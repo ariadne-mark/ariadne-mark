@@ -32,9 +32,18 @@
         "EU-50",
         "CA-22757"
       ],
-      "implementation_status": "planned",
-      "verification_status": "not_run",
-      "evidence": []
+      "implementation_status": "implemented",
+      "verification_status": "passed",
+      "evidence": [
+        {
+          "release": "0.2.0a0",
+          "environment": "Linux x86-64 CPU Docker; 2 vCPU / 6 GiB container; network disabled",
+          "command": "ARIADNE_MEDIA_TESTS=1 python -m unittest discover -s tests -t . -v",
+          "result": "passed",
+          "report": "docs/validation/0.2.0a0.md",
+          "scope": "Supported formats and limits in docs/operations/support.md; not legal certification"
+        }
+      ]
     },
     {
       "id": "REQ-003",
@@ -62,9 +71,18 @@
       "source_ids": [
         "EU-CODE"
       ],
-      "implementation_status": "planned",
-      "verification_status": "not_run",
-      "evidence": []
+      "implementation_status": "implemented",
+      "verification_status": "passed",
+      "evidence": [
+        {
+          "release": "0.2.0a0",
+          "environment": "Linux x86-64 CPU Docker; 2 vCPU / 6 GiB container; network disabled",
+          "command": "ARIADNE_MEDIA_TESTS=1 python -m unittest discover -s tests -t . -v",
+          "result": "passed",
+          "report": "docs/validation/0.2.0a0.md",
+          "scope": "Supported formats and limits in docs/operations/support.md; not legal certification"
+        }
+      ]
     },
     {
       "id": "REQ-005",
@@ -78,9 +96,18 @@
         "EU-50",
         "CA-22757"
       ],
-      "implementation_status": "planned",
-      "verification_status": "not_run",
-      "evidence": []
+      "implementation_status": "implemented",
+      "verification_status": "passed",
+      "evidence": [
+        {
+          "release": "0.2.0a0",
+          "environment": "Linux x86-64 CPU Docker; 2 vCPU / 6 GiB container; network disabled",
+          "command": "ARIADNE_MEDIA_TESTS=1 python -m unittest discover -s tests -t . -v",
+          "result": "passed",
+          "report": "docs/validation/0.2.0a0.md",
+          "scope": "Supported formats and limits in docs/operations/support.md; not legal certification"
+        }
+      ]
     },
     {
       "id": "REQ-006",
@@ -94,9 +121,18 @@
         "CA-22757",
         "EU-CODE"
       ],
-      "implementation_status": "planned",
-      "verification_status": "not_run",
-      "evidence": []
+      "implementation_status": "implemented",
+      "verification_status": "passed",
+      "evidence": [
+        {
+          "release": "0.2.0a0",
+          "environment": "Linux x86-64 CPU Docker; 2 vCPU / 6 GiB container; network disabled",
+          "command": "ARIADNE_MEDIA_TESTS=1 python -m unittest discover -s tests -t . -v",
+          "result": "passed",
+          "report": "docs/validation/0.2.0a0.md",
+          "scope": "Supported formats and limits in docs/operations/support.md; not legal certification"
+        }
+      ]
     },
     {
       "id": "REQ-007",
@@ -110,7 +146,7 @@
         "CA-22757",
         "EU-CODE"
       ],
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "verification_status": "not_run",
       "evidence": []
     },
@@ -123,9 +159,18 @@
       "test_path": "tests/verification",
       "documentation_path": "docs/implementation/verification-results.md",
       "source_ids": [],
-      "implementation_status": "in_progress",
-      "verification_status": "not_run",
-      "evidence": []
+      "implementation_status": "implemented",
+      "verification_status": "passed",
+      "evidence": [
+        {
+          "release": "0.2.0a0",
+          "environment": "Linux x86-64 CPU Docker; 2 vCPU / 6 GiB container; network disabled",
+          "command": "ARIADNE_MEDIA_TESTS=1 python -m unittest discover -s tests -t . -v",
+          "result": "passed",
+          "report": "docs/validation/0.2.0a0.md",
+          "scope": "Supported formats and limits in docs/operations/support.md; not legal certification"
+        }
+      ]
     },
     {
       "id": "REQ-009",
@@ -138,7 +183,7 @@
       "source_ids": [
         "EU-50"
       ],
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "verification_status": "not_run",
       "evidence": []
     },
@@ -153,9 +198,18 @@
       "source_ids": [
         "EU-CODE"
       ],
-      "implementation_status": "planned",
-      "verification_status": "not_run",
-      "evidence": []
+      "implementation_status": "implemented",
+      "verification_status": "passed",
+      "evidence": [
+        {
+          "release": "0.2.0a0",
+          "environment": "Linux x86-64 CPU Docker; 2 vCPU / 6 GiB container; network disabled",
+          "command": "ARIADNE_MEDIA_TESTS=1 python -m unittest discover -s tests -t . -v",
+          "result": "passed",
+          "report": "docs/validation/0.2.0a0.md",
+          "scope": "Supported formats and limits in docs/operations/support.md; not legal certification"
+        }
+      ]
     },
     {
       "id": "REQ-011",
@@ -168,7 +222,7 @@
       "source_ids": [
         "CA-22757"
       ],
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "verification_status": "not_run",
       "evidence": []
     },
@@ -185,7 +239,7 @@
         "EU-CODE",
         "CA-22757"
       ],
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "verification_status": "not_run",
       "evidence": []
     },
@@ -198,7 +252,7 @@
       "test_path": "tests/integration",
       "documentation_path": "docs/operations/cpu-deployment.md",
       "source_ids": [],
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "verification_status": "not_run",
       "evidence": []
     },
@@ -211,7 +265,7 @@
       "test_path": "tests/signing",
       "documentation_path": "docs/operations/keys-and-trust.md",
       "source_ids": [],
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "verification_status": "not_run",
       "evidence": []
     },

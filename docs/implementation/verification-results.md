@@ -1,6 +1,6 @@
 # Verification result contract
 
-Related: **REQ-008 (in progress)**. This module defines a per-method result;
+Related: **REQ-008**. This module defines a per-method result;
 it does **not** run watermark detection or cryptographic verification.
 
 | Status | Meaning within the named method's scope |
@@ -31,5 +31,5 @@ trust policy before setting these states. Failure messages must not contain
 keys, upload contents or private identifiers.
 
 Executable tests: [test_results.py](../../tests/verification/test_results.py).
-REQ-008 remains in progress until real adapters demonstrate these semantics
-on supported, unsupported and malformed media files.
+The media adapters now exercise these distinctions on actual signed,
+transformed, unmarked and corrupted files; see [release evidence](../validation/0.2.0a0.md).

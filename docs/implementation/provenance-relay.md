@@ -1,16 +1,7 @@
-# Сохранять историю преобразований
+# Preserving source history
 
-Требование: **REQ-010**. Статус: **запланировано**.
+REQ-010. `SDK.mark` inspects input C2PA before changing pixels. Invalid/unreadable credentials abort export. A valid prior manifest is imported as a parent ingredient; altered material also carries its source as a parent. C2PA edit intent creates the required opening history before subsequent actions.
 
-## Критерий приёмки
+The integration suite verifies a signed image that is marked again as altered, then checks the resulting parent ingredient and active signature. This preserves history within this SDK workflow; it does not make arbitrary editors, CDNs or social platforms preserve provenance.
 
-Сохранить исходные credentials до перекодирования, корректно сформировать ingredients/derived assertions; проверить созданный и изменённый контент.
-
-## Расположение
-
-- Реализация: `src/ariadne_mark/provenance/`
-- Проверки: `tests/provenance/`
-
-## Доказательство
-
-В Ariadne Mark пока не реализовано и не проверено. После реализации здесь будут пример использования, поддерживаемые версии и ограничения.
+See [evidence](../validation/0.2.0a0.md).

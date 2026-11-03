@@ -1,16 +1,5 @@
-# Предоставить публичную проверку
+# Self-hosted verifier
 
-Требование: **REQ-007**. Статус: **запланировано**.
+REQ-007 remains in progress pending deployment and feedback-operation qualification. Working UI/API and local CLI are available. See [deployment](../operations/verifier.md), [privacy](../operations/privacy.md) and [verification semantics](verification-results.md).
 
-## Критерий приёмки
-
-Self-hosted UI и API; upload workflow, доступность без ненужной регистрации, feedback. Проверка относится к поддерживаемым меткам/издателям и не обещает обнаружение любого AI-контента.
-
-## Расположение
-
-- Реализация: `apps/verifier/`
-- Проверки: `tests/verifier/`
-
-## Доказательство
-
-В Ariadne Mark пока не реализовано и не проверено. После реализации здесь будут пример использования, поддерживаемые версии и ограничения.
+The reference service takes uploads without registration. Default limits are 32 MiB and one active inference. Actual engine tests and HTTP cleanup/error tests run in CI. Public deployment, an operational feedback channel and accessibility review remain the adopting provider's work.

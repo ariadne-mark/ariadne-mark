@@ -1,0 +1,36 @@
+test_cli_mark_verify_and_refuse_overwrite (tests.integration.test_media.MediaTests.test_cli_mark_verify_and_refuse_overwrite) ... ok
+test_explicit_development_opt_in (tests.integration.test_media.MediaTests.test_explicit_development_opt_in) ... ok
+test_failed_watermark_publishes_nothing (tests.integration.test_media.MediaTests.test_failed_watermark_publishes_nothing) ... ok
+test_metadata_loss_recovers_record_without_claiming_signature (tests.integration.test_media.MediaTests.test_metadata_loss_recovers_record_without_claiming_signature) ... ok
+test_parent_manifest_is_preserved (tests.integration.test_media.MediaTests.test_parent_manifest_is_preserved) ... ok
+test_png_jpeg_alpha_signed_roundtrip_and_trust (tests.integration.test_media.MediaTests.test_png_jpeg_alpha_signed_roundtrip_and_trust) ... ok
+test_public_api_runs_real_verification (tests.integration.test_media.MediaTests.test_public_api_runs_real_verification) ... ok
+test_registry_error_removes_export_and_receipt (tests.integration.test_media.MediaTests.test_registry_error_removes_export_and_receipt) ... ok
+test_signature_tampering_is_invalid (tests.integration.test_media.MediaTests.test_signature_tampering_is_invalid) ... ok
+test_video_recompression_recovery (tests.integration.test_media.MediaTests.test_video_recompression_recovery) ... ok
+test_video_roundtrip_audio_timestamps_and_rotation (tests.integration.test_media.MediaTests.test_video_roundtrip_audio_timestamps_and_rotation) ... ok
+test_duplicate_fields_and_invalid_json_rejected (tests.provenance.test_records.RecordTests.test_duplicate_fields_and_invalid_json_rejected) ... ok
+test_image_and_video_created_and_altered_roundtrip (tests.provenance.test_records.RecordTests.test_image_and_video_created_and_altered_roundtrip) ... ok
+test_malformed_values_rejected (tests.provenance.test_records.RecordTests.test_malformed_values_rejected) ... ok
+test_missing_unknown_and_personal_fields_rejected (tests.provenance.test_records.RecordTests.test_missing_unknown_and_personal_fields_rejected) ... ok
+test_naive_timestamp_and_non_random_uuid_rejected (tests.provenance.test_records.RecordTests.test_naive_timestamp_and_non_random_uuid_rejected) ... ok
+test_new_public_ids_are_random_and_distinct (tests.provenance.test_records.RecordTests.test_new_public_ids_are_random_and_distinct) ... ok
+test_python_api_rejects_untyped_inputs (tests.provenance.test_records.RecordTests.test_python_api_rejects_untyped_inputs) ... ok
+test_records_are_immutable (tests.provenance.test_records.RecordTests.test_records_are_immutable) ... ok
+test_signature_without_content_binding_is_not_verified (tests.verification.test_c2pa_policy.C2paPolicyTests.test_signature_without_content_binding_is_not_verified) ... ok
+test_unknown_failure_is_not_silently_ignored (tests.verification.test_c2pa_policy.C2paPolicyTests.test_unknown_failure_is_not_silently_ignored) ... ok
+test_untrusted_valid_signature_is_distinct_from_tampering (tests.verification.test_c2pa_policy.C2paPolicyTests.test_untrusted_valid_signature_is_distinct_from_tampering) ... ok
+test_contradictory_results_rejected (tests.verification.test_results.VerificationTests.test_contradictory_results_rejected) ... ok
+test_no_implicit_compliance_or_human_origin_verdict (tests.verification.test_results.VerificationTests.test_no_implicit_compliance_or_human_origin_verdict) ... ok
+test_operational_failures_are_not_negative_detections (tests.verification.test_results.VerificationTests.test_operational_failures_are_not_negative_detections) ... ok
+test_signature_validity_does_not_imply_issuer_trust (tests.verification.test_results.VerificationTests.test_signature_validity_does_not_imply_issuer_trust) ... ok
+test_tampered_claim_is_invalid (tests.verification.test_results.VerificationTests.test_tampered_claim_is_invalid) ... ok
+test_unsigned_recovered_claim_is_not_trusted (tests.verification.test_results.VerificationTests.test_unsigned_recovered_claim_is_not_trusted) ... ok
+test_error_is_not_a_negative_detection_and_temp_is_deleted (tests.verifier.test_server.ServerTests.test_error_is_not_a_negative_detection_and_temp_is_deleted) ... ok
+test_no_account_and_cleanup_on_success (tests.verifier.test_server.ServerTests.test_no_account_and_cleanup_on_success) ... ok
+test_reject_unsupported_and_oversized_upload_before_inference (tests.verifier.test_server.ServerTests.test_reject_unsupported_and_oversized_upload_before_inference) ... ok
+
+----------------------------------------------------------------------
+Ran 31 tests in 61.483s
+
+OK

@@ -1,16 +1,5 @@
-# Предоставить нужные disclosure-компоненты
+# Visible disclosure
 
-Требование: **REQ-009**. Статус: **запланировано**.
+REQ-009 remains in progress as a legal-mapping requirement. `--visible` bakes an AI-generated/AI-altered label into an image or every video frame before watermarking and signing. The API equivalent is `SDK.mark(..., visible=True)`.
 
-## Критерий приёмки
-
-Видимая маркировка или уведомление включаются только для применимого сценария. Документировать, какие действия выполняет SDK, а какие требуется встроить в приложение.
-
-## Расположение
-
-- Реализация: `src/ariadne_mark/disclosure/`
-- Проверки: `tests/disclosure/`
-
-## Доказательство
-
-В Ariadne Mark пока не реализовано и не проверено. После реализации здесь будут пример использования, поддерживаемые версии и ограничения.
+This is a technical component, not a decision that a label is required for every scenario. The application must determine applicability and provide accessible disclosures at the appropriate point in its own UI. See [regulatory mapping](../compliance/release-mapping.md).

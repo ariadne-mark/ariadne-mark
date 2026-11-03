@@ -1,5 +1,3 @@
-# Проверки: `tests/integration`
+# Real-engine integration tests
 
-Место зарезервировано в структуре Ariadne Mark. Реализация или исполняемые тесты пока отсутствуют.
-
-Требования и критерии приёмки: [матрица покрытия](../../compliance/COVERAGE.md).
+Enable `ARIADNE_MEDIA_TESTS=1` in the built CPU Docker image. [test_media.py](test_media.py) uses actual TrustMark, C2PA and FFmpeg rather than mocked optional engines. The default core-only suite skips these tests; the required CI media job runs them.

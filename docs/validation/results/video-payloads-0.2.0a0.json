@@ -1,0 +1,71 @@
+{
+  "scope": "8 random payloads on the same 2s vertical fixture; not a population robustness guarantee",
+  "video_strength": 1.5,
+  "h264_crf": 18,
+  "rows": [
+    {
+      "trial": 0,
+      "passed": true,
+      "token": "014d407c61ea8cf3",
+      "seconds": 7.752,
+      "mean_frame_psnr_db": 33.78,
+      "min_frame_psnr_db": 33.51
+    },
+    {
+      "trial": 1,
+      "passed": true,
+      "token": "014de87f83674f00",
+      "seconds": 7.732,
+      "mean_frame_psnr_db": 33.72,
+      "min_frame_psnr_db": 33.49
+    },
+    {
+      "trial": 2,
+      "passed": true,
+      "token": "014d7bbf64c47ce7",
+      "seconds": 7.783,
+      "mean_frame_psnr_db": 33.74,
+      "min_frame_psnr_db": 33.49
+    },
+    {
+      "trial": 3,
+      "passed": true,
+      "token": "014d5d1df606931f",
+      "seconds": 8.021,
+      "mean_frame_psnr_db": 33.73,
+      "min_frame_psnr_db": 33.49
+    },
+    {
+      "trial": 4,
+      "passed": true,
+      "token": "014dc28ad0851387",
+      "seconds": 7.855,
+      "mean_frame_psnr_db": 33.75,
+      "min_frame_psnr_db": 33.47
+    },
+    {
+      "trial": 5,
+      "passed": true,
+      "token": "014d588787624d5f",
+      "seconds": 7.739,
+      "mean_frame_psnr_db": 33.74,
+      "min_frame_psnr_db": 33.42
+    },
+    {
+      "trial": 6,
+      "passed": true,
+      "token": "014d03c0729a3027",
+      "seconds": 7.799,
+      "mean_frame_psnr_db": 33.73,
+      "min_frame_psnr_db": 33.45
+    },
+    {
+      "trial": 7,
+      "passed": true,
+      "token": "014d06723ccb19bd",
+      "seconds": 7.78,
+      "mean_frame_psnr_db": 33.74,
+      "min_frame_psnr_db": 33.43
+    }
+  ]
+}
