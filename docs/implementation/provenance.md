@@ -1,16 +1,33 @@
-# Сформировать сведения о происхождении
+# Unsigned provenance records
 
-Требование: **REQ-003**. Статус: **запланировано**.
+Related: **REQ-003 (in progress)**. Available in the Python core.
 
-## Критерий приёмки
+`ProvenanceRecord.create()` accepts a publisher, a `GenerativeSystem` with its
+own name and version, image/video `MediaKind`, created/altered `Action`, and a
+timezone-aware `created_at`. It creates a random UUIDv4 asset ID. Serialization
+normalizes timestamps to UTC. The SDK version never substitutes for the
+version of the generative system.
 
-Валидировать publisher, system name/version, timestamp, asset ID и created/altered согласно выбранному профилю. Не подменять версию генеративной системы версией SDK.
+`to_json()` and `from_json()` round-trip the version 1 record schema. Parsing
+rejects unknown/missing fields, duplicate JSON keys, unsupported schema
+versions, empty identity fields, naive timestamps and non-UUIDv4 IDs. Data
+classes are immutable. Python callers must supply the enums, not raw strings.
 
-## Расположение
+Run [the example](../../examples/provenance_record.py) after installing the
+package. Tests: [test_records.py](../../tests/provenance/test_records.py).
 
-- Реализация: `src/ariadne_mark/provenance/`
-- Проверки: `tests/provenance/`
+## Boundaries
 
-## Доказательство
+This is an **unsigned publisher assertion**, not a C2PA manifest or proof that a
+media file contains a watermark. There is no file hash, signature, trust
+validation, legal profile, or media binding yet. The record's UUID is not an
+assumption about a particular watermark engine's bit capacity; the adapter
+must define the wire payload and any recovery mapping separately.
 
-В Ariadne Mark пока не реализовано и не проверено. После реализации здесь будут пример использования, поддерживаемые версии и ограничения.
+There is no user identifier field. Do not put personal data in publisher or
+system strings; the SDK cannot determine whether arbitrary text is personal
+data. Local operation requires no account, API key or network access.
+
+REQ-003 remains incomplete until profile-specific fields and actual
+media/signing integration are validated. Passing data tests is not proof of
+legal sufficiency.
