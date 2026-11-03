@@ -12,8 +12,9 @@ from ariadne_mark.errors import AriadneError
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="ariadne", description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    models = commands.add_parser("models", help="Provision or check pinned TrustMark models")
+    models = commands.add_parser("models", help="Provision or check pinned watermark models")
     models.add_argument("action", choices=["fetch", "check"])
+    models.add_argument("--engine", choices=["all", "trustmark", "videoseal"], default="all")
     dev = commands.add_parser("init-dev", help="Generate a DEVELOPMENT signing identity")
     dev.add_argument("directory", type=Path)
     mark = commands.add_parser("mark", help="Watermark, sign and verify a JPEG, PNG or MP4")
@@ -43,8 +44,11 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.command == "models":
-            from ariadne_mark.watermark import fetch_models, check_models
-            result = fetch_models() if args.action == "fetch" else check_models()
+            from ariadne_mark import watermark, videoseal
+            result = {}
+            for name, engine in (("trustmark", watermark), ("videoseal", videoseal)):
+                if args.engine in {"all", name}:
+                    result[name] = engine.fetch_models() if args.action == "fetch" else engine.check_models()
         elif args.command == "init-dev":
             from ariadne_mark.signing import create_development_identity
             create_development_identity(args.directory)
@@ -55,7 +59,9 @@ def main(argv=None) -> int:
             from ariadne_mark.pipeline import SDK
             marker = Watermarker(threads=args.threads)
             registry = Registry(args.registry) if args.registry else None
-            sdk = SDK(marker, registry=registry, trust_anchors=args.trust_anchors)
+            from ariadne_mark.videoseal import VideoSealWatermarker
+            sdk = SDK(marker, registry=registry, trust_anchors=args.trust_anchors,
+                      video_marker=VideoSealWatermarker(threads=args.threads))
             if args.command == "serve":
                 from ariadne_mark.server import serve
                 serve(sdk, host=args.host, port=args.port, max_upload_mb=args.max_upload_mb, feedback_url=args.feedback_url)

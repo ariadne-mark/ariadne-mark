@@ -81,6 +81,9 @@ def fetch_models() -> dict:
 
 
 class Watermarker:
+    algorithm = "adobe.trustmark.Q.bch5"
+    payload_format = "ariadne-v1"
+
     def __init__(self, *, threads: int = 2):
         import torch
         from trustmark import TrustMark

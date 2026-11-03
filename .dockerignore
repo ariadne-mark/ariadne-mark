@@ -13,3 +13,5 @@ dist
 *.sqlite3
 *.sqlite3-*
 *.receipt.json
+
+*.jit

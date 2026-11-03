@@ -1,6 +1,6 @@
 """Export only after real watermark and C2PA read-back succeed."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import hashlib
 import json
 import os
@@ -13,6 +13,7 @@ from ariadne_mark.provenance import ProvenanceRecord
 from ariadne_mark.signing import SigningIdentity, sign_file, MIME
 from ariadne_mark.verification.media import open_image, verify_file, inspect_c2pa
 from ariadne_mark.watermark import new_token
+from ariadne_mark.videoseal import VideoSealWatermarker
 
 
 def file_hash(path: Path) -> str:
@@ -30,8 +31,10 @@ class SDK:
     registry: object | None = None
     trust_anchors: Path | None = None
 
+    video_marker: object = field(default_factory=VideoSealWatermarker)
+
     def verify(self, path: Path) -> dict:
-        return verify_file(path, marker=self.marker, registry=self.registry, trust_anchors=self.trust_anchors)
+        return verify_file(path, marker=self.marker, video_marker=self.video_marker, registry=self.registry, trust_anchors=self.trust_anchors)
 
     def mark(self, source: Path, destination: Path, record: ProvenanceRecord, *, visible=False, audio_kind="unknown") -> dict:
         source, destination = Path(source).resolve(), Path(destination).resolve()
@@ -66,7 +69,7 @@ class SDK:
                 from ariadne_mark.video import encode_video, probe
                 if probe(source)["audio"] and audio_kind == "none":
                     raise UnsupportedMedia("Input contains audio; select its provenance explicitly")
-                details = encode_video(source, marked, self.marker, token, visible=visible, altered=record.action.value == "altered")
+                details = encode_video(source, marked, self.video_marker, token, visible=visible, altered=record.action.value == "altered")
                 audio = audio_kind if details["audio"] != "none" else "none"
             else:
                 from ariadne_mark.disclosure import apply_label
@@ -83,16 +86,22 @@ class SDK:
                     image.save(marked, "JPEG", quality=95, subsampling=0)
                 else:
                     image.save(marked, "PNG")
-            sign_file(marked, signed, record, token, self.identity, parent=parent, disclosure=visible, audio=audio)
+            engine = self.video_marker if video else self.marker
+            sign_file(marked, signed, record, token, self.identity, parent=parent, disclosure=visible, audio=audio,
+                      algorithm=getattr(engine, "algorithm", "adobe.trustmark.Q.bch5"),
+                      payload_format=getattr(engine, "payload_format", "ariadne-v1"))
             checked = self.verify(signed)
             samples = checked["watermark"].get("samples", [])
             if (checked["c2pa"]["status"] != "verified_claim" or checked["c2pa"].get("token") != token
                     or checked["c2pa"].get("record") != record.to_dict()
-                    or not samples or any(row["token"] != token for row in samples)):
+                    or checked["watermark"].get("status") != "recovered_claim"
+                    or checked["watermark"].get("token") != token
+                    or not samples
+                    or (not video and any(row["token"] != token for row in samples))):
                 matches = sum(row["token"] == token for row in samples)
-                raise VerificationFailed(f"Final read-back failed: C2PA={checked['c2pa']['status']}, watermark={matches}/{len(samples)} samples; no output published")
+                raise VerificationFailed(f"Final read-back failed: C2PA={checked['c2pa']['status']}, watermark={checked['watermark']['status']}, matching frames={matches}/{len(samples)}; no output published")
             digest = file_hash(signed)
-            receipt = {"schema_version": 1, "sdk_version": "0.2.0a0", "asset_id": str(record.asset_id),
+            receipt = {"schema_version": 1, "sdk_version": "0.3.0a0", "asset_id": str(record.asset_id),
                        "token": token, "sha256": digest, "seconds": round(time.monotonic() - start, 3),
                        "development_identity": self.identity.development, "audio_kind": audio,
                        "video": details, "verification": checked}

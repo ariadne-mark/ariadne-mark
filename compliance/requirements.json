@@ -42,6 +42,14 @@
           "result": "passed",
           "report": "docs/validation/0.2.0a0.md",
           "scope": "Supported formats and limits in docs/operations/support.md; not legal certification"
+        },
+        {
+          "release": "0.3.0a0",
+          "environment": "Linux x86-64 CPU Docker; 2 vCPU / 6 GiB container; network disabled",
+          "command": "ARIADNE_MEDIA_TESTS=1 python -m unittest discover -s tests -t . -v",
+          "result": "passed",
+          "report": "docs/validation/0.3.0a0.md",
+          "scope": "42 real-engine/core tests; VideoSeal replaces default video engine; supported technical scope only, not legal certification"
         }
       ]
     },
@@ -81,6 +89,14 @@
           "result": "passed",
           "report": "docs/validation/0.2.0a0.md",
           "scope": "Supported formats and limits in docs/operations/support.md; not legal certification"
+        },
+        {
+          "release": "0.3.0a0",
+          "environment": "Linux x86-64 CPU Docker; 2 vCPU / 6 GiB container; network disabled",
+          "command": "ARIADNE_MEDIA_TESTS=1 python -m unittest discover -s tests -t . -v",
+          "result": "passed",
+          "report": "docs/validation/0.3.0a0.md",
+          "scope": "42 real-engine/core tests; VideoSeal replaces default video engine; supported technical scope only, not legal certification"
         }
       ]
     },
@@ -106,6 +122,14 @@
           "result": "passed",
           "report": "docs/validation/0.2.0a0.md",
           "scope": "Supported formats and limits in docs/operations/support.md; not legal certification"
+        },
+        {
+          "release": "0.3.0a0",
+          "environment": "Linux x86-64 CPU Docker; 2 vCPU / 6 GiB container; network disabled",
+          "command": "ARIADNE_MEDIA_TESTS=1 python -m unittest discover -s tests -t . -v",
+          "result": "passed",
+          "report": "docs/validation/0.3.0a0.md",
+          "scope": "42 real-engine/core tests; VideoSeal replaces default video engine; supported technical scope only, not legal certification"
         }
       ]
     },
@@ -131,6 +155,14 @@
           "result": "passed",
           "report": "docs/validation/0.2.0a0.md",
           "scope": "Supported formats and limits in docs/operations/support.md; not legal certification"
+        },
+        {
+          "release": "0.3.0a0",
+          "environment": "Linux x86-64 CPU Docker; 2 vCPU / 6 GiB container; network disabled",
+          "command": "ARIADNE_MEDIA_TESTS=1 python -m unittest discover -s tests -t . -v",
+          "result": "passed",
+          "report": "docs/validation/0.3.0a0.md",
+          "scope": "42 real-engine/core tests; VideoSeal replaces default video engine; supported technical scope only, not legal certification"
         }
       ]
     },
@@ -169,6 +201,14 @@
           "result": "passed",
           "report": "docs/validation/0.2.0a0.md",
           "scope": "Supported formats and limits in docs/operations/support.md; not legal certification"
+        },
+        {
+          "release": "0.3.0a0",
+          "environment": "Linux x86-64 CPU Docker; 2 vCPU / 6 GiB container; network disabled",
+          "command": "ARIADNE_MEDIA_TESTS=1 python -m unittest discover -s tests -t . -v",
+          "result": "passed",
+          "report": "docs/validation/0.3.0a0.md",
+          "scope": "42 real-engine/core tests; VideoSeal replaces default video engine; supported technical scope only, not legal certification"
         }
       ]
     },
@@ -208,6 +248,14 @@
           "result": "passed",
           "report": "docs/validation/0.2.0a0.md",
           "scope": "Supported formats and limits in docs/operations/support.md; not legal certification"
+        },
+        {
+          "release": "0.3.0a0",
+          "environment": "Linux x86-64 CPU Docker; 2 vCPU / 6 GiB container; network disabled",
+          "command": "ARIADNE_MEDIA_TESTS=1 python -m unittest discover -s tests -t . -v",
+          "result": "passed",
+          "report": "docs/validation/0.3.0a0.md",
+          "scope": "42 real-engine/core tests; VideoSeal replaces default video engine; supported technical scope only, not legal certification"
         }
       ]
     },

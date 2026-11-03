@@ -8,6 +8,10 @@ read-back, timestamp-preserving video path, AAC retention, local registry,
 optional visible label, self-hosted UI/API, real-engine tests, Docker recipe and
 measured smoke benchmark. See [release evidence](../validation/0.2.0a0.md).
 
+Added in 0.3.0a0: CPU VideoSeal video adapter, BCH-protected IDs, multi-frame
+verification, legacy-video dispatch and explicit model provisioning. See
+[VideoSeal release evidence](../validation/0.3.0a0.md).
+
 Remaining before broad production/compliance claims:
 
 1. Representative product datasets, broader transformations and adversarial tests.

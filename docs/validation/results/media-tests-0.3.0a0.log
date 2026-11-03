@@ -1,0 +1,49 @@
+test_cli_mark_verify_and_refuse_overwrite (tests.integration.test_media.MediaTests.test_cli_mark_verify_and_refuse_overwrite) ... ok
+test_explicit_development_opt_in (tests.integration.test_media.MediaTests.test_explicit_development_opt_in) ... ok
+test_failed_watermark_publishes_nothing (tests.integration.test_media.MediaTests.test_failed_watermark_publishes_nothing) ... ok
+test_legacy_video_and_new_engine_metadata_dispatch (tests.integration.test_media.MediaTests.test_legacy_video_and_new_engine_metadata_dispatch) ... /usr/local/lib/python3.12/site-packages/torch/jit/_serialization.py:176: FutureWarning: `torch.jit.load` is deprecated. Please switch to `torch.export`.
+  warnings.warn(
+ok
+test_metadata_loss_recovers_record_without_claiming_signature (tests.integration.test_media.MediaTests.test_metadata_loss_recovers_record_without_claiming_signature) ... ok
+test_parent_manifest_is_preserved (tests.integration.test_media.MediaTests.test_parent_manifest_is_preserved) ... ok
+test_png_jpeg_alpha_signed_roundtrip_and_trust (tests.integration.test_media.MediaTests.test_png_jpeg_alpha_signed_roundtrip_and_trust) ... ok
+test_public_api_runs_real_verification (tests.integration.test_media.MediaTests.test_public_api_runs_real_verification) ... ok
+test_registry_error_removes_export_and_receipt (tests.integration.test_media.MediaTests.test_registry_error_removes_export_and_receipt) ... ok
+test_saturated_test_pattern_is_not_silently_published (tests.integration.test_media.MediaTests.test_saturated_test_pattern_is_not_silently_published) ... ok
+test_signature_tampering_is_invalid (tests.integration.test_media.MediaTests.test_signature_tampering_is_invalid) ... ok
+test_video_recompression_recovery (tests.integration.test_media.MediaTests.test_video_recompression_recovery) ... ok
+test_video_roundtrip_audio_timestamps_and_rotation (tests.integration.test_media.MediaTests.test_video_roundtrip_audio_timestamps_and_rotation) ... ok
+test_videoseal_tail_batch_negative_and_fail_closed (tests.integration.test_media.MediaTests.test_videoseal_tail_batch_negative_and_fail_closed) ... ok
+test_duplicate_fields_and_invalid_json_rejected (tests.provenance.test_records.RecordTests.test_duplicate_fields_and_invalid_json_rejected) ... ok
+test_image_and_video_created_and_altered_roundtrip (tests.provenance.test_records.RecordTests.test_image_and_video_created_and_altered_roundtrip) ... ok
+test_malformed_values_rejected (tests.provenance.test_records.RecordTests.test_malformed_values_rejected) ... ok
+test_missing_unknown_and_personal_fields_rejected (tests.provenance.test_records.RecordTests.test_missing_unknown_and_personal_fields_rejected) ... ok
+test_naive_timestamp_and_non_random_uuid_rejected (tests.provenance.test_records.RecordTests.test_naive_timestamp_and_non_random_uuid_rejected) ... ok
+test_new_public_ids_are_random_and_distinct (tests.provenance.test_records.RecordTests.test_new_public_ids_are_random_and_distinct) ... ok
+test_python_api_rejects_untyped_inputs (tests.provenance.test_records.RecordTests.test_python_api_rejects_untyped_inputs) ... ok
+test_records_are_immutable (tests.provenance.test_records.RecordTests.test_records_are_immutable) ... ok
+test_signature_without_content_binding_is_not_verified (tests.verification.test_c2pa_policy.C2paPolicyTests.test_signature_without_content_binding_is_not_verified) ... ok
+test_unknown_failure_is_not_silently_ignored (tests.verification.test_c2pa_policy.C2paPolicyTests.test_unknown_failure_is_not_silently_ignored) ... ok
+test_untrusted_valid_signature_is_distinct_from_tampering (tests.verification.test_c2pa_policy.C2paPolicyTests.test_untrusted_valid_signature_is_distinct_from_tampering) ... ok
+test_contradictory_results_rejected (tests.verification.test_results.VerificationTests.test_contradictory_results_rejected) ... ok
+test_no_implicit_compliance_or_human_origin_verdict (tests.verification.test_results.VerificationTests.test_no_implicit_compliance_or_human_origin_verdict) ... ok
+test_operational_failures_are_not_negative_detections (tests.verification.test_results.VerificationTests.test_operational_failures_are_not_negative_detections) ... ok
+test_signature_validity_does_not_imply_issuer_trust (tests.verification.test_results.VerificationTests.test_signature_validity_does_not_imply_issuer_trust) ... ok
+test_tampered_claim_is_invalid (tests.verification.test_results.VerificationTests.test_tampered_claim_is_invalid) ... ok
+test_unsigned_recovered_claim_is_not_trusted (tests.verification.test_results.VerificationTests.test_unsigned_recovered_claim_is_not_trusted) ... ok
+test_error_is_not_a_negative_detection_and_temp_is_deleted (tests.verifier.test_server.ServerTests.test_error_is_not_a_negative_detection_and_temp_is_deleted) ... ok
+test_no_account_and_cleanup_on_success (tests.verifier.test_server.ServerTests.test_no_account_and_cleanup_on_success) ... ok
+test_reject_unsupported_and_oversized_upload_before_inference (tests.verifier.test_server.ServerTests.test_reject_unsupported_and_oversized_upload_before_inference) ... ok
+test_missing_video_model_is_not_reported_as_absent_mark (tests.watermark.test_videoseal.VideoRoutingTests.test_missing_video_model_is_not_reported_as_absent_mark) ... ok
+test_signed_videoseal_dispatch_does_not_invoke_legacy_engine (tests.watermark.test_videoseal.VideoRoutingTests.test_signed_videoseal_dispatch_does_not_invoke_legacy_engine) ... ok
+test_error_correction_integrity_and_negative_packets (tests.watermark.test_videoseal.VideoSealPayloadTests.test_error_correction_integrity_and_negative_packets) ... ok
+test_aggregate_cannot_hide_conflicting_frame_id (tests.watermark.test_videoseal.VideoSealPolicyTests.test_aggregate_cannot_hide_conflicting_frame_id) ... ok
+test_aggregate_recovers_when_individual_frames_do_not (tests.watermark.test_videoseal.VideoSealPolicyTests.test_aggregate_recovers_when_individual_frames_do_not) ... ok
+test_constructor_is_lazy_and_validates_threads (tests.watermark.test_videoseal.VideoSealPolicyTests.test_constructor_is_lazy_and_validates_threads) ... ok
+test_empty_samples_are_not_a_negative_detection (tests.watermark.test_videoseal.VideoSealPolicyTests.test_empty_samples_are_not_a_negative_detection) ... ok
+test_missing_and_modified_models_fail_before_deserialization (tests.watermark.test_videoseal.VideoSealPolicyTests.test_missing_and_modified_models_fail_before_deserialization) ... ok
+
+----------------------------------------------------------------------
+Ran 42 tests in 95.127s
+
+OK

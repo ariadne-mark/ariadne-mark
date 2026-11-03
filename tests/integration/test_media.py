@@ -20,6 +20,8 @@ class MediaTests(unittest.TestCase):
         create_development_identity(cls.root / "identity")
         cls.identity = SigningIdentity.from_directory(cls.root / "identity", allow_dev=True)
         cls.marker = Watermarker()
+        from ariadne_mark.videoseal import VideoSealWatermarker
+        cls.video_marker = VideoSealWatermarker()
 
     @classmethod
     def tearDownClass(cls):
@@ -30,7 +32,7 @@ class MediaTests(unittest.TestCase):
         from ariadne_mark.pipeline import SDK
         self.directory = tempfile.TemporaryDirectory(dir=self.root)
         self.path = Path(self.directory.name)
-        self.sdk = SDK(self.marker, self.identity, Registry(self.path / "registry.sqlite3"))
+        self.sdk = SDK(self.marker, self.identity, Registry(self.path / "registry.sqlite3"), video_marker=self.video_marker)
 
     def tearDown(self):
         self.directory.cleanup()
@@ -55,15 +57,30 @@ class MediaTests(unittest.TestCase):
     def ffmpeg(self, *args):
         subprocess.run(["ffmpeg", "-v", "error", "-nostdin", "-y", *map(str, args)], check=True, capture_output=True, timeout=60)
 
-    def video(self, *, vertical=False, audio=True, vfr=False):
+    def video(self, *, vertical=False, audio=True, vfr=False, pattern="texture"):
         path = self.path / "input.mp4"
         size = "320x512" if vertical else "512x320"
-        args = ["-f", "lavfi", "-i", f"testsrc2=size={size}:rate=12:duration=2"]
+        if pattern == "testsrc":
+            args = ["-f", "lavfi", "-i", f"testsrc2=size={size}:rate=12:duration=2"]
+        else:
+            # Reproducible unsaturated texture. The old saturated color-bar fixture
+            # is deliberately retained below as a fail-closed edge case.
+            import numpy as np
+            from PIL import Image
+            width, height = map(int, size.split("x"))
+            rng = np.random.default_rng(42)
+            pixels = np.zeros((height, width, 3), dtype=np.float32)
+            for side, amplitude in ((4, 35), (16, 30), (64, 20), (256, 10)):
+                noise = Image.fromarray(rng.integers(0, 256, (side, side, 3), dtype=np.uint8))
+                pixels += (np.asarray(noise.resize((width, height), Image.Resampling.BICUBIC), dtype=np.float32) - 128) * amplitude / 128
+            fixture = self.path / "texture.png"
+            Image.fromarray(np.clip(128 + pixels, 0, 255).astype("uint8")).save(fixture)
+            args = ["-loop", "1", "-framerate", "12", "-i", str(fixture)]
         if audio:
             args += ["-f", "lavfi", "-i", "sine=frequency=440:duration=2"]
         if vfr:
             args += ["-vf", "select='if(lt(n,12),1,not(mod(n,2)))'", "-fps_mode", "vfr"]
-        args += ["-c:v", "libx264", "-pix_fmt", "yuv420p"]
+        args += ["-t", "2", "-c:v", "libx264", "-pix_fmt", "yuv420p"]
         if audio:
             args += ["-c:a", "aac"]
         self.ffmpeg(*args, path)
@@ -154,11 +171,15 @@ class MediaTests(unittest.TestCase):
                 output = self.path / f"{scenario}.mp4"
                 receipt = self.sdk.mark(source, output, self.record("video"), audio_kind="original")
                 with av.open(str(source)) as a, av.open(str(output)) as b:
-                    source_times = [float(f.pts * f.time_base) for f in a.decode(video=0)]
-                    output_times = [float(f.pts * f.time_base) for f in b.decode(video=0)]
+                    source_frames = [(float(f.pts * f.time_base), float(f.duration * f.time_base)) for f in a.decode(video=0)]
+                    output_frames = [(float(f.pts * f.time_base), float(f.duration * f.time_base)) for f in b.decode(video=0)]
+                    source_times = [row[0] for row in source_frames]
+                    output_times = [row[0] for row in output_frames]
                 self.assertEqual(len(source_times), len(output_times))
                 for x, y in zip(source_times, output_times):
                     self.assertAlmostEqual(x, y, places=3)
+                self.assertAlmostEqual(max(t + d for t, d in source_frames),
+                                       max(t + d for t, d in output_frames), places=3)
                 self.assertTrue(probe(output)["audio"])
                 # Compare compressed AAC payloads, not only presence of an audio stream.
                 def audio_packets(path):
@@ -178,6 +199,47 @@ class MediaTests(unittest.TestCase):
         result = self.sdk.verify(compressed)
         self.assertEqual(result["c2pa"]["status"], "not_found")
         self.assertEqual(result["watermark"]["token"], receipt["token"])
+
+    def test_legacy_video_and_new_engine_metadata_dispatch(self):
+        from ariadne_mark.pipeline import SDK
+        from unittest.mock import patch
+        old = SDK(self.marker, self.identity, video_marker=self.marker)
+        output = self.path / "legacy.mp4"
+        receipt = old.mark(self.video(audio=False), output, self.record("video"))
+        with patch.object(self.video_marker, "decode_frames", side_effect=AssertionError("Wrong dispatch")):
+            report = self.sdk.verify(output)
+        self.assertEqual(report["watermark"]["token"], receipt["token"])
+        stripped = self.path / "legacy-stripped.mp4"
+        self.ffmpeg("-i", output, "-c:v", "libx264", "-crf", "28", "-map_metadata", "-1", stripped)
+        self.assertEqual(self.sdk.verify(stripped)["watermark"]["token"], receipt["token"])
+
+    def test_videoseal_tail_batch_negative_and_fail_closed(self):
+        from ariadne_mark.errors import VerificationFailed
+        from unittest.mock import patch
+        source = self.video(audio=False, vfr=True)  # 18 frames: final batch has two.
+        self.assertEqual(self.sdk.verify(source)["watermark"]["status"], "not_found")
+        output = self.path / "tail.mp4"
+        receipt = self.sdk.mark(source, output, self.record("video"))
+        self.assertEqual(receipt["video"]["frames_encoded"], 18)
+        self.assertEqual(receipt["video"]["batch_size"], 4)
+        self.assertEqual(receipt["verification"]["c2pa"]["watermark_algorithm"], "meta.videoseal.1.0.bch20")
+        with patch.object(self.video_marker, "decode_frames", return_value=([{"time": 0, "token": None}], None)):
+            failed = self.path / "failed-video.mp4"
+            with self.assertRaises(VerificationFailed):
+                self.sdk.mark(source, failed, self.record("video"))
+            self.assertFalse(failed.exists())
+            self.assertFalse(failed.with_name(failed.name + ".receipt.json").exists())
+
+    def test_saturated_test_pattern_is_not_silently_published(self):
+        from ariadne_mark.errors import VerificationFailed
+        from unittest.mock import patch
+        output = self.path / "saturated.mp4"
+        # Known difficult content: default VideoSeal cannot survive H.264 here.
+        with patch("ariadne_mark.pipeline.new_token", return_value="014d123456789abc"):
+            with self.assertRaises(VerificationFailed):
+                self.sdk.mark(self.video(audio=False, pattern="testsrc"), output, self.record("video"))
+        self.assertFalse(output.exists())
+        self.assertFalse(output.with_name(output.name + ".receipt.json").exists())
 
     def test_explicit_development_opt_in(self):
         from ariadne_mark.signing import SigningIdentity

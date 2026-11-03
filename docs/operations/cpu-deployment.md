@@ -1,13 +1,14 @@
 # CPU deployment
 
 The reference Docker build installs CPU-only PyTorch and preloads checksum-pinned
-TrustMark Q weights. Runtime can be disconnected from the network. The tested
+TrustMark Q and official VideoSeal weights. Runtime can be disconnected from the network. The tested
 server has 2 vCPU / 8 GiB; test containers use 2 CPU / 6 GiB limits.
 
 Load `Watermarker(threads=2)` once and reuse it. Model calls are serialized;
-use an application queue, not a new model instance per request. Video encodes
-every frame and therefore consumes substantially more CPU time than an image.
-See measured [release evidence](../validation/0.2.0a0.md); large production
+use an application queue, not a new model instance per request. VideoSeal processes bounded batches of four frames; the SDK lazily loads its
+video model on first use. Reuse the SDK instance to avoid repeated loading.
+Video still consumes substantially more CPU time than an image.
+See measured [release evidence](../validation/0.3.0a0.md); large production
 queues and peak-load capacity are not yet qualified.
 
 Export uses a temporary directory beside the destination. The file is published
