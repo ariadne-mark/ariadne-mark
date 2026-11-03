@@ -9,16 +9,17 @@
       "title": "Определить применимые требования",
       "kind": "legal-mapping",
       "acceptance": "Роль пользователя SDK, юрисдикция, тип контента, created/altered, дата и исключения определяют профиль; неизвестные данные не дают автоматического «compliant».",
-      "implementation_path": "compliance/profiles",
+      "implementation_path": "src/ariadne_mark/profiles",
       "test_path": "tests/compliance",
       "documentation_path": "docs/compliance/applicability.md",
       "source_ids": [
         "EU-50",
         "CA-22757"
       ],
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "verification_status": "not_run",
-      "evidence": []
+      "evidence": [],
+      "progress_note": "0.4.0a0 adds executable product profiles and receipt binding; technical scenarios tested separately from unresolved legal/source review. See docs/validation/0.4.0a0.md."
     },
     {
       "id": "REQ-002",
@@ -66,7 +67,8 @@
       ],
       "implementation_status": "in_progress",
       "verification_status": "not_run",
-      "evidence": []
+      "evidence": [],
+      "progress_note": "0.4.0a0 adds executable product profiles and receipt binding; technical scenarios tested separately from unresolved legal/source review. See docs/validation/0.4.0a0.md."
     },
     {
       "id": "REQ-004",
@@ -328,7 +330,8 @@
       "source_ids": [],
       "implementation_status": "in_progress",
       "verification_status": "not_run",
-      "evidence": []
+      "evidence": [],
+      "progress_note": "0.4.0a0 adds executable product profiles and receipt binding; technical scenarios tested separately from unresolved legal/source review. See docs/validation/0.4.0a0.md."
     }
   ]
 }

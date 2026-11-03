@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "jurisdictions": [
+    "EU",
+    "US-CA"
+  ],
+  "role": "unknown",
+  "media_kinds": [
+    "image",
+    "video"
+  ],
+  "publisher": "",
+  "system": {
+    "name": "",
+    "version": ""
+  },
+  "context": {
+    "eu_in_scope": null,
+    "eu_first_placed_on_market": null,
+    "deepfake": null,
+    "creative_work": null,
+    "eu_exception": "none",
+    "ca_public_access": null,
+    "ca_produces_system": null,
+    "ca_exception": "none",
+    "licenses_system_to_third_parties": null
+  },
+  "sdk": {
+    "audio_kind": "unknown"
+  },
+  "deployment": {
+    "disclosure": "none",
+    "accessibility_review": false,
+    "verifier_url": null,
+    "verifier_free": null,
+    "verifier_upload": null,
+    "verifier_api": null,
+    "verifier_provider": "unknown",
+    "verifier_link_in_product": null,
+    "feedback_url": null,
+    "privacy_review": false,
+    "durability_evidence": null,
+    "interoperability_evidence": null,
+    "verifier_url_submission": null
+  }
+}

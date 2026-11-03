@@ -91,7 +91,7 @@ def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: 
     action = "c2pa.created" if record.action.value == "created" else "c2pa.edited"
     source_type = "trainedAlgorithmicMedia" if record.action.value == "created" else "compositeWithTrainedAlgorithmicMedia"
     manifest = {
-        "claim_generator_info": [{"name": "Ariadne Mark", "version": "0.3.0a0"}],
+        "claim_generator_info": [{"name": "Ariadne Mark", "version": "0.4.0a0"}],
         "title": "AI-generated media" if record.action.value == "created" else "AI-altered media",
         "format": MIME[source.suffix.lower()],
         "assertions": [

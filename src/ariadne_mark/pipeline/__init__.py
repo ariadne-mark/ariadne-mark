@@ -36,7 +36,16 @@ class SDK:
     def verify(self, path: Path) -> dict:
         return verify_file(path, marker=self.marker, video_marker=self.video_marker, registry=self.registry, trust_anchors=self.trust_anchors)
 
-    def mark(self, source: Path, destination: Path, record: ProvenanceRecord, *, visible=False, audio_kind="unknown") -> dict:
+    def mark(self, source: Path, destination: Path, record: ProvenanceRecord, *, visible=False, audio_kind="unknown", profile=None) -> dict:
+        profile_report = None
+        if profile is not None:
+            from ariadne_mark.profiles import export_settings
+            profile_report = export_settings(profile, record)
+            visible = visible or profile_report["sdk_options"]["visible"]
+            configured_audio = profile_report["sdk_options"]["audio_kind"]
+            if audio_kind != "unknown" and audio_kind != configured_audio:
+                raise ValueError("audio_kind conflicts with the selected profile")
+            audio_kind = configured_audio
         source, destination = Path(source).resolve(), Path(destination).resolve()
         if self.identity is None:
             raise AriadneError("A signing identity is required; unsigned export is not supported")
@@ -101,10 +110,15 @@ class SDK:
                 matches = sum(row["token"] == token for row in samples)
                 raise VerificationFailed(f"Final read-back failed: C2PA={checked['c2pa']['status']}, watermark={checked['watermark']['status']}, matching frames={matches}/{len(samples)}; no output published")
             digest = file_hash(signed)
-            receipt = {"schema_version": 1, "sdk_version": "0.3.0a0", "asset_id": str(record.asset_id),
+            receipt = {"schema_version": 1, "sdk_version": "0.4.0a0", "asset_id": str(record.asset_id),
                        "token": token, "sha256": digest, "seconds": round(time.monotonic() - start, 3),
                        "development_identity": self.identity.development, "audio_kind": audio,
+                       "export_settings": {"visible_disclosure": bool(visible), "audio_kind": audio},
                        "video": details, "verification": checked}
+            if profile_report is not None:
+                # Keep product planning separate from cryptographic media evidence.
+                # Store before publication/registry commit; never patch receipts later.
+                receipt["profile_assessment"] = profile_report
             receipt["registry_recorded"] = self.registry is not None
             checked["recovery"] = {"status": "not_attempted", "reason": "export_readback_before_registry_commit"}
             # Hard-link publication is atomic and refuses overwrite, including races.

@@ -86,6 +86,55 @@ class MediaTests(unittest.TestCase):
         self.ffmpeg(*args, path)
         return path
 
+    def product_profile(self):
+        from ariadne_mark.profiles import template
+        config = template()
+        config.update(publisher="Test Publisher", system={"name": "Fixture", "version": "1"}, role="provider")
+        config["sdk"]["audio_kind"] = "none"
+        config["deployment"]["disclosure"] = "baked_in"
+        return config
+
+    def test_profile_cli_signed_image_and_receipt_persistence(self):
+        from contextlib import redirect_stdout
+        from ariadne_mark.cli import main
+        import io
+        source, output = self.image(), self.path / "profile.png"
+        config_path = self.path / "product.json"
+        config_path.write_text(json.dumps(self.product_profile()))
+        with redirect_stdout(io.StringIO()) as stdout:
+            code = main(["mark", str(source), str(output), "--profile", str(config_path),
+                "--created-at", "2026-11-03T00:00:00Z", "--identity", str(self.root / "identity"),
+                "--allow-dev", "--registry", str(self.sdk.registry.path)])
+        self.assertEqual(code, 0)
+        receipt = json.loads(stdout.getvalue())
+        self.assertEqual(receipt, json.loads(output.with_name(output.name + ".receipt.json").read_text()))
+        with self.sdk.registry.connect() as db:
+            stored = json.loads(db.execute("SELECT receipt FROM assets WHERE token=?", (receipt["token"],)).fetchone()[0])
+        self.assertEqual(receipt, stored)
+        self.assertEqual(receipt["verification"]["c2pa"]["status"], "verified_claim")
+        self.assertTrue(receipt["profile_assessment"]["sdk_options"]["visible"])
+        self.assertTrue(receipt["verification"]["c2pa"]["visible_disclosure"])
+        self.assertTrue(receipt["export_settings"]["visible_disclosure"])
+        self.assertEqual(receipt["profile_assessment"]["legal_determination"], "not_performed")
+        self.assertEqual(receipt["verification"]["c2pa"]["record"]["publisher"], "Test Publisher")
+
+    def test_profile_video_roundtrip(self):
+        output = self.path / "profile.mp4"
+        receipt = self.sdk.mark(self.video(audio=False), output, self.record("video"), profile=self.product_profile())
+        self.assertEqual(receipt["audio_kind"], "none")
+        self.assertEqual(self.sdk.verify(output)["watermark"]["token"], receipt["token"])
+        self.assertEqual(receipt["profile_assessment"]["configuration_status"], "valid")
+
+    def test_profile_mismatch_fails_before_publication(self):
+        output = self.path / "conflict.png"
+        config = self.product_profile(); config["publisher"] = "Wrong Publisher"
+        with self.assertRaisesRegex(ValueError, "does not match"):
+            self.sdk.mark(self.image(), output, self.record(), profile=config)
+        self.assertFalse(output.exists())
+        self.assertFalse(output.with_name(output.name + ".receipt.json").exists())
+        with self.sdk.registry.connect() as db:
+            self.assertEqual(db.execute("SELECT count(*) FROM assets").fetchone()[0], 0)
+
     def test_png_jpeg_alpha_signed_roundtrip_and_trust(self):
         from PIL import Image
         from ariadne_mark.verification.media import verify_file
