@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-11-03",
+  "scope": "AI-generated images and video; EU and California first. Standalone audio/music excluded.",
+  "status_note": "Tracked in plan does not mean implemented, tested, or legally sufficient.",
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "title": "Определить применимые требования",
+      "kind": "legal-mapping",
+      "acceptance": "Роль пользователя SDK, юрисдикция, тип контента, created/altered, дата и исключения определяют профиль; неизвестные данные не дают автоматического «compliant».",
+      "implementation_path": "compliance/profiles",
+      "test_path": "tests/compliance",
+      "documentation_path": "docs/compliance/applicability.md",
+      "source_ids": [
+        "EU-50",
+        "CA-22757"
+      ],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-002",
+      "title": "Записать машиночитаемую маркировку изображения",
+      "kind": "technical-measure",
+      "acceptance": "Встроить метку, извлечь корректный payload и проверить результат; публичный ID не содержит идентификатор пользователя.",
+      "implementation_path": "src/ariadne_mark/watermark",
+      "test_path": "tests/watermark",
+      "documentation_path": "docs/implementation/image-marking.md",
+      "source_ids": [
+        "EU-50",
+        "CA-22757"
+      ],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-003",
+      "title": "Сформировать сведения о происхождении",
+      "kind": "legal-mapping",
+      "acceptance": "Валидировать publisher, system name/version, timestamp, asset ID и created/altered согласно выбранному профилю. Не подменять версию генеративной системы версией SDK.",
+      "implementation_path": "src/ariadne_mark/provenance",
+      "test_path": "tests/provenance",
+      "documentation_path": "docs/implementation/provenance.md",
+      "source_ids": [
+        "CA-22757"
+      ],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-004",
+      "title": "Подписать и проверить C2PA",
+      "kind": "technical-measure",
+      "acceptance": "Записать manifest и выполнить read-back validation; различать целостность подписи и доверие к издателю. C2PA — выбранный технический механизм, не универсальное название обязательного законом формата.",
+      "implementation_path": "src/ariadne_mark/signing",
+      "test_path": "tests/signing",
+      "documentation_path": "docs/implementation/signing.md",
+      "source_ids": [
+        "EU-CODE"
+      ],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-005",
+      "title": "Реализовать полный путь для видео",
+      "kind": "legal-mapping",
+      "acceptance": "Decode → маркировка → encode → sign → verify; короткие и вертикальные ролики, timestamps, rotation, VFR. Явно определить поведение с синтетической аудиодорожкой; отдельные музыкальные файлы вне первого scope.",
+      "implementation_path": "src/ariadne_mark/video",
+      "test_path": "tests/video",
+      "documentation_path": "docs/implementation/video.md",
+      "source_ids": [
+        "EU-50",
+        "CA-22757"
+      ],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-006",
+      "title": "Обеспечить восстановление связи с источником",
+      "kind": "technical-measure",
+      "acceptance": "После потери metadata проверить восстановление ID и связанных claims. При использовании resolver определить долговечность записей и обработку неизвестного ID. Централизованный реестр — архитектурный выбор, не безусловное требование закона.",
+      "implementation_path": "src/ariadne_mark/registry",
+      "test_path": "tests/registry",
+      "documentation_path": "docs/implementation/recovery.md",
+      "source_ids": [
+        "CA-22757",
+        "EU-CODE"
+      ],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-007",
+      "title": "Предоставить публичную проверку",
+      "kind": "legal-mapping",
+      "acceptance": "Self-hosted UI и API; upload workflow, доступность без ненужной регистрации, feedback. Проверка относится к поддерживаемым меткам/издателям и не обещает обнаружение любого AI-контента.",
+      "implementation_path": "apps/verifier",
+      "test_path": "tests/verifier",
+      "documentation_path": "docs/implementation/verifier.md",
+      "source_ids": [
+        "CA-22757",
+        "EU-CODE"
+      ],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-008",
+      "title": "Разделить результаты проверки и ошибки",
+      "kind": "engineering",
+      "acceptance": "Различать not_found, not_checked, invalid и verified_claim; unsupported format и отсутствующие модели не превращаются в «метки нет». Неподписанный результат не получает статус trusted.",
+      "implementation_path": "src/ariadne_mark/verification",
+      "test_path": "tests/verification",
+      "documentation_path": "docs/implementation/verification-results.md",
+      "source_ids": [],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-009",
+      "title": "Предоставить нужные disclosure-компоненты",
+      "kind": "legal-mapping",
+      "acceptance": "Видимая маркировка или уведомление включаются только для применимого сценария. Документировать, какие действия выполняет SDK, а какие требуется встроить в приложение.",
+      "implementation_path": "src/ariadne_mark/disclosure",
+      "test_path": "tests/disclosure",
+      "documentation_path": "docs/implementation/disclosure.md",
+      "source_ids": [
+        "EU-50"
+      ],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-010",
+      "title": "Сохранять историю преобразований",
+      "kind": "technical-measure",
+      "acceptance": "Сохранить исходные credentials до перекодирования, корректно сформировать ingredients/derived assertions; проверить созданный и изменённый контент.",
+      "implementation_path": "src/ariadne_mark/provenance",
+      "test_path": "tests/provenance",
+      "documentation_path": "docs/implementation/provenance-relay.md",
+      "source_ids": [
+        "EU-CODE"
+      ],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-011",
+      "title": "Ограничить обработку данных в verifier",
+      "kind": "legal-mapping",
+      "acceptance": "Установить сроки удаления upload/temp-файлов, исключить PII из логов и публичных claims по умолчанию, проверить tenant isolation и доступ к данным.",
+      "implementation_path": "apps/verifier",
+      "test_path": "tests/privacy",
+      "documentation_path": "docs/operations/privacy.md",
+      "source_ids": [
+        "CA-22757"
+      ],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-012",
+      "title": "Измерить устойчивость и качество",
+      "kind": "evidence",
+      "acceptance": "Воспроизводимые transform fixtures, отрицательные примеры, FPR/FNR, качество изображения и видео. Порог приёмки задаётся для сценария; не выдавать выбранный нами процент за норму закона.",
+      "implementation_path": "benchmarks/durability",
+      "test_path": "tests/robustness",
+      "documentation_path": "docs/benchmarks/durability.md",
+      "source_ids": [
+        "EU-50",
+        "EU-CODE",
+        "CA-22757"
+      ],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-013",
+      "title": "Обеспечить работу на CPU и явный отказ",
+      "kind": "engineering",
+      "acceptance": "Измерить весь pipeline, память, latency и очереди. Ошибка обязательного слоя завершает задачу ошибкой; retry не создаёт противоречивые записи.",
+      "implementation_path": "src/ariadne_mark/pipeline",
+      "test_path": "tests/integration",
+      "documentation_path": "docs/operations/cpu-deployment.md",
+      "source_ids": [],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-014",
+      "title": "Организовать production-подписание",
+      "kind": "engineering",
+      "acceptance": "Настройка ключей, certificates, rotation/revocation и выбранной timestamp-политики. Demo identity явно отделена от production; секреты не попадают в Git и отчёты.",
+      "implementation_path": "src/ariadne_mark/signing",
+      "test_path": "tests/signing",
+      "documentation_path": "docs/operations/keys-and-trust.md",
+      "source_ids": [],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "REQ-015",
+      "title": "Версионировать правила и выпускать доказательства",
+      "kind": "engineering",
+      "acceptance": "Профиль связан с источником, редакцией, датой применимости, версией SDK и тестовым отчётом. Проверять установку, лицензии кода/весов, фиксировать ограничения релиза.",
+      "implementation_path": "compliance/profiles",
+      "test_path": "tests/compliance",
+      "documentation_path": "docs/operations/releases.md",
+      "source_ids": [],
+      "implementation_status": "planned",
+      "verification_status": "not_run",
+      "evidence": []
+    }
+  ]
+}

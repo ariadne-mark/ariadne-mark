@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and integration discussions
+    url: https://github.com/ariadne-mark/ariadne-mark/discussions
+    about: Ask about planned capabilities or describe your integration needs.
+  - name: Private security report
+    url: https://github.com/ariadne-mark/ariadne-mark/security/advisories/new
+    about: Report vulnerabilities privately; do not publish sensitive details.

@@ -1,0 +1,32 @@
+{
+  "updated_at": "2026-11-03",
+  "note": "Source registry only. URLs and exact operative provisions must be verified when a profile is released; this file is not a reviewed executable legal profile.",
+  "sources": [
+    {
+      "id": "EU-50",
+      "title": "EU AI Act — Article 50",
+      "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50",
+      "type": "binding-law",
+      "status": "source_identified",
+      "mapping_status": "requires_review_for_release"
+    },
+    {
+      "id": "EU-CODE",
+      "title": "Code of Practice on Transparency of AI-generated Content",
+      "url": "https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content",
+      "type": "voluntary-code",
+      "status": "source_identified",
+      "mapping_status": "requires_review_for_release"
+    },
+    {
+      "id": "CA-22757",
+      "title": "California AI Transparency Act — BPC §§22757 et seq.; check consolidated version and SB 1000 amendments",
+      "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=8.&chapter=25.&part=&lawCode=BPC",
+      "amendment_url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260SB1000",
+      "text_mirror": "https://calmatters.digitaldemocracy.org/bills/ca_202520260sb1000",
+      "type": "binding-law",
+      "status": "source_identified",
+      "mapping_status": "requires_review_for_release"
+    }
+  ]
+}
