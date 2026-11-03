@@ -2,7 +2,7 @@
 
 **Open-source compliance toolkit for AI-generated images and video.**
 
-Статус: каркас репозитория. Исполняемый SDK, установочный пакет и production verifier ещё не выпущены.
+Статус: pre-alpha ядро SDK, устанавливаемое из исходников. Реализованы форматы данных о происхождении и результатов проверки. Маркировка файлов, C2PA-подписание и production verifier ещё не реализованы. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#install-and-try-the-core) и [очередность реализации](implementation/sequence.md).
 
 ## Требования → код → тесты
 

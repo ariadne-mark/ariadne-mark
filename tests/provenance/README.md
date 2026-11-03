@@ -1,5 +1,7 @@
-# Проверки: `tests/provenance`
+# Core tests
 
-Место зарезервировано в структуре Ariadne Mark. Реализация или исполняемые тесты пока отсутствуют.
+Executable tests: [test_records.py](test_records.py).
 
-Требования и критерии приёмки: [матрица покрытия](../../compliance/COVERAGE.md).
+Install the package, then run `python -m unittest discover -s tests -t . -v`
+from the repository root. These test contracts only, not media processing or
+legal sufficiency. See the module documentation for remaining work.

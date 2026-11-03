@@ -4,7 +4,7 @@
 
 Watermarking, C2PA provenance, and verification — built to help developers implement applicable content-labeling requirements, with an initial focus on the EU AI Act and California.
 
-> **Pre-alpha: repository scaffold.** No installable SDK or production verifier has been released. Planned capabilities below are not claims of implemented features or legal certification.
+> **Pre-alpha: SDK core only.** Installable from source: provenance records and verification result contracts. No watermarking, C2PA signing, media processing, or production verifier is included yet. No package has been published to PyPI.
 
 ## What we are building
 
@@ -41,19 +41,26 @@ tests/             Tests corresponding to the requirements
 docs/              Integration, compliance, and operations guidance
 ```
 
-The module directories currently contain planning placeholders, not working implementations.
+The `provenance` and `verification` modules contain the first data contracts. Other module directories remain planning placeholders. These contracts describe images and video; they do not yet process either format.
 
-## Check this scaffold
+## Install and try the core
 
-Requires Python 3.9 or newer; no third-party Python dependencies.
+Requires Python 3.11 or newer. There are no runtime dependencies, account requirements, API keys, model downloads, or network calls in the core. Installation needs Python build tooling; an already-built wheel can be installed offline.
 
 ```sh
 git clone https://github.com/ariadne-mark/ariadne-mark.git
 cd ariadne-mark
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install .
+python examples/provenance_record.py
+python -m unittest discover -s tests -t . -v
 python3 scripts/check_requirements.py
 ```
 
-This checks traceability metadata and local paths. It does **not** run watermarking or establish legal compliance.
+The example creates an **unsigned record**, with a random asset ID and the supplied generator name/version. It does not change any media file. The unit tests validate data and result semantics; `check_requirements.py` checks traceability metadata and paths. Neither establishes legal compliance.
+
+See [provenance records](docs/implementation/provenance.md), [verification results](docs/implementation/verification-results.md), and the [implementation sequence](docs/implementation/sequence.md).
 
 ## Participate
 

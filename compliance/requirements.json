@@ -47,7 +47,7 @@
       "source_ids": [
         "CA-22757"
       ],
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "verification_status": "not_run",
       "evidence": []
     },
@@ -123,7 +123,7 @@
       "test_path": "tests/verification",
       "documentation_path": "docs/implementation/verification-results.md",
       "source_ids": [],
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "verification_status": "not_run",
       "evidence": []
     },
@@ -224,7 +224,7 @@
       "test_path": "tests/compliance",
       "documentation_path": "docs/operations/releases.md",
       "source_ids": [],
-      "implementation_status": "planned",
+      "implementation_status": "in_progress",
       "verification_status": "not_run",
       "evidence": []
     }

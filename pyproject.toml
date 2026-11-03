@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ariadne-mark"
+version = "0.1.0a0"
+description = "Open-source compliance tooling for AI-generated images and video"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+dependencies = []
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+Repository = "https://github.com/ariadne-mark/ariadne-mark"
+Issues = "https://github.com/ariadne-mark/ariadne-mark/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["ariadne_mark*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+ariadne_mark = ["py.typed"]
