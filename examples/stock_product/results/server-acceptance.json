@@ -1,0 +1,386 @@
+{
+  "started_utc": "2026-11-03T17:33:31.746152+00:00",
+  "checks": [
+    {
+      "name": "catalog_has_six_images_three_videos",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "duplicate_delivery_returns_same_job",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "conflicting_idempotency_key_rejected",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "arbitrary_source_path_rejected",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "verify_unsplash-10",
+      "passed": true,
+      "details": {
+        "sdk_seconds": 0.844,
+        "issuer_trust": "untrusted",
+        "response": null
+      }
+    },
+    {
+      "name": "download_unsplash-10",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "profile_receipt_unsplash-10",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "verify_unsplash-64",
+      "passed": true,
+      "details": {
+        "sdk_seconds": 0.838,
+        "issuer_trust": "untrusted",
+        "response": null
+      }
+    },
+    {
+      "name": "download_unsplash-64",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "profile_receipt_unsplash-64",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "verify_unsplash-1025",
+      "passed": true,
+      "details": {
+        "sdk_seconds": 0.974,
+        "issuer_trust": "untrusted",
+        "response": null
+      }
+    },
+    {
+      "name": "download_unsplash-1025",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "profile_receipt_unsplash-1025",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "verify_unsplash-1060",
+      "passed": true,
+      "details": {
+        "sdk_seconds": 0.84,
+        "issuer_trust": "untrusted",
+        "response": null
+      }
+    },
+    {
+      "name": "download_unsplash-1060",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "profile_receipt_unsplash-1060",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "verify_unsplash-1011",
+      "passed": true,
+      "details": {
+        "sdk_seconds": 0.982,
+        "issuer_trust": "untrusted",
+        "response": null
+      }
+    },
+    {
+      "name": "download_unsplash-1011",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "profile_receipt_unsplash-1011",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "verify_unsplash-1031",
+      "passed": true,
+      "details": {
+        "sdk_seconds": 0.803,
+        "issuer_trust": "untrusted",
+        "response": null
+      }
+    },
+    {
+      "name": "download_unsplash-1031",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "profile_receipt_unsplash-1031",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "verify_waterfall",
+      "passed": true,
+      "details": {
+        "sdk_seconds": 36.117,
+        "issuer_trust": "untrusted",
+        "response": null
+      }
+    },
+    {
+      "name": "download_waterfall",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "profile_receipt_waterfall",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "verify_road",
+      "passed": true,
+      "details": {
+        "sdk_seconds": 37.802,
+        "issuer_trust": "untrusted",
+        "response": null
+      }
+    },
+    {
+      "name": "download_road",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "profile_receipt_road",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "verify_clouds",
+      "passed": true,
+      "details": {
+        "sdk_seconds": 36.071,
+        "issuer_trust": "untrusted",
+        "response": null
+      }
+    },
+    {
+      "name": "download_clouds",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "profile_receipt_clouds",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "video_byte_ranges_supported",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "corrupt_input_fails_without_download",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "visible_label_is_in_signed_claim",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "worker_killed_mid_export_no_partial_download",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "worker_restart_recovers_job",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "web_and_verifier_restart_preserve_results",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "unmarked_stock_not_claimed_as_marked",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "metadata_stripped_image_recovers_source_record",
+      "passed": true,
+      "details": null
+    }
+  ],
+  "exports": [
+    {
+      "job_id": "2cb48380-71b0-43b0-8c51-488c07044467",
+      "fixture": "unsplash-10",
+      "kind": "image",
+      "file": "media.png",
+      "sha256": "115b7ce2d63c84767f199b08e86adcd4796f88dfc000fa16456a034941613507",
+      "token": "014d998af34d34b4",
+      "asset_id": "4b36efa7-1bb5-44ff-8f2e-284bce2b4574",
+      "sdk_seconds": 0.844,
+      "sdk_version": "0.4.0a0",
+      "fixture_sha256": "b61abeac5d24191cf72d1a213ff427de4e0bf6f41e0db2ca6a2d860f5de008d0",
+      "source_page": "https://unsplash.com/photos/6J--NXulQCs",
+      "test_fixture": true,
+      "profile_status": "action_required",
+      "worker_seconds": 0.864
+    },
+    {
+      "job_id": "1e0ac8bb-5b31-4c9c-9be6-f98af52fe2ee",
+      "fixture": "unsplash-64",
+      "kind": "image",
+      "file": "media.png",
+      "sha256": "aa8dc4883d8b6a08bce0d7b016a728a7af640aef3889d1e0877c035a04818f34",
+      "token": "014dbf24a5c44302",
+      "asset_id": "5f08b690-ecd0-46f8-9c07-db8a30fd41cd",
+      "sdk_seconds": 0.838,
+      "sdk_version": "0.4.0a0",
+      "fixture_sha256": "7fcafec62c4a717e863743407ebb46e59552c5252df9ccf3e8297458249edb0d",
+      "source_page": "https://unsplash.com/photos/AHBiSKaENwc",
+      "test_fixture": true,
+      "profile_status": "action_required",
+      "worker_seconds": 0.848
+    },
+    {
+      "job_id": "4549144c-3c46-428f-b397-32c1d13e25ba",
+      "fixture": "unsplash-1025",
+      "kind": "image",
+      "file": "media.png",
+      "sha256": "04a01686389d7f1a06302fce08711759283c338d1c6c8e70488cfe860594ee96",
+      "token": "014dc52003a047f4",
+      "asset_id": "168b12ab-1d11-43a2-bcff-e6abb78b1c55",
+      "sdk_seconds": 0.974,
+      "sdk_version": "0.4.0a0",
+      "fixture_sha256": "d515e6887edacd85f710089e5817521dca30d3f931f349100e63a9dcd4a6488d",
+      "source_page": "https://unsplash.com/photos/U5rMrSI7Pn4",
+      "test_fixture": true,
+      "profile_status": "action_required",
+      "worker_seconds": 0.988
+    },
+    {
+      "job_id": "60ca5f06-bac2-44db-9320-ef52a7a94a15",
+      "fixture": "unsplash-1060",
+      "kind": "image",
+      "file": "media.png",
+      "sha256": "dcbba953ddb02b12cf2590dd8eff157430e83b280a3a7787fff89e1bd63ca7c7",
+      "token": "014de9bde1b3265f",
+      "asset_id": "4bc39de4-bb0a-4027-9a1d-105bf9614807",
+      "sdk_seconds": 0.84,
+      "sdk_version": "0.4.0a0",
+      "fixture_sha256": "ac6b5d0f5a40700e426230ac587ae21fce84fbf06fa5012832d211d86bdb9762",
+      "source_page": "https://unsplash.com/photos/TYIzeCiZ_60",
+      "test_fixture": true,
+      "profile_status": "action_required",
+      "worker_seconds": 0.852
+    },
+    {
+      "job_id": "52dd3e21-65d8-4cdf-bedf-0f1a0429677f",
+      "fixture": "unsplash-1011",
+      "kind": "image",
+      "file": "media.png",
+      "sha256": "8236cb7233c03a2b854c8fea4cc107a9859b33c28a36a954fd4941ceb6452f08",
+      "token": "014d30d051c45223",
+      "asset_id": "1df0e33e-0a28-48dd-9241-70a0aa3f88ce",
+      "sdk_seconds": 0.982,
+      "sdk_version": "0.4.0a0",
+      "fixture_sha256": "53cffc9f84ef47cee1e7172c9242e84da22daf4defc385a8e0f6fb20dc89706f",
+      "source_page": "https://unsplash.com/photos/7BjmDICVloE",
+      "test_fixture": true,
+      "profile_status": "action_required",
+      "worker_seconds": 0.994
+    },
+    {
+      "job_id": "5d88ce74-6f3a-445f-84ee-068461f4725a",
+      "fixture": "unsplash-1031",
+      "kind": "image",
+      "file": "media.png",
+      "sha256": "13e1e250ce80011e08f1ab76d941f2bc030519fc11db89d5a72e2785e4f16dd0",
+      "token": "014d79e1c97a2b0d",
+      "asset_id": "d728b8fc-e84b-4bef-8686-2cb7318564d3",
+      "sdk_seconds": 0.803,
+      "sdk_version": "0.4.0a0",
+      "fixture_sha256": "545c1d46547a631b115837c1bea20cf298ec8dc7089ea942593d115a3ebd6ced",
+      "source_page": "https://unsplash.com/photos/rM7B4DheQc0",
+      "test_fixture": true,
+      "profile_status": "action_required",
+      "worker_seconds": 0.815
+    },
+    {
+      "job_id": "50bd4611-78e9-4054-8508-240e1ece7651",
+      "fixture": "waterfall",
+      "kind": "video",
+      "file": "media.mp4",
+      "sha256": "81fb61b22144aec1999d702654352d9a479fa219814eead1843b8117b169e2a7",
+      "token": "014dc7e1c35737f4",
+      "asset_id": "508860ab-e2a5-48c1-ad7f-db2938f9feec",
+      "sdk_seconds": 36.117,
+      "sdk_version": "0.4.0a0",
+      "fixture_sha256": "308293f694c3074d67e687fa9f5def6cf8cb28bf5aee0a65a5e8eccd576f5906",
+      "source_page": "https://mixkit.co/free-stock-video/waterfall-in-forest-2213/",
+      "test_fixture": true,
+      "profile_status": "action_required",
+      "worker_seconds": 36.131
+    },
+    {
+      "job_id": "05d2a0fa-f276-4e9e-bcfc-6470a997d948",
+      "fixture": "road",
+      "kind": "video",
+      "file": "media.mp4",
+      "sha256": "610d41c21a1d1f38eda5aa41bddd1570a5e3969ba89e3548ff369cc9ccada347",
+      "token": "014d0e75bb5ac093",
+      "asset_id": "3ca4cddc-c2c3-483b-a2ab-ae9267f2b687",
+      "sdk_seconds": 37.802,
+      "sdk_version": "0.4.0a0",
+      "fixture_sha256": "fb759828187ee809465969a922422ad8b08fcd1cc6990ba6815b30f59cd1f370",
+      "source_page": "https://mixkit.co/free-stock-video/going-down-a-curved-highway-through-a-mountain-range-41576/",
+      "test_fixture": true,
+      "profile_status": "action_required",
+      "worker_seconds": 37.813
+    },
+    {
+      "job_id": "192fa0ef-6cdd-4187-9de4-e24ad3e9f356",
+      "fixture": "clouds",
+      "kind": "video",
+      "file": "media.mp4",
+      "sha256": "db304282dcfe2be902b8e963ab212c6c7c77fbe1601696ad1a4c8b56572de8e7",
+      "token": "014d060b6f3dcd16",
+      "asset_id": "21ab031c-764f-43f8-8ec3-3e9a70c7b65e",
+      "sdk_seconds": 36.071,
+      "sdk_version": "0.4.0a0",
+      "fixture_sha256": "6140dc1da9d982c191fe3412d91baac8ea52697b9b89bd3fef6c40edff5b1aee",
+      "source_page": "https://mixkit.co/free-stock-video/blue-sky-background-as-the-clouds-travel-blown-by-the-26108/",
+      "test_fixture": true,
+      "profile_status": "action_required",
+      "worker_seconds": 36.083
+    }
+  ],
+  "scope": "Private stock-generator replacement, real installed SDK, HTTP product + separate verifier, CPU. Not a durability or throughput qualification.",
+  "completed_utc": "2026-11-03T17:36:35.722202+00:00",
+  "passed": 39,
+  "total": 39
+}

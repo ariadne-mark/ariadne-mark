@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "jurisdictions": [
+    "EU",
+    "US-CA"
+  ],
+  "role": "provider",
+  "media_kinds": [
+    "image",
+    "video"
+  ],
+  "publisher": "TEST ONLY: stock export emulator, not an AI-origin claim",
+  "system": {
+    "name": "Stock fixture replacing a generator",
+    "version": "1.0"
+  },
+  "context": {
+    "eu_in_scope": true,
+    "eu_first_placed_on_market": "2026-11-04",
+    "deepfake": false,
+    "creative_work": false,
+    "eu_exception": "none",
+    "ca_public_access": true,
+    "ca_produces_system": true,
+    "ca_exception": "none",
+    "licenses_system_to_third_parties": false
+  },
+  "sdk": {
+    "audio_kind": "none"
+  },
+  "deployment": {
+    "disclosure": "none",
+    "accessibility_review": false,
+    "verifier_url": null,
+    "verifier_free": null,
+    "verifier_upload": null,
+    "verifier_api": null,
+    "verifier_url_submission": null,
+    "verifier_provider": "unknown",
+    "verifier_link_in_product": null,
+    "feedback_url": null,
+    "privacy_review": false,
+    "durability_evidence": null,
+    "interoperability_evidence": null
+  }
+}

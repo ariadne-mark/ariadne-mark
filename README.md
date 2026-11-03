@@ -104,6 +104,14 @@ docker compose up --build
 
 Open **http://localhost:8080**. It accepts uploads without registration, exposes a binary-upload API at `POST /verify?format=png` (also `jpg`, `jpeg`, `mp4`), and deletes temporary media after each request. The default Compose service binds only to localhost. See [deployment](docs/operations/verifier.md) to attach a recovery registry, trust roots or feedback link and publish it behind a reverse proxy.
 
+## Try a complete product integration
+
+The [stock export lab](examples/stock_product/README.md) replaces a generator
+with stock images/video and exercises a persistent queue, SDK worker,
+downloads and a separate verifier. It includes a browser UI and an HTTP
+acceptance script that deliberately interrupts and restarts services.
+[Server validation](examples/stock_product/VALIDATION.md).
+
 ## What verification means
 
 - **Valid signed claim:** the C2PA signature and content binding validate. Issuer trust is a separate field.

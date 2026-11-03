@@ -1,0 +1,103 @@
+[
+  {
+    "id": "unsplash-10",
+    "title": "Forest landscape",
+    "kind": "image",
+    "file": "unsplash-10.png",
+    "sha256": "b61abeac5d24191cf72d1a213ff427de4e0bf6f41e0db2ca6a2d860f5de008d0",
+    "page": "https://unsplash.com/photos/6J--NXulQCs",
+    "author": "Paul Jarvis",
+    "license": "https://unsplash.com/license"
+  },
+  {
+    "id": "unsplash-64",
+    "title": "Portrait",
+    "kind": "image",
+    "file": "unsplash-64.png",
+    "sha256": "7fcafec62c4a717e863743407ebb46e59552c5252df9ccf3e8297458249edb0d",
+    "page": "https://unsplash.com/photos/AHBiSKaENwc",
+    "author": "Alexander Shustov",
+    "license": "https://unsplash.com/license"
+  },
+  {
+    "id": "unsplash-1025",
+    "title": "Dog in a blanket",
+    "kind": "image",
+    "file": "unsplash-1025.png",
+    "sha256": "d515e6887edacd85f710089e5817521dca30d3f931f349100e63a9dcd4a6488d",
+    "page": "https://unsplash.com/photos/U5rMrSI7Pn4",
+    "author": "Matthew Wiebe",
+    "license": "https://unsplash.com/license"
+  },
+  {
+    "id": "unsplash-1060",
+    "title": "Coffee",
+    "kind": "image",
+    "file": "unsplash-1060.png",
+    "sha256": "ac6b5d0f5a40700e426230ac587ae21fce84fbf06fa5012832d211d86bdb9762",
+    "page": "https://unsplash.com/photos/TYIzeCiZ_60",
+    "author": "Karl Fredrickson",
+    "license": "https://unsplash.com/license"
+  },
+  {
+    "id": "unsplash-1011",
+    "title": "Adventure",
+    "kind": "image",
+    "file": "unsplash-1011.png",
+    "sha256": "53cffc9f84ef47cee1e7172c9242e84da22daf4defc385a8e0f6fb20dc89706f",
+    "page": "https://unsplash.com/photos/7BjmDICVloE",
+    "author": "Roberto Nickson",
+    "license": "https://unsplash.com/license"
+  },
+  {
+    "id": "unsplash-1031",
+    "title": "Architecture",
+    "kind": "image",
+    "file": "unsplash-1031.png",
+    "sha256": "545c1d46547a631b115837c1bea20cf298ec8dc7089ea942593d115a3ebd6ced",
+    "page": "https://unsplash.com/photos/rM7B4DheQc0",
+    "author": "Mike Wilson",
+    "license": "https://unsplash.com/license"
+  },
+  {
+    "id": "waterfall",
+    "title": "Forest waterfall",
+    "kind": "video",
+    "file": "waterfall.mp4",
+    "sha256": "308293f694c3074d67e687fa9f5def6cf8cb28bf5aee0a65a5e8eccd576f5906",
+    "page": "https://mixkit.co/free-stock-video/waterfall-in-forest-2213/",
+    "author": "marcolopez",
+    "license": "https://mixkit.co/license/#videoFree"
+  },
+  {
+    "id": "road",
+    "title": "Mountain road",
+    "kind": "video",
+    "file": "road.mp4",
+    "sha256": "fb759828187ee809465969a922422ad8b08fcd1cc6990ba6815b30f59cd1f370",
+    "page": "https://mixkit.co/free-stock-video/going-down-a-curved-highway-through-a-mountain-range-41576/",
+    "author": "mixkit",
+    "license": "https://mixkit.co/license/#videoFree"
+  },
+  {
+    "id": "clouds",
+    "title": "Drifting clouds",
+    "kind": "video",
+    "file": "clouds.mp4",
+    "sha256": "6140dc1da9d982c191fe3412d91baac8ea52697b9b89bd3fef6c40edff5b1aee",
+    "page": "https://mixkit.co/free-stock-video/blue-sky-background-as-the-clouds-travel-blown-by-the-26108/",
+    "author": "rubenvelasco",
+    "license": "https://mixkit.co/license/#videoFree"
+  },
+  {
+    "id": "invalid-fixture",
+    "title": "Corrupt input regression",
+    "kind": "image",
+    "file": "invalid.png",
+    "sha256": "5464533c9647b67eb320c40ccc5959537c09102ae75388f6a7675b433e745c9d",
+    "page": "",
+    "author": "Test fixture",
+    "license": "",
+    "hidden": true
+  }
+]

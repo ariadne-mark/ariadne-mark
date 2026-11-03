@@ -1,0 +1,8 @@
+{
+  "database_reads": 1000,
+  "gc_disabled": true,
+  "fds_before": 4,
+  "fds_after": 4,
+  "passed": true,
+  "environment": "Final product web container on dedicated Linux CPU test host"
+}
