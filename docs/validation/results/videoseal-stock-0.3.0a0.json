@@ -1,0 +1,1730 @@
+{
+  "version": "0.3.0a0",
+  "model_sha256": "5c7a4581c36fc6090aafdcfb3999123bae5172a4847f22e2da4e7fd1a39d1e1b",
+  "model_load_seconds": 0.4421011900000167,
+  "protocol": "Full SDK; CPU threads=2; 4-frame VideoSeal batches; 5-frame verifier; 3 tokens per clip; transforms on first token only; no legal qualification",
+  "exports": [
+    {
+      "fixture": "waterfall",
+      "repeat": 0,
+      "token": "014d24c216e58928",
+      "export_seconds": 34.47144335600001,
+      "verify_seconds": 2.0954750799999147,
+      "c2pa": "verified_claim",
+      "exact": true,
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d24c216e58928",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": "014d24c216e58928",
+            "corrected_bits": 10,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": "014d24c216e58928",
+            "corrected_bits": 5,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": "014d24c216e58928",
+            "corrected_bits": 4,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": "014d24c216e58928",
+            "corrected_bits": 3,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d24c216e58928",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d24c216e58928",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      },
+      "input_sha256": "308293f694c3074d67e687fa9f5def6cf8cb28bf5aee0a65a5e8eccd576f5906",
+      "output_sha256": "86806e902d56f894b5ea254d39ff9e5efd12c5a2aa633850daa0d84c67003a32"
+    },
+    {
+      "fixture": "waterfall",
+      "repeat": 1,
+      "token": "014d29be29810b38",
+      "export_seconds": 34.542357814999946,
+      "verify_seconds": 2.0731340749999845,
+      "c2pa": "verified_claim",
+      "exact": true,
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d29be29810b38",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": "014d29be29810b38",
+            "corrected_bits": 11,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": "014d29be29810b38",
+            "corrected_bits": 6,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": "014d29be29810b38",
+            "corrected_bits": 6,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": "014d29be29810b38",
+            "corrected_bits": 3,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d29be29810b38",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d29be29810b38",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      },
+      "input_sha256": "308293f694c3074d67e687fa9f5def6cf8cb28bf5aee0a65a5e8eccd576f5906",
+      "output_sha256": "abf0a77e752fc219617d880a890a05da1995cb598dc6917becad0bc1d85b6142"
+    },
+    {
+      "fixture": "waterfall",
+      "repeat": 2,
+      "token": "014d9eaa31b51313",
+      "export_seconds": 34.6569816760001,
+      "verify_seconds": 2.0694559549999667,
+      "c2pa": "verified_claim",
+      "exact": true,
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d9eaa31b51313",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": "014d9eaa31b51313",
+            "corrected_bits": 12,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": "014d9eaa31b51313",
+            "corrected_bits": 3,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": "014d9eaa31b51313",
+            "corrected_bits": 4,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": "014d9eaa31b51313",
+            "corrected_bits": 4,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d9eaa31b51313",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d9eaa31b51313",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      },
+      "input_sha256": "308293f694c3074d67e687fa9f5def6cf8cb28bf5aee0a65a5e8eccd576f5906",
+      "output_sha256": "a21f1638b429ecacd1e3a53fc07e0475af2a6ca9d17c693bbb9c3513ca7cc837"
+    },
+    {
+      "fixture": "road",
+      "repeat": 0,
+      "token": "014d9d8afd35cf2c",
+      "export_seconds": 34.053707490999955,
+      "verify_seconds": 1.8400733369999216,
+      "c2pa": "verified_claim",
+      "exact": true,
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 16,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 20,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 4,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d9d8afd35cf2c",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      },
+      "input_sha256": "fb759828187ee809465969a922422ad8b08fcd1cc6990ba6815b30f59cd1f370",
+      "output_sha256": "5487dbe13da850c579f6d1f6c33becc16a620acd7d2f73fac24b6616d24010f3"
+    },
+    {
+      "fixture": "road",
+      "repeat": 1,
+      "token": "014d2233d0e67b86",
+      "export_seconds": 33.76007916699996,
+      "verify_seconds": 1.8349727470000516,
+      "c2pa": "verified_claim",
+      "exact": true,
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d2233d0e67b86",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": "014d2233d0e67b86",
+            "corrected_bits": 6,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": "014d2233d0e67b86",
+            "corrected_bits": 14,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": "014d2233d0e67b86",
+            "corrected_bits": 3,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d2233d0e67b86",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d2233d0e67b86",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      },
+      "input_sha256": "fb759828187ee809465969a922422ad8b08fcd1cc6990ba6815b30f59cd1f370",
+      "output_sha256": "7f4502074e11b9f3344fa6aef7ba42ad44e9fc92d0ae74109986c9c050501fff"
+    },
+    {
+      "fixture": "road",
+      "repeat": 2,
+      "token": "014d875d0dfff428",
+      "export_seconds": 33.720597412000075,
+      "verify_seconds": 1.841941886000086,
+      "c2pa": "verified_claim",
+      "exact": true,
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d875d0dfff428",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": "014d875d0dfff428",
+            "corrected_bits": 7,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": "014d875d0dfff428",
+            "corrected_bits": 16,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": "014d875d0dfff428",
+            "corrected_bits": 1,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d875d0dfff428",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d875d0dfff428",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      },
+      "input_sha256": "fb759828187ee809465969a922422ad8b08fcd1cc6990ba6815b30f59cd1f370",
+      "output_sha256": "cefba1a2c7b69ae5977a2ddea9d8cb5cb70bacadc4643e14e849048c305f0625"
+    },
+    {
+      "fixture": "clouds",
+      "repeat": 0,
+      "token": "014d879a41012b99",
+      "export_seconds": 34.21547547,
+      "verify_seconds": 1.8981480130000818,
+      "c2pa": "verified_claim",
+      "exact": true,
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d879a41012b99",
+            "corrected_bits": 1,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": "014d879a41012b99",
+            "corrected_bits": 13,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d879a41012b99",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d879a41012b99",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      },
+      "input_sha256": "6140dc1da9d982c191fe3412d91baac8ea52697b9b89bd3fef6c40edff5b1aee",
+      "output_sha256": "e473dc28afcfcdc2623823bc47640dd7690de8018b691ea492ba0ce28001b78d"
+    },
+    {
+      "fixture": "clouds",
+      "repeat": 1,
+      "token": "014dae4dbd5b4fe0",
+      "export_seconds": 34.37480041599997,
+      "verify_seconds": 1.8985274750000372,
+      "c2pa": "verified_claim",
+      "exact": true,
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014dae4dbd5b4fe0",
+            "corrected_bits": 1,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": "014dae4dbd5b4fe0",
+            "corrected_bits": 8,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014dae4dbd5b4fe0",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014dae4dbd5b4fe0",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      },
+      "input_sha256": "6140dc1da9d982c191fe3412d91baac8ea52697b9b89bd3fef6c40edff5b1aee",
+      "output_sha256": "37112b6f9c819f35e541883096670cff85413db8bb5b8979f53ace97ce056ff7"
+    },
+    {
+      "fixture": "clouds",
+      "repeat": 2,
+      "token": "014d8221b3f011ea",
+      "export_seconds": 34.53405691700004,
+      "verify_seconds": 1.8993964759999926,
+      "c2pa": "verified_claim",
+      "exact": true,
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d8221b3f011ea",
+            "corrected_bits": 1,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": "014d8221b3f011ea",
+            "corrected_bits": 8,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d8221b3f011ea",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d8221b3f011ea",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      },
+      "input_sha256": "6140dc1da9d982c191fe3412d91baac8ea52697b9b89bd3fef6c40edff5b1aee",
+      "output_sha256": "6bcfd6ec518687697948c7b817ff3db06565238d5a4b28020b83b69687a26c91"
+    }
+  ],
+  "transforms": [
+    {
+      "fixture": "waterfall",
+      "transform": "crf28",
+      "exact": true,
+      "verify_seconds": 2.3063061139999945,
+      "c2pa": "not_found",
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d24c216e58928",
+            "corrected_bits": 1,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": "014d24c216e58928",
+            "corrected_bits": 10,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": "014d24c216e58928",
+            "corrected_bits": 6,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": "014d24c216e58928",
+            "corrected_bits": 6,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": "014d24c216e58928",
+            "corrected_bits": 8,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d24c216e58928",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d24c216e58928",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "waterfall",
+      "transform": "crf35",
+      "exact": true,
+      "verify_seconds": 2.076305693999984,
+      "c2pa": "not_found",
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d24c216e58928",
+            "corrected_bits": 19,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d24c216e58928",
+            "corrected_bits": 4,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d24c216e58928",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "waterfall",
+      "transform": "half-crf28",
+      "exact": true,
+      "verify_seconds": 1.7688695250000137,
+      "c2pa": "not_found",
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d24c216e58928",
+            "corrected_bits": 14,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": "014d24c216e58928",
+            "corrected_bits": 20,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d24c216e58928",
+            "corrected_bits": 5,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d24c216e58928",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "waterfall",
+      "transform": "crop10-crf28",
+      "exact": true,
+      "verify_seconds": 2.491955700999938,
+      "c2pa": "not_found",
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d24c216e58928",
+            "corrected_bits": 9,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": "014d24c216e58928",
+            "corrected_bits": 19,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": "014d24c216e58928",
+            "corrected_bits": 9,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d24c216e58928",
+            "corrected_bits": 3,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d24c216e58928",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "road",
+      "transform": "crf28",
+      "exact": true,
+      "verify_seconds": 2.1432908440000347,
+      "c2pa": "not_found",
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 2,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 17,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 14,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 0,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d9d8afd35cf2c",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "road",
+      "transform": "crf35",
+      "exact": true,
+      "verify_seconds": 2.023929910999982,
+      "c2pa": "not_found",
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 14,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d9d8afd35cf2c",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "road",
+      "transform": "half-crf28",
+      "exact": true,
+      "verify_seconds": 1.7388336899999786,
+      "c2pa": "not_found",
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 16,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d9d8afd35cf2c",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "road",
+      "transform": "crop10-crf28",
+      "exact": true,
+      "verify_seconds": 2.035708915999976,
+      "c2pa": "not_found",
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 5,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d9d8afd35cf2c",
+            "corrected_bits": 4,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d9d8afd35cf2c",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "clouds",
+      "transform": "crf28",
+      "exact": true,
+      "verify_seconds": 2.2407113860001573,
+      "c2pa": "not_found",
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [
+          {
+            "token": "014d879a41012b99",
+            "corrected_bits": 8,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          }
+        ],
+        "scope": "sampled_frames",
+        "token": "014d879a41012b99",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "clouds",
+      "transform": "crf35",
+      "exact": false,
+      "verify_seconds": 2.0733352190000005,
+      "c2pa": "not_found",
+      "watermark": {
+        "status": "not_found",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [],
+        "scope": "sampled_frames",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "clouds",
+      "transform": "half-crf28",
+      "exact": false,
+      "verify_seconds": 1.7766253740001048,
+      "c2pa": "not_found",
+      "watermark": {
+        "status": "not_found",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [],
+        "scope": "sampled_frames",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "clouds",
+      "transform": "crop10-crf28",
+      "exact": true,
+      "verify_seconds": 2.1444487109999955,
+      "c2pa": "not_found",
+      "watermark": {
+        "status": "recovered_claim",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": "014d879a41012b99",
+            "corrected_bits": 18,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [],
+        "scope": "sampled_frames",
+        "token": "014d879a41012b99",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    }
+  ],
+  "negatives": [
+    {
+      "fixture": "waterfall",
+      "watermark": {
+        "status": "not_found",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [],
+        "scope": "sampled_frames",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "road",
+      "watermark": {
+        "status": "not_found",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [],
+        "scope": "sampled_frames",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    },
+    {
+      "fixture": "clouds",
+      "watermark": {
+        "status": "not_found",
+        "samples": [
+          {
+            "time": 0.0,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "corrected_bits": null,
+            "algorithm": "meta.videoseal.1.0.bch20"
+          },
+          {
+            "time": 0.0,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 1.25,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 2.4583333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 3.7083333333333335,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          },
+          {
+            "time": 4.916666666666667,
+            "token": null,
+            "algorithm": "adobe.trustmark.Q.bch5"
+          }
+        ],
+        "aggregates": [],
+        "scope": "sampled_frames",
+        "engines_checked": [
+          "meta.videoseal.1.0.bch20",
+          "adobe.trustmark.Q.bch5"
+        ],
+        "unavailable_engines": [],
+        "checked_frames": 5
+      }
+    }
+  ],
+  "peak_python_rss_mib": 1286.16796875
+}

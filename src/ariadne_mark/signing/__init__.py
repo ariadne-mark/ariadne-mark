@@ -85,12 +85,13 @@ def context(trust_anchors: Path | None = None):
 
 def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: str,
               identity: SigningIdentity, *, parent: Path | None = None, disclosure: bool = False,
-              audio: str = "none") -> None:
+              audio: str = "none", algorithm: str = "adobe.trustmark.Q.bch5",
+              payload_format: str = "ariadne-v1") -> None:
     import c2pa
     action = "c2pa.created" if record.action.value == "created" else "c2pa.edited"
     source_type = "trainedAlgorithmicMedia" if record.action.value == "created" else "compositeWithTrainedAlgorithmicMedia"
     manifest = {
-        "claim_generator_info": [{"name": "Ariadne Mark", "version": "0.2.0a0"}],
+        "claim_generator_info": [{"name": "Ariadne Mark", "version": "0.3.0a0"}],
         "title": "AI-generated media" if record.action.value == "created" else "AI-altered media",
         "format": MIME[source.suffix.lower()],
         "assertions": [
@@ -99,7 +100,7 @@ def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: 
                 "when": record.to_dict()["created_at"],
                 "softwareAgent": {"name": record.system.name, "version": record.system.version}}]}},
             {"label": ASSERTION, "data": {"record": record.to_dict(), "watermark": {
-                "algorithm": "adobe.trustmark.Q.bch5", "format": "ariadne-v1", "token": token},
+                "algorithm": algorithm, "format": payload_format, "token": token},
                 "development_identity": identity.development, "visible_disclosure": disclosure,
                 "audio": audio}},
         ],

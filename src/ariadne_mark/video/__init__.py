@@ -54,8 +54,8 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
     info = probe(source)
     silent = destination.with_name("frames.mp4")
     frames = 0
-    first_time = None
     last_pts = None
+    decoded_end = Fraction(0)
     with av.open(str(source), options={"protocol_whitelist": "file,pipe"}) as incoming, av.open(str(silent), "w") as outgoing:
         stream = incoming.streams.video[0]
         rate = stream.average_rate or Fraction(24, 1)
@@ -66,29 +66,50 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
         encoded.codec_context.time_base = stream.time_base
         encoded.codec_context.thread_count = 2
         encoded.options = {"crf": "18", "preset": "fast", "bf": "0"}
+        pending = []
+        durations = {}
+        def mux(packet):
+            if packet.pts is not None and packet.time_base is not None:
+                duration = durations.pop(packet.pts * packet.time_base, None)
+                if duration:
+                    packet.duration = round(duration / packet.time_base)
+            outgoing.mux(packet)
+        def flush():
+            images = [row[0] for row in pending]
+            if hasattr(marker, "encode_frames"):
+                marked = marker.encode_frames(images, token)
+            else:
+                marked = [marker.encode(image, token, strength=1.5) for image in images]
+            if len(marked) != len(pending):
+                raise AriadneError("Watermarker returned an incomplete frame batch")
+            for image, (_, pts, time_base) in zip(marked, pending):
+                output = av.VideoFrame.from_image(image)
+                output.pts, output.time_base = pts, time_base
+                for packet in encoded.encode(output):
+                    mux(packet)
+            pending.clear()
         for frame in incoming.decode(stream):
             if frame.pts is None or frame.time_base is None:
                 raise UnsupportedMedia("Video frames require timestamps")
             if last_pts is not None and frame.pts <= last_pts:
                 raise UnsupportedMedia("Non-monotonic video timestamps")
             last_pts = frame.pts
-            if first_time is None:
-                first_time = frame.pts * frame.time_base
             if frames >= 18000:
                 raise UnsupportedMedia("Video exceeds 18000-frame limit")
             image = _orient(frame.to_image(), info["rotation"])
             if visible:
                 image = apply_label(image, altered=altered)
-            # Video is always re-encoded; reserve a modest signal margin for H.264.
-            image = marker.encode(image, token, strength=1.5)
-            output = av.VideoFrame.from_image(image)
-            output.pts = frame.pts
-            output.time_base = frame.time_base
-            for packet in encoded.encode(output):
-                outgoing.mux(packet)
+            duration = frame.duration * frame.time_base
+            decoded_end = max(decoded_end, frame.pts * frame.time_base + duration)
+            durations[frame.pts * frame.time_base] = duration
+            pending.append((image, frame.pts, frame.time_base))
             frames += 1
+            if len(pending) == getattr(marker, "batch_size", 1):
+                flush()
+        if pending:
+            flush()
         for packet in encoded.encode():
-            outgoing.mux(packet)
+            mux(packet)
     if not frames:
         raise UnsupportedMedia("Video contains no decodable frames")
     # Preserve packet timing and AAC bytes; avoid shortening either stream silently.
@@ -103,13 +124,17 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
     except (subprocess.SubprocessError, OSError) as exc:
         raise AriadneError("Video audio/container remux failed") from exc
     final = probe(destination)
-    if abs(final["duration"] - info["duration"]) > max(.15, 1 / float(rate)):
+    # Some VFR/B-frame MP4 headers under-report the final presentation end.
+    # Preserve decoded frames instead of rejecting a correct, longer timeline.
+    expected_duration = max(info["duration"], float(decoded_end))
+    if abs(final["duration"] - expected_duration) > max(.15, 1 / float(rate)):
         raise AriadneError("Output duration differs from input beyond tolerance")
     if final["audio"] != info["audio"]:
         raise AriadneError("Output audio preservation failed")
     return {"frames_encoded": frames, "duration": final["duration"], "audio": "preserved_aac" if info["audio"] else "none",
             "rotation_normalized": info["rotation"], "width": final["width"], "height": final["height"],
-            "watermark_strength": 1.5, "h264_crf": 18}
+            "watermark_algorithm": getattr(marker, "algorithm", "custom"),
+            "batch_size": getattr(marker, "batch_size", 1), "h264_crf": 18}
 
 
 def sample_frames(path: Path, *, samples: int = 5):

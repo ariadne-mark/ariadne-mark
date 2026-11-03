@@ -2,9 +2,9 @@
 
 **Open-source watermarking, provenance and verification for AI-generated images and video.**
 
-A local Python SDK and CLI that adds a recoverable TrustMark ID, signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
+A local Python SDK and CLI that adds a recoverable ID (TrustMark for images, VideoSeal for video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer preview · 0.2.0a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer preview · 0.3.0a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 ## Quick start with Docker
 
@@ -33,6 +33,8 @@ docker run --rm --network none --user "$(id -u):$(id -g)" \
   --registry .ariadne/registry.sqlite3
 ```
 
+Video uses the official VideoSeal model on CPU with BCH error correction and five-frame aggregate verification. Existing TrustMark video IDs remain readable.
+
 For video use `input.mp4 output.mp4` and set `--audio-kind original`, `synthetic`, or `unknown` when appropriate. Add `--visible` for a visible disclosure, or `--action altered` for AI-altered material. Existing output files are never overwritten.
 
 The output includes a `.receipt.json` file containing its SHA-256, processing time and verification results. A development signature is valid but **not publicly trusted**. `--trust-anchors .ariadne/dev/trust.pem` is only for explicitly trusting your own test root.
@@ -48,6 +50,8 @@ python -m pip install torch==2.14.1 torchvision==0.29.1 --index-url https://down
 python -m pip install '.[media]'
 ariadne models fetch
 ```
+
+`models fetch` provisions both engines. Use `--engine trustmark` for an image-only installation, or `--engine videoseal` to add video later. `ARIADNE_VIDEOSEAL_MODEL` can point to a shared, checksum-verified model file.
 
 `models fetch` is an explicit setup step. Later requests fail clearly if models are missing or have incorrect checksums. They do not silently download models.
 
@@ -74,7 +78,7 @@ receipt = sdk.mark(Path("input.png"), Path("output.png"), record)
 result = sdk.verify(Path("output.png"))
 ```
 
-Load the SDK once and reuse it across a queue of jobs. It serializes TrustMark inference; do not load a model per frame or request.
+Load the SDK once and reuse it across a queue of jobs. It serializes model inference; do not load a model per frame or request.
 
 ## Self-hosted verifier
 
@@ -104,7 +108,7 @@ docker run --rm --network none --cpus 2 --memory 6g \
   ariadne-mark:local -m unittest discover -s tests -t . -v
 ```
 
-The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.2.0a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.3.0a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
 
 ## Contribute
 
@@ -112,4 +116,4 @@ Use [Discussions](https://github.com/ariadne-mark/ariadne-mark/discussions) for 
 
 ## License
 
-Original code is [Apache-2.0](LICENSE). TrustMark code and models are MIT; C2PA is MIT/Apache-2.0. Other dependencies, including FFmpeg and codec libraries, retain their own licenses. [Third-party inventory](THIRD_PARTY.md).
+Original code is [Apache-2.0](LICENSE). TrustMark and VideoSeal code/models are MIT; C2PA is MIT/Apache-2.0. Other dependencies, including FFmpeg and codec libraries, retain their own licenses. [Third-party inventory](THIRD_PARTY.md).

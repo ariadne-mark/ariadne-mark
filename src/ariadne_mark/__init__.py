@@ -1,1 +1,1 @@
-"""Local, dependency-free contracts; media processing adapters are not yet included."""
+"""Local watermarking, C2PA signing and provenance verification SDK."""

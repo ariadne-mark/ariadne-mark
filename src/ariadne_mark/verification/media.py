@@ -38,9 +38,11 @@ def inspect_c2pa(path: Path, *, trust_anchors: Path | None = None) -> dict:
             claim = assertions[0]
             record = ProvenanceRecord.from_json(json.dumps(claim["record"]))
             token = claim["watermark"]["token"]
-            if not valid_token(token) or claim["watermark"]["format"] != "ariadne-v1":
+            formats = {"ariadne-v1": "adobe.trustmark.Q.bch5", "ariadne-vs1": "meta.videoseal.1.0.bch20"}
+            fmt = claim["watermark"]["format"]
+            if not valid_token(token) or formats.get(fmt) != claim["watermark"].get("algorithm"):
                 raise ValueError("Unknown payload")
-            result.update(record=record.to_dict(), token=token, development_identity=claim.get("development_identity", False),
+            result.update(record=record.to_dict(), token=token, watermark_algorithm=formats[fmt], development_identity=claim.get("development_identity", False),
                           audio=claim.get("audio", "unknown"), visible_disclosure=claim.get("visible_disclosure", False))
         except (KeyError, TypeError, ValueError):
             result.update(status="invalid", reason="invalid_ariadne_assertion")
@@ -68,30 +70,52 @@ def open_image(path: Path):
         raise UnsupportedMedia("Cannot decode image") from exc
 
 
-def verify_file(path: Path, *, marker=None, registry=None, trust_anchors: Path | None = None) -> dict:
+def verify_file(path: Path, *, marker=None, video_marker=None, registry=None, trust_anchors: Path | None = None) -> dict:
     path = Path(path).resolve()
     if not path.is_file() or path.suffix.lower() not in MIME:
         raise UnsupportedMedia("Provide a local JPEG, PNG or MP4 file")
     c2pa = inspect_c2pa(path, trust_anchors=trust_anchors)
     watermark = {"status": "not_checked", "reason": "watermark_engine_not_loaded"}
-    if marker is not None:
+    if marker is not None or video_marker is not None:
         try:
-            if path.suffix.lower() == ".mp4":
+            video = path.suffix.lower() == ".mp4"
+            if video:
                 from ariadne_mark.video import sample_frames
-                frames = sample_frames(path)
+                frames = list(sample_frames(path))
+                algorithm = c2pa.get("watermark_algorithm") if c2pa["status"] == "verified_claim" else None
+                candidates = []
+                if algorithm != "adobe.trustmark.Q.bch5":
+                    if video_marker is None:
+                        from ariadne_mark.videoseal import VideoSealWatermarker
+                        video_marker = VideoSealWatermarker()
+                    candidates.append(video_marker)
+                if algorithm != "meta.videoseal.1.0.bch20" and marker is not None:
+                    candidates.append(marker)
             else:
                 frames = [(open_image(path), None)]
-            observations = [{"time": timestamp, "token": marker.decode(frame)} for frame, timestamp in frames]
-            tokens = {row["token"] for row in observations if row["token"] is not None}
-            watermark = {"status": "recovered_claim" if tokens else "not_found", "samples": observations,
-                         "checked_frames": len(observations), "scope": "sampled_frames" if path.suffix.lower() == ".mp4" else "whole_image"}
-            if not observations:
-                watermark.update(status="not_checked", reason="no_decodable_frames")
-            elif len(tokens) == 1:
-                watermark["token"] = next(iter(tokens))
-            elif len(tokens) > 1:
-                watermark.update(status="invalid", reason="multiple_tokens")
-        except (AriadneError, OSError, ValueError) as exc:
+                candidates = [marker] if marker is not None else []
+            observations, aggregates, engines, unavailable = [], [], [], []
+            for engine in candidates:
+                name = getattr(engine, "algorithm", "custom")
+                try:
+                    if hasattr(engine, "decode_frames"):
+                        rows, aggregate = engine.decode_frames(frames)
+                        if aggregate:
+                            aggregates.append({**aggregate, "algorithm": name})
+                    else:
+                        rows = [{"time": timestamp, "token": engine.decode(frame)} for frame, timestamp in frames]
+                    observations.extend({**row, "algorithm": name} for row in rows)
+                    engines.append(name)
+                except (AriadneError, OSError, ValueError, ImportError) as exc:
+                    unavailable.append({"algorithm": name, "reason": type(exc).__name__})
+            watermark = summarize_watermarks(observations, aggregates, video=video)
+            watermark.update(engines_checked=engines, unavailable_engines=unavailable,
+                             checked_frames=len(frames))
+            if unavailable and watermark["status"] == "not_found":
+                watermark.update(status="not_checked", reason="incomplete_engine_coverage")
+            elif unavailable:
+                watermark["coverage"] = "partial"
+        except (AriadneError, OSError, ValueError, ImportError) as exc:
             watermark = {"status": "not_checked", "reason": type(exc).__name__}
     recovery = {"status": "not_attempted"}
     token = watermark.get("token")
@@ -114,3 +138,17 @@ def verify_file(path: Path, *, marker=None, registry=None, trust_anchors: Path |
         label = "Provenance unavailable"
     return {"schema_version": 1, "label": label, "c2pa": c2pa, "watermark": watermark,
             "recovery": recovery, "token_mismatch": mismatch}
+
+
+def summarize_watermarks(observations, aggregates, *, video):
+    """Never let averaged logits hide individually recovered conflicting IDs."""
+    tokens = {row["token"] for row in [*observations, *aggregates] if row.get("token") is not None}
+    result = {"status": "recovered_claim" if tokens else "not_found", "samples": observations,
+              "aggregates": aggregates, "scope": "sampled_frames" if video else "whole_image"}
+    if not observations:
+        result.update(status="not_checked", reason="no_decodable_frames")
+    elif len(tokens) == 1:
+        result["token"] = next(iter(tokens))
+    elif len(tokens) > 1:
+        result.update(status="invalid", reason="multiple_tokens")
+    return result

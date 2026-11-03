@@ -1,4 +1,4 @@
-# Supported scope — 0.2.0a0
+# Supported scope — 0.3.0a0
 
 | Area | Supported | Boundary |
 | --- | --- | --- |
@@ -6,7 +6,7 @@
 | Video | SDR MP4, H.264 output; one video stream; optional AAC audio | Even dimensions, each 256–1920 pixels; max 5 min / 18000 frames. Other audio codecs, subtitles, multiple tracks, interlacing, anamorphic pixels and HDR are rejected |
 | Timing | Frame presentation timestamps retained, including tested VFR; display rotation normalized | Verification samples up to 5 positions, not every frame |
 | Audio | AAC packets retained; original/synthetic/unknown provenance recorded | No standalone audio processing or independent audio watermark. Extraction/transcoding of synthetic audio is not covered |
-| Watermark | TrustMark Q, BCH-5; 61-bit payload with a 13-bit format prefix and 48 random bits | Recoverable ID, not authentication. Cropping/removal/copying may defeat it |
+| Watermark | Images: TrustMark Q/BCH-5. Video: VideoSeal 1.0 with BCH-20/CRC; five-frame aggregate. Both carry 48 random ID bits | Recoverable ID, not authentication. Cropping/removal/copying may defeat it |
 | Provenance | Signed C2PA record: publisher, generator/version, time, UUID, created/altered; parent ingredient when applicable | Caller supplies accurate facts. External certificate issuance and public trust enrollment are operator responsibilities |
 | Recovery | Local SQLite token-to-record lookup | No central resolver, cross-provider routing or guaranteed permanent hosting |
 | Disclosure | Optional baked-in AI-generated/AI-altered label | Caller determines applicability and provides accessible in-app disclosure |
@@ -26,3 +26,5 @@ All inference is local after model provisioning. C2PA remote-manifest and OCSP
 fetching are disabled. Revocation freshness is therefore not checked offline.
 Only a caller-configured timestamp authority enables a signing-time network
 request. Output receipts document technical actions, not a legal verdict.
+
+Default VideoSeal can fail read-back on saturated synthetic color bars after H.264 compression. Such exports are rejected; no file or receipt is published. This content-dependent boundary is covered by a regression test. Do not infer universal durability from the supported dimensions.
