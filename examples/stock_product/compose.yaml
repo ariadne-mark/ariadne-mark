@@ -1,0 +1,55 @@
+x-runtime: &runtime
+  image: ariadne-stock-product:local
+  pull_policy: never
+  restart: unless-stopped
+  read_only: true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=512m,mode=1777
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  networks: [lab]
+services:
+  web:
+    <<: *runtime
+    depends_on:
+      verifier:
+        condition: service_healthy
+    build:
+      context: .
+      args:
+        SDK_IMAGE: ${SDK_IMAGE:-ariadne-mark:local}
+    networks: [lab, front]
+    ports: ["127.0.0.1:8020:8080"]
+    volumes:
+      - ${PRODUCT_DATA:?Set PRODUCT_DATA}:/data
+      - ${PRODUCT_INPUTS:?Set PRODUCT_INPUTS}:/inputs:ro
+    mem_limit: 512m
+    cpus: 0.5
+  worker:
+    <<: *runtime
+    command: ["worker"]
+    volumes:
+      - ${PRODUCT_DATA}:/data
+      - ${PRODUCT_INPUTS}:/inputs:ro
+    mem_limit: 4g
+    cpus: 2
+  verifier:
+    <<: *runtime
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2).read()"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    entrypoint: ["ariadne"]
+    command: ["serve", "--host", "0.0.0.0", "--registry", "/data/registry/assets.sqlite3"]
+    networks: [lab, front]
+    ports: ["127.0.0.1:8021:8080"]
+    volumes:
+      - ${PRODUCT_DATA}/registry:/data/registry
+    mem_limit: 3g
+    cpus: 2
+networks:
+  front: {}
+  lab:
+    internal: true
