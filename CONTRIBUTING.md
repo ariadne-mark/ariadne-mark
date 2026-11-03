@@ -1,6 +1,6 @@
 # Contributing to Ariadne Mark
 
-The repository is currently a pre-alpha SDK core. Implementation, integration examples, reproducible benchmarks, and corrections to the requirements mapping are welcome.
+The repository is currently a developer-preview media SDK. Implementation, integration examples, reproducible benchmarks, and corrections to the requirements mapping are welcome.
 
 ## Before a change
 
@@ -12,7 +12,7 @@ For substantial design changes, open an issue or discussion first. For a concret
 2. For regulatory changes, provide the official source, exact provision, version, effective date, applicability, and exceptions. Distinguish binding law, voluntary guidance, and engineering choices.
 3. Implement the acceptance criterion and add appropriate executable checks. A unit test does not replace an end-to-end scenario.
 4. Update relevant documentation and the coverage checklist in the same change.
-5. Install the package with `python -m pip install .`, then run `python -m unittest discover -s tests -t . -v` and `python3 scripts/check_requirements.py`. CI tests the built wheel on Python 3.11–3.14; all versions must pass the required traceability check.
+5. Install the package with `python -m pip install .`, then run `python -m unittest discover -s tests -t . -v` and `python3 scripts/check_requirements.py`. CI tests the built wheel on Python 3.11–3.14; all versions and the real-engine CPU Docker job must pass the required traceability check.
 
 Implementation states: `planned`, `in_progress`, `implemented`.
 Verification states: `not_run`, `failed`, `passed`.

@@ -2,22 +2,22 @@
 
 Все 15 пунктов включены в план. **Учтено в плане ≠ реализовано ≠ проверено ≠ полное юридическое соответствие.**
 
-Текущий статус: 3 из 15 в работе (REQ-003, REQ-008, REQ-015); 0 полностью реализовано; 0 полностью проверено в Ariadne Mark. Форматы данных и установка пакета имеют исполняемые тесты, но это не закрывает полные критерии приёмки. Результаты сторонних проектов не засчитываются как тесты нашей сборки.
+Текущий статус: **6 из 15 реализовано и проверено в указанном техническом scope**, 8 в работе, 1 запланировано. См. [границы поддержки](../docs/operations/support.md) и [доказательства](../docs/validation/0.2.0a0.md). Юридическая применимость не становится подтверждённой автоматически.
 
 Машиночитаемый источник: [requirements.json](requirements.json). Нормативные источники: [sources/index.json](sources/index.json).
 
 | ID | Требование | Реализация | Проверки | Документация | Готово |
 |---|---|---|---|---|---|
 | REQ-001 | Определить применимые требования | [compliance/profiles](../compliance/profiles/README.md) | [tests/compliance](../tests/compliance/README.md) | [Руководство](../docs/compliance/applicability.md) | ☐ |
-| REQ-002 | Записать машиночитаемую маркировку изображения | [src/ariadne_mark/watermark](../src/ariadne_mark/watermark/README.md) | [tests/watermark](../tests/watermark/README.md) | [Руководство](../docs/implementation/image-marking.md) | ☐ |
+| REQ-002 | Записать машиночитаемую маркировку изображения | [src/ariadne_mark/watermark](../src/ariadne_mark/watermark/README.md) | [tests/watermark](../tests/watermark/README.md) | [Руководство](../docs/implementation/image-marking.md) | ✓ |
 | REQ-003 | Сформировать сведения о происхождении | [src/ariadne_mark/provenance](../src/ariadne_mark/provenance/README.md) | [tests/provenance](../tests/provenance/README.md) | [Руководство](../docs/implementation/provenance.md) | ☐ |
-| REQ-004 | Подписать и проверить C2PA | [src/ariadne_mark/signing](../src/ariadne_mark/signing/README.md) | [tests/signing](../tests/signing/README.md) | [Руководство](../docs/implementation/signing.md) | ☐ |
-| REQ-005 | Реализовать полный путь для видео | [src/ariadne_mark/video](../src/ariadne_mark/video/README.md) | [tests/video](../tests/video/README.md) | [Руководство](../docs/implementation/video.md) | ☐ |
-| REQ-006 | Обеспечить восстановление связи с источником | [src/ariadne_mark/registry](../src/ariadne_mark/registry/README.md) | [tests/registry](../tests/registry/README.md) | [Руководство](../docs/implementation/recovery.md) | ☐ |
+| REQ-004 | Подписать и проверить C2PA | [src/ariadne_mark/signing](../src/ariadne_mark/signing/README.md) | [tests/signing](../tests/signing/README.md) | [Руководство](../docs/implementation/signing.md) | ✓ |
+| REQ-005 | Реализовать полный путь для видео | [src/ariadne_mark/video](../src/ariadne_mark/video/README.md) | [tests/video](../tests/video/README.md) | [Руководство](../docs/implementation/video.md) | ✓ |
+| REQ-006 | Обеспечить восстановление связи с источником | [src/ariadne_mark/registry](../src/ariadne_mark/registry/README.md) | [tests/registry](../tests/registry/README.md) | [Руководство](../docs/implementation/recovery.md) | ✓ |
 | REQ-007 | Предоставить публичную проверку | [apps/verifier](../apps/verifier/README.md) | [tests/verifier](../tests/verifier/README.md) | [Руководство](../docs/implementation/verifier.md) | ☐ |
-| REQ-008 | Разделить результаты проверки и ошибки | [src/ariadne_mark/verification](../src/ariadne_mark/verification/README.md) | [tests/verification](../tests/verification/README.md) | [Руководство](../docs/implementation/verification-results.md) | ☐ |
+| REQ-008 | Разделить результаты проверки и ошибки | [src/ariadne_mark/verification](../src/ariadne_mark/verification/README.md) | [tests/verification](../tests/verification/README.md) | [Руководство](../docs/implementation/verification-results.md) | ✓ |
 | REQ-009 | Предоставить нужные disclosure-компоненты | [src/ariadne_mark/disclosure](../src/ariadne_mark/disclosure/README.md) | [tests/disclosure](../tests/disclosure/README.md) | [Руководство](../docs/implementation/disclosure.md) | ☐ |
-| REQ-010 | Сохранять историю преобразований | [src/ariadne_mark/provenance](../src/ariadne_mark/provenance/README.md) | [tests/provenance](../tests/provenance/README.md) | [Руководство](../docs/implementation/provenance-relay.md) | ☐ |
+| REQ-010 | Сохранять историю преобразований | [src/ariadne_mark/provenance](../src/ariadne_mark/provenance/README.md) | [tests/provenance](../tests/provenance/README.md) | [Руководство](../docs/implementation/provenance-relay.md) | ✓ |
 | REQ-011 | Ограничить обработку данных в verifier | [apps/verifier](../apps/verifier/README.md) | [tests/privacy](../tests/privacy/README.md) | [Руководство](../docs/operations/privacy.md) | ☐ |
 | REQ-012 | Измерить устойчивость и качество | [benchmarks/durability](../benchmarks/durability/README.md) | [tests/robustness](../tests/robustness/README.md) | [Руководство](../docs/benchmarks/durability.md) | ☐ |
 | REQ-013 | Обеспечить работу на CPU и явный отказ | [src/ariadne_mark/pipeline](../src/ariadne_mark/pipeline/README.md) | [tests/integration](../tests/integration/README.md) | [Руководство](../docs/operations/cpu-deployment.md) | ☐ |

@@ -39,9 +39,26 @@ jobs:
         run: python -m unittest discover -s tests -t . -v
       - name: Run integration example
         run: python examples/provenance_record.py
+  media:
+    name: CPU media integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Build standalone CPU image
+        run: docker build -t ariadne-mark:test .
+      - name: Test real media offline
+        run: >-
+          docker run --rm --network none --cpus 2 --memory 6g
+          --read-only --tmpfs /tmp:rw,noexec,nosuid,size=512m
+          -e ARIADNE_MEDIA_TESTS=1 -w /app --entrypoint python
+          ariadne-mark:test -m unittest discover -s tests -t . -v
   requirements:
     name: Requirements traceability
-    needs: sdk
+    needs: [sdk, media]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -55,4 +72,5 @@ jobs:
       - name: Require passing SDK checks
         env:
           SDK_RESULT: ${{ needs.sdk.result }}
-        run: test "$SDK_RESULT" = success
+          MEDIA_RESULT: ${{ needs.media.result }}
+        run: test "$SDK_RESULT" = success && test "$MEDIA_RESULT" = success

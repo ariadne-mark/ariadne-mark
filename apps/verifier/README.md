@@ -1,5 +1,3 @@
-# Реализация: `apps/verifier`
+# Self-hosted verifier
 
-Место зарезервировано в структуре Ariadne Mark. Реализация или исполняемые тесты пока отсутствуют.
-
-Требования и критерии приёмки: [матрица покрытия](../../compliance/COVERAGE.md).
+Run `ariadne serve` or `docker compose up --build`. The implementation is in [server.py](../../src/ariadne_mark/server.py). See [deployment](../../docs/operations/verifier.md).

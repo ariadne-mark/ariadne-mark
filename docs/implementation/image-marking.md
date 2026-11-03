@@ -1,16 +1,5 @@
-# Записать машиночитаемую маркировку изображения
+# Image marking
 
-Требование: **REQ-002**. Статус: **запланировано**.
+REQ-002. `SDK.mark` loads single-frame PNG/JPEG, normalizes EXIF orientation, optionally adds visible disclosure, embeds an Ariadne-format 61-bit TrustMark-Q token, signs the exported file and reads it back. Alpha is retained for PNG; existing outputs are never overwritten. Models are provisioned explicitly and verified against SHA-256 before loading.
 
-## Критерий приёмки
-
-Встроить метку, извлечь корректный payload и проверить результат; публичный ID не содержит идентификатор пользователя.
-
-## Расположение
-
-- Реализация: `src/ariadne_mark/watermark/`
-- Проверки: `tests/watermark/`
-
-## Доказательство
-
-В Ariadne Mark пока не реализовано и не проверено. После реализации здесь будут пример использования, поддерживаемые версии и ограничения.
+See [quick start](../../README.md), [limits](../operations/support.md), and [evidence](../validation/0.2.0a0.md). Tests include PNG, JPEG, transparency, metadata stripping and failure without publication. The watermark carries a recovery token, not a user ID or cryptographic proof.

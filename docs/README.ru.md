@@ -2,7 +2,7 @@
 
 **Open-source compliance toolkit for AI-generated images and video.**
 
-Статус: pre-alpha ядро SDK, устанавливаемое из исходников. Реализованы форматы данных о происхождении и результатов проверки. Маркировка файлов, C2PA-подписание и production verifier ещё не реализованы. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#install-and-try-the-core) и [очередность реализации](implementation/sequence.md).
+Статус: рабочая developer-preview сборка SDK 0.2.0a0. Реализованы CPU-маркировка изображений и MP4, C2PA-подписание, локальный реестр и self-hosted verifier. Границы поддержки и оставшиеся юридические/эксплуатационные задачи указаны в документации. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#quick-start-with-docker) и [очередность реализации](implementation/sequence.md).
 
 ## Требования → код → тесты
 

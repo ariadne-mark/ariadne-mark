@@ -1,16 +1,7 @@
-# Подписать и проверить C2PA
+# Signing and validation
 
-Требование: **REQ-004**. Статус: **запланировано**.
+REQ-004. The official `c2pa-python==0.38.1` signs the final media file with ES256. Verification requires a valid signature and a matching image/BMFF asset binding; untrusted issuer status is separate from invalid evidence. Unknown substantive native validation failures are not ignored.
 
-## Критерий приёмки
+The manifest contains standard C2PA actions/digital source types plus an Ariadne assertion with publisher, model/version, timestamp, public UUID, action and watermark token. Parent credentials are imported before publishing derived material. A custom token assertion is not an implementation of the C2PA soft-binding repository protocol.
 
-Записать manifest и выполнить read-back validation; различать целостность подписи и доверие к издателю. C2PA — выбранный технический механизм, не универсальное название обязательного законом формата.
-
-## Расположение
-
-- Реализация: `src/ariadne_mark/signing/`
-- Проверки: `tests/signing/`
-
-## Доказательство
-
-В Ariadne Mark пока не реализовано и не проверено. После реализации здесь будут пример использования, поддерживаемые версии и ограничения.
+See [key operations](../operations/keys-and-trust.md), [result semantics](verification-results.md) and [test evidence](../validation/0.2.0a0.md). No production trust enrollment or legal certification is implied.

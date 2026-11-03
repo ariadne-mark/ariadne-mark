@@ -1,5 +1,3 @@
-# Реализация: `src/ariadne_mark/pipeline`
+# pipeline
 
-Место зарезервировано в структуре Ariadne Mark. Реализация или исполняемые тесты пока отсутствуют.
-
-Требования и критерии приёмки: [матрица покрытия](../../../compliance/COVERAGE.md).
+Working implementation is in this module. See [integration documentation](../../../docs/implementation/sequence.md), [supported scope](../../../docs/operations/support.md) and [release evidence](../../../docs/validation/0.2.0a0.md).

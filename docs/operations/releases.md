@@ -1,16 +1,15 @@
-# Версионировать правила и выпускать доказательства
+# Release qualification
 
-Требование: **REQ-015**. Статус: **запланировано**.
+0.2.0a0 is a developer preview with a wheel, source code, reproducible Docker
+recipe, real-engine tests and CPU smoke evidence. It has no automatic legal
+profile selection, public certificate enrollment or PyPI publishing credentials.
 
-## Критерий приёмки
+The required CI gate depends on both the Python 3.11–3.14 core matrix and the
+CPU Docker media suite. Media tests use actual TrustMark/C2PA/FFmpeg with
+networking disabled. Model SHA-256 hashes and tested package versions are
+recorded. Legal-mapping requirements stay in progress until independently
+reviewed against their operative sources and applicability.
 
-Профиль связан с источником, редакцией, датой применимости, версией SDK и тестовым отчётом. Проверять установку, лицензии кода/весов, фиксировать ограничения релиза.
-
-## Расположение
-
-- Реализация: `compliance/profiles/`
-- Проверки: `tests/compliance/`
-
-## Доказательство
-
-В Ariadne Mark пока не реализовано и не проверено. После реализации здесь будут пример использования, поддерживаемые версии и ограничения.
+For a subsequent release, rebuild, run the real-engine suite, benchmark the
+changed pipeline, update support limits and source mappings, inspect dependency
+licenses/security updates, and link evidence to the exact release commit.

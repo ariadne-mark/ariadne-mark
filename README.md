@@ -1,74 +1,115 @@
 # Ariadne Mark
 
-**Open-source compliance toolkit for AI-generated images and video.**
+**Open-source watermarking, provenance and verification for AI-generated images and video.**
 
-Watermarking, C2PA provenance, and verification — built to help developers implement applicable content-labeling requirements, with an initial focus on the EU AI Act and California.
+A local Python SDK and CLI that adds a recoverable TrustMark ID, signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-> **Pre-alpha: SDK core only.** Installable from source: provenance records and verification result contracts. No watermarking, C2PA signing, media processing, or production verifier is included yet. No package has been published to PyPI.
+**Developer preview · 0.2.0a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
-## What we are building
-
-- CPU-first invisible watermarking for images and video.
-- Signed provenance with publisher, system, creation/editing, and asset information.
-- A self-hostable verifier with clear verification and error states.
-- Versioned requirement profiles linked to implementation, tests, and developer guidance.
-
-Standalone music/audio watermarking is outside the initial scope. Synthetic audio within video needs an explicit supported workflow before full video coverage can be claimed.
-
-## Requirements you can trace
-
-Every requirement has an ID, an acceptance criterion, implementation and test locations, documentation, and a separate verification status.
-
-| Entry point | Purpose |
-| --- | --- |
-| [Coverage checklist](compliance/COVERAGE.md) | Track all 15 initial requirements |
-| [Requirement records](compliance/requirements.json) | Machine-readable source of truth |
-| [Official-source registry](compliance/sources/index.json) | Legislative sources and release-review status |
-| [Contributing](CONTRIBUTING.md) | How to propose code, tests, and regulatory corrections |
-| [Security](SECURITY.md) | Private vulnerability reporting |
-
-Initial detailed planning documents are in Russian; the public documentation will expand alongside implementation. [Russian project overview](docs/README.ru.md).
-
-## Repository layout
-
-```text
-src/ariadne_mark/   Watermarking, provenance, signing, video, registry,
-                   verification, disclosure, and pipeline modules
-apps/verifier/     Public verification UI and API
-compliance/        Requirements, sources, profiles, and coverage
-benchmarks/        Reproducible robustness and quality evaluation
-tests/             Tests corresponding to the requirements
-docs/              Integration, compliance, and operations guidance
-```
-
-The `provenance` and `verification` modules contain the first data contracts. Other module directories remain planning placeholders. These contracts describe images and video; they do not yet process either format.
-
-## Install and try the core
-
-Requires Python 3.11 or newer. There are no runtime dependencies, account requirements, API keys, model downloads, or network calls in the core. Installation needs Python build tooling; an already-built wheel can be installed offline.
+## Quick start with Docker
 
 ```sh
 git clone https://github.com/ariadne-mark/ariadne-mark.git
 cd ariadne-mark
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install .
-python examples/provenance_record.py
-python -m unittest discover -s tests -t . -v
-python3 scripts/check_requirements.py
+docker build -t ariadne-mark:local .
 ```
 
-The example creates an **unsigned record**, with a random asset ID and the supplied generator name/version. It does not change any media file. The unit tests validate data and result semantics; `check_requirements.py` checks traceability metadata and paths. Neither establishes legal compliance.
+The build downloads CPU dependencies and verifies pinned model files. Processing can then run without a network connection:
 
-See [provenance records](docs/implementation/provenance.md), [verification results](docs/implementation/verification-results.md), and the [implementation sequence](docs/implementation/sequence.md).
+```sh
+# Create a local DEVELOPMENT identity. Production uses your own credentials.
+docker run --rm --network none --user "$(id -u):$(id -g)" \
+  -v "$PWD:/data" ariadne-mark:local init-dev .ariadne/dev
 
-## Participate
+# Put input.png in this directory. Supply its actual generator and creation time.
+docker run --rm --network none --user "$(id -u):$(id -g)" \
+  -v "$PWD:/data" ariadne-mark:local mark input.png output.png \
+  --publisher "Example Studio" --system "Example Generator" --system-version "1.0" \
+  --created-at "2026-11-03T10:00:00Z" --identity .ariadne/dev --allow-dev \
+  --registry .ariadne/registry.sqlite3
 
-- Use [Discussions](https://github.com/ariadne-mark/ariadne-mark/discussions) for questions and integration needs.
-- Use [Issues](https://github.com/ariadne-mark/ariadne-mark/issues) for reproducible problems, feature requests, and sourced regulatory corrections.
-- Link implementation changes to a requirement ID and include evidence before marking it verified.
-- If this project is useful to you, give it a star.
+docker run --rm --network none --user "$(id -u):$(id -g)" \
+  -v "$PWD:/data" ariadne-mark:local verify output.png \
+  --registry .ariadne/registry.sqlite3
+```
+
+For video use `input.mp4 output.mp4` and set `--audio-kind original`, `synthetic`, or `unknown` when appropriate. Add `--visible` for a visible disclosure, or `--action altered` for AI-altered material. Existing output files are never overwritten.
+
+The output includes a `.receipt.json` file containing its SHA-256, processing time and verification results. A development signature is valid but **not publicly trusted**. `--trust-anchors .ariadne/dev/trust.pem` is only for explicitly trusting your own test root.
+
+## Python installation and API
+
+The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free record core is also tested on Python 3.11–3.14. Native video use also requires FFmpeg/ffprobe on PATH; the Docker image includes them.
+
+```sh
+python3.12 -m venv .venv
+. .venv/bin/activate
+python -m pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install '.[media]'
+ariadne models fetch
+```
+
+`models fetch` is an explicit setup step. Later requests fail clearly if models are missing or have incorrect checksums. They do not silently download models.
+
+```python
+from datetime import datetime, timezone
+from pathlib import Path
+from ariadne_mark.pipeline import SDK
+from ariadne_mark.provenance import Action, GenerativeSystem, MediaKind, ProvenanceRecord
+from ariadne_mark.registry import Registry
+from ariadne_mark.signing import SigningIdentity
+from ariadne_mark.watermark import Watermarker
+
+sdk = SDK(
+    Watermarker(threads=2),
+    SigningIdentity.from_directory(Path(".ariadne/dev"), allow_dev=True),
+    Registry(Path(".ariadne/registry.sqlite3")),
+)
+record = ProvenanceRecord.create(
+    publisher="Example Studio", system=GenerativeSystem("Example Generator", "1.0"),
+    media_kind=MediaKind.IMAGE, action=Action.CREATED,
+    created_at=datetime(2026, 11, 3, 10, 0, tzinfo=timezone.utc),
+)
+receipt = sdk.mark(Path("input.png"), Path("output.png"), record)
+result = sdk.verify(Path("output.png"))
+```
+
+Load the SDK once and reuse it across a queue of jobs. It serializes TrustMark inference; do not load a model per frame or request.
+
+## Self-hosted verifier
+
+```sh
+docker compose up --build
+```
+
+Open **http://localhost:8080**. It accepts uploads without registration, exposes a binary-upload API at `POST /verify?format=png` (also `jpg`, `jpeg`, `mp4`), and deletes temporary media after each request. The default Compose service binds only to localhost. See [deployment](docs/operations/verifier.md) to attach a recovery registry, trust roots or feedback link and publish it behind a reverse proxy.
+
+## What verification means
+
+- **Valid signed claim:** the C2PA signature and content binding validate. Issuer trust is a separate field.
+- **Recovered watermark:** a supported ID was extracted. The optional registry can identify its source record after metadata loss; this is not a cryptographic binding of a transformed copy.
+- **Not found:** a supported check ran and found no mark. This does not establish human origin.
+- **Not checked / invalid:** an operational failure or invalid evidence, never a successful negative detection.
+
+Watermarks can be removed or copied. The tool does not detect every AI image, verify factual truth, or call other providers' closed detectors. Video watermark verification samples frames; C2PA verifies the signed asset binding.
+
+## Tests and evidence
+
+```sh
+python -m unittest discover -s tests -t . -v
+python scripts/check_requirements.py
+# Full real-engine suite in the built image, with networking disabled:
+docker run --rm --network none --cpus 2 --memory 6g \
+  -e ARIADNE_MEDIA_TESTS=1 -w /app --entrypoint python \
+  ariadne-mark:local -m unittest discover -s tests -t . -v
+```
+
+The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.2.0a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+
+## Contribute
+
+Use [Discussions](https://github.com/ariadne-mark/ariadne-mark/discussions) for integration questions, [Issues](https://github.com/ariadne-mark/ariadne-mark/issues) for bugs and sourced regulatory corrections, and [private security reports](https://github.com/ariadne-mark/ariadne-mark/security/advisories/new) for vulnerabilities. See [CONTRIBUTING](CONTRIBUTING.md). If useful, give the project a star.
 
 ## License
 
-Original project code and documentation are licensed under [Apache-2.0](LICENSE). Third-party code, model weights, standards, and legislative documents retain their own applicable terms; the project license does not relicense them.
+Original code is [Apache-2.0](LICENSE). TrustMark code and models are MIT; C2PA is MIT/Apache-2.0. Other dependencies, including FFmpeg and codec libraries, retain their own licenses. [Third-party inventory](THIRD_PARTY.md).
