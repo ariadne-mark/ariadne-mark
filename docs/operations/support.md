@@ -1,4 +1,4 @@
-# Supported scope — 0.3.0a0
+# Supported scope — 0.4.0a0
 
 | Area | Supported | Boundary |
 | --- | --- | --- |
@@ -10,6 +10,7 @@
 | Provenance | Signed C2PA record: publisher, generator/version, time, UUID, created/altered; parent ingredient when applicable | Caller supplies accurate facts. External certificate issuance and public trust enrollment are operator responsibilities |
 | Recovery | Local SQLite token-to-record lookup | No central resolver, cross-provider routing or guaranteed permanent hosting |
 | Disclosure | Optional baked-in AI-generated/AI-altered label | Caller determines applicability and provides accessible in-app disclosure |
+| Profiles | Offline EU/California product requirement planning; versioned source catalog and export receipts | Partial legal mapping; no deployment verification or legal determination. Profiled synthetic-audio exports unsupported |
 | Runtime | Tested Linux x86-64, Python 3.12, 2 CPU / 8 GiB host | GPU unnecessary. Native/macOS/Windows media bundles have not been validated |
 
 The 61-bit watermark payload is not the 128-bit public asset UUID. The signed

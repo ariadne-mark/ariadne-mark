@@ -4,7 +4,7 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images, VideoSeal for video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer preview · 0.3.0a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer preview · 0.4.0a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 ## Quick start with Docker
 
@@ -80,6 +80,22 @@ result = sdk.verify(Path("output.png"))
 
 Load the SDK once and reuse it across a queue of jobs. It serializes model inference; do not load a model per frame or request.
 
+## Product requirements profiles
+
+```sh
+ariadne profile init > product.json
+# Fill the product facts and deployment fields, then:
+ariadne profile check product.json > requirements-report.json
+ariadne mark input.png marked.png --profile product.json \
+  --created-at "2026-11-03T10:00:00Z" --identity .ariadne/dev --allow-dev
+```
+
+The offline EU/California planner reports missing configuration, deployment
+actions and review items. No models are needed for `profile check`; exit 3 means
+open actions/review, exit 2 means invalid input. The media export records the
+assessment and configuration hash in its receipt. Declarations are never
+reported as verified legal compliance. [Profile guide](docs/compliance/applicability.md).
+
 ## Self-hosted verifier
 
 ```sh
@@ -108,7 +124,7 @@ docker run --rm --network none --cpus 2 --memory 6g \
   ariadne-mark:local -m unittest discover -s tests -t . -v
 ```
 
-The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.3.0a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.4.0a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
 
 ## Contribute
 

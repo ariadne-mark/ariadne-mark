@@ -21,7 +21,8 @@ package. Tests: [test_records.py](../../tests/provenance/test_records.py).
 This is an **unsigned publisher assertion**, not a C2PA manifest or proof that a
 media file contains a watermark. The record object alone has no file hash, signature or trust validation.
 `SDK.mark` now embeds it in signed media with a verified content binding;
-there is still no executable legal profile. The record's UUID is not an
+optional product profiles now check record/configuration consistency, while
+legal sufficiency remains under review. The record's UUID is not an
 assumption about a particular watermark engine's bit capacity; the adapter
 must define the wire payload and any recovery mapping separately.
 

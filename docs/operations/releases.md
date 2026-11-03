@@ -1,8 +1,9 @@
 # Release qualification
 
-0.3.0a0 is a developer preview with a wheel, source code, reproducible Docker
-recipe, real-engine tests and CPU smoke evidence. It has no automatic legal
-profile selection, public certificate enrollment or PyPI publishing credentials.
+0.4.0a0 is a developer preview with a wheel, source code, reproducible Docker
+recipe, real-engine tests and CPU evidence. It adds an offline EU/California
+requirements planner and optional export configuration. Automatic legal
+determinations, public certificate enrollment and PyPI publishing are not included.
 
 The required CI gate depends on both the Python 3.11–3.14 core matrix and the
 CPU Docker media suite. Media tests use actual TrustMark/VideoSeal/C2PA/FFmpeg with

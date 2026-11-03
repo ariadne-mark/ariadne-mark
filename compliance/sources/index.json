@@ -1,14 +1,14 @@
 {
   "updated_at": "2026-11-03",
-  "note": "Source registry only. URLs and exact operative provisions must be verified when a profile is released; this file is not a reviewed executable legal profile.",
+  "note": "Versioned executable planner shipped in 0.4.0a0. Technical mapping is not a final legal determination; see packaged profile catalog for retrieval details and open review items.",
   "sources": [
     {
       "id": "EU-50",
-      "title": "EU AI Act — Article 50",
+      "title": "EU AI Act \u2014 Article 50",
       "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50",
       "type": "binding-law",
-      "status": "source_identified",
-      "mapping_status": "requires_review_for_release"
+      "status": "reviewed_2026-11-03",
+      "mapping_status": "partial_executable_mapping"
     },
     {
       "id": "EU-CODE",
@@ -20,13 +20,21 @@
     },
     {
       "id": "CA-22757",
-      "title": "California AI Transparency Act — BPC §§22757 et seq.; check consolidated version and SB 1000 amendments",
+      "title": "California AI Transparency Act \u2014 BPC \u00a7\u00a722757 et seq.; check consolidated version and SB 1000 amendments",
       "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=8.&chapter=25.&part=&lawCode=BPC",
       "amendment_url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260SB1000",
-      "text_mirror": "https://calmatters.digitaldemocracy.org/bills/ca_202520260sb1000",
+      "text_mirror": "https://legiscan.com/CA/text/SB1000/2025",
       "type": "binding-law",
-      "status": "source_identified",
-      "mapping_status": "requires_review_for_release"
+      "status": "chaptered_text_reviewed_via_mirror",
+      "mapping_status": "official_consolidated_reconciliation_open"
+    },
+    {
+      "id": "EU-TIMING",
+      "title": "Commission Article 50 FAQ and transition guidance",
+      "url": "https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act",
+      "type": "official-guidance",
+      "status": "reviewed_2026-11-03",
+      "mapping_status": "partial_executable_mapping"
     }
   ]
 }

@@ -2,7 +2,7 @@
 
 **Open-source compliance toolkit for AI-generated images and video.**
 
-Статус: рабочая developer-preview сборка SDK 0.3.0a0. Реализованы CPU-маркировка изображений через TrustMark и MP4 через VideoSeal с коррекцией ошибок, C2PA-подписание, локальный реестр и self-hosted verifier. Границы поддержки и оставшиеся юридические/эксплуатационные задачи указаны в документации. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#quick-start-with-docker) и [очередность реализации](implementation/sequence.md).
+Статус: рабочая developer-preview сборка SDK 0.4.0a0. Реализованы CPU-маркировка изображений через TrustMark и MP4 через VideoSeal с коррекцией ошибок, C2PA-подписание, локальный реестр и self-hosted verifier. Границы поддержки и оставшиеся юридические/эксплуатационные задачи указаны в документации. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#quick-start-with-docker) и [очередность реализации](implementation/sequence.md).
 
 ## Требования → код → тесты
 
@@ -37,3 +37,5 @@ python3 scripts/check_requirements.py
 Проверяет пути, ссылки на источники и статусы. Не запускает watermarking и не подтверждает compliance.
 
 Организация: https://github.com/ariadne-mark. Основной репозиторий: https://github.com/ariadne-mark/ariadne-mark. Каркас опубликован; лицензия исходного кода и нашей документации — Apache-2.0. Сторонние материалы сохраняют собственные условия использования.
+
+В 0.4 добавлен [планировщик требований ЕС/Калифорнии](compliance/applicability.md): `ariadne profile check` показывает настройки, недостающие действия и вопросы для проверки. `mark --profile` применяет конфигурацию и сохраняет оценку в receipt. Это не автоматическое юридическое заключение.

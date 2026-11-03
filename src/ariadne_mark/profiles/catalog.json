@@ -1,0 +1,13 @@
+{
+  "version": "2026-11-03.1",
+  "reviewed_on": "2026-11-03",
+  "review_interval_days": 30,
+  "scope": "Image/video provider marking and EU deployer deepfake disclosure; requirements planning, not a legal determination",
+  "sources": {
+    "EU-50": {"url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50", "kind": "statute_official_explainer", "basis": "Consolidated AI Act 2026-07-27 as reproduced by European Commission"},
+    "EU-TIMING": {"url": "https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act", "kind": "official_guidance", "basis": "Article 50 starts 2026-08-02; provider marking transition for systems first placed before that date until 2026-12-02"},
+    "EU-CODE": {"url": "https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content", "kind": "voluntary_code", "basis": "Separate voluntary route; full code adherence is not evaluated by this profile"},
+    "CA-22757": {"url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260SB1000", "retrieved_via": "https://legiscan.com/CA/text/SB1000/2025", "kind": "chaptered_statutory_text_via_mirror", "basis": "SB 1000, Chapter 861, 2026-09-30; official endpoint returned HTTP 403; direct official reconciliation remains open"},
+    "SDK": {"url": "https://github.com/ariadne-mark/ariadne-mark", "kind": "implementation_choice", "basis": "C2PA + watermark is the SDK implementation, not a statutory mandate to use these particular algorithms"}
+  }
+}
