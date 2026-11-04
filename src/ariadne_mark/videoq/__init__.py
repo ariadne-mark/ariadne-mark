@@ -1,0 +1,267 @@
+"""Pinned TrustMark-Q CPU video profiles; persistent binary Node/ONNX worker."""
+from types import SimpleNamespace
+import atexit, contextlib, hashlib, json, os, queue, shutil, struct, subprocess, tempfile, threading
+from pathlib import Path
+from ariadne_mark.errors import AriadneError, MissingModel, UnsupportedMedia
+from ariadne_mark.watermark import valid_token
+ROOT = Path(__file__).parent
+ALGORITHM = 'adobe.trustmark.Q.variax-bch5'
+FORMAT = 'ariadne-vq1'
+MODELS = {'encoder_Q.onnx': '19b3d1b25836130ffd78775a8f61539f993375d1823ef0e59ba5b8dffb4f892d', 'decoder_Q.onnx': 'ee3268f057c9dabef680e169302f5973d0589feea86189ed229a896cc3aa88df'}
+ORIGINAL = '1de62f33353525b11cb38f89c56f8b07fd8ca241092d67ce5a74bdfb5c8db3d3'
+PATCHED = 'b9a1c7035bed4c35a5a0e61ff423b4fae34781634a565b56d14dfc92e2927b31'
+
+def data_dir():
+    return Path(os.environ.get('ARIADNE_VIDEO_DATA', str(Path.home() / '.cache/ariadne-mark/video-v1')))
+
+def digest(p):
+    h = hashlib.sha256()
+    with p.open('rb') as f:
+        for b in iter(lambda: f.read(1048576), b''):
+            h.update(b)
+    return h.hexdigest()
+
+def installation_matches(d):
+    receipt = d / 'runtime/ariadne-install.json'
+    adm = d / 'runtime/node_modules/adm-zip/package.json'
+    try:
+        return (json.loads(receipt.read_text()).get('lock_sha256') == digest(ROOT / 'package-lock.json')
+                and json.loads(adm.read_text()).get('version') == '0.6.1')
+    except (OSError, ValueError):
+        return False
+
+def check_models():
+    d = data_dir()
+    if not installation_matches(d):
+        raise MissingModel('Video dependency policy changed; run ariadne models fetch --engine video')
+    p = d / 'runtime/node_modules/@variax-ai/video-watermark/dist/index.cjs'
+    if not p.is_file() or digest(p) != PATCHED:
+        raise MissingModel('Video runtime missing/checksum mismatch; run ariadne models fetch --engine video')
+    for name, sha in MODELS.items():
+        p = d / 'models' / name
+        if not p.is_file() or digest(p) != sha:
+            raise MissingModel('Video ONNX model missing/checksum mismatch; run ariadne models fetch --engine video')
+    ort = d / 'runtime/node_modules/onnxruntime-node/package.json'
+    if not ort.is_file() or json.loads(ort.read_text()).get('version') != '1.23.2':
+        raise MissingModel('Pinned CPU ONNX runtime missing; run ariadne models fetch --engine video')
+    if not shutil.which('node'):
+        raise MissingModel('Node.js20+ is required for video; use the Docker image or install Node.js')
+    return {'runtime_js_sha256': PATCHED, **MODELS}
+
+def fetch_models():
+    # Frozen Docker runtime needs only Node; npm belongs to the build stage.
+    try:
+        return check_models()
+    except MissingModel:
+        pass
+    import urllib.request
+    d = data_dir()
+    runtime = d / 'runtime'
+    runtime.mkdir(parents=True, exist_ok=True)
+    if not shutil.which('npm') or not shutil.which('node'):
+        raise MissingModel('Install Node.js20+ and npm, or use the Docker image')
+    for name in ['package.json', 'package-lock.json']:
+        shutil.copyfile(ROOT / name, runtime / name)
+    p = runtime / 'node_modules/@variax-ai/video-watermark/dist/index.cjs'
+    ort = runtime / 'node_modules/onnxruntime-node/package.json'
+    if not installation_matches(d) or not p.exists() or digest(p) != PATCHED or (not ort.is_file()) or (json.loads(ort.read_text()).get('version') != '1.23.2'):
+        env = {**os.environ, 'ONNXRUNTIME_NODE_INSTALL_CUDA': 'skip'}
+        try:
+            subprocess.run(['npm', 'ci', '--omit=dev', '--no-audit', '--no-fund'], cwd=runtime, env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
+        except (subprocess.SubprocessError, OSError) as exc:
+            raise MissingModel('Could not provision CPU video runtime; check Node/npm and network access') from exc
+        if digest(p) != ORIGINAL:
+            raise MissingModel('Unexpected upstream video runtime; refusing to patch')
+        s = p.read_text()
+        old = '          signature,\n          region'
+        if s.count(old) != 1:
+            raise MissingModel('Unsupported upstream signature cache layout')
+        p.write_text(s.replace(old, '          signature: signature.slice(),\n          region'))
+        (runtime / 'ariadne-install.json').write_text(json.dumps({'lock_sha256': digest(ROOT / 'package-lock.json'), 'runtime_js_sha256': PATCHED}))
+    model = d / 'models'
+    model.mkdir(exist_ok=True)
+    for name, sha in MODELS.items():
+        path = model / name
+        if path.exists() and digest(path) == sha:
+            continue
+        fd, tmp = tempfile.mkstemp(dir=model, prefix='.download-')
+        try:
+            total = 0
+            with os.fdopen(fd, 'wb') as f, urllib.request.urlopen('https://cai-watermark.adobe.net/watermarking/trustmark-models/' + name, timeout=90) as response:
+                for b in iter(lambda: response.read(1048576), b''):
+                    total += len(b)
+                    if total > 512 * 1024 * 1024:
+                        raise MissingModel('Model size exceeded')
+                    f.write(b)
+            if digest(Path(tmp)) != sha:
+                raise MissingModel('Video model checksum mismatch')
+            os.chmod(tmp, 0o644)
+            os.replace(tmp, path)
+        finally:
+            Path(tmp).unlink(missing_ok=True)
+    return check_models()
+
+class VideoWatermarker:
+    algorithm = ALGORITHM
+    payload_format = FORMAT
+    batch_size = 1
+
+    def __init__(self, *, profile='fast', threads=2, timeout=120):
+        if profile not in {'fast', 'resilient'}:
+            raise ValueError('video profile must be fast or resilient')
+        if not 1 <= threads <= 64:
+            raise ValueError('threads must be1–64')
+        self.profile = profile
+        self.profile_id = 'fast-cpu-v1' if profile == 'fast' else 'resilient-cpu-candidate-v1'
+        self.threads = threads
+        self.timeout = timeout
+        self._lock = threading.RLock()
+        self._process = None
+        self._owner = None
+        self._token = None
+        self.stats = {}
+        self.last_error = None
+        self._cleanup_registered = False
+
+    def _load(self):
+        if self._process and self._owner == os.getpid() and (self._process.poll() is None):
+            return
+        if self._process and self._owner != os.getpid():
+            self._process = None
+        check_models()
+        d = data_dir().resolve()
+        self._errors = tempfile.TemporaryFile()
+        self._responses = queue.Queue()
+        self._process = subprocess.Popen(['node', str(ROOT / 'worker.mjs'), str(d / 'runtime'), str(d / 'models'), str(self.threads)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self._errors)
+        self._owner = os.getpid()
+        if not self._cleanup_registered:
+            atexit.register(self.close)
+            self._cleanup_registered = True
+        process = self._process
+        responses = self._responses
+
+        def read_exact(n):
+            chunks = []
+            while n:
+                b = process.stdout.read(n)
+                if not b:
+                    raise EOFError('video worker exited')
+                chunks.append(b)
+                n -= len(b)
+            return b''.join(chunks)
+
+        def reader():
+            try:
+                while True:
+                    n = struct.unpack('>I', read_exact(4))[0]
+                    if n > 65536:
+                        raise ValueError('oversized worker header')
+                    h = json.loads(read_exact(n))
+                    size = h.get('n', 0)
+                    if not isinstance(size, int) or not 0 <= size <= 67108864:
+                        raise ValueError('oversized worker response')
+                    responses.put((h, read_exact(size)))
+            except Exception as e:
+                responses.put(e)
+        threading.Thread(target=reader, daemon=True).start()
+        self._receive()
+
+    def _receive(self):
+        try:
+            r = self._responses.get(timeout=self.timeout)
+        except queue.Empty:
+            self.close()
+            raise AriadneError('Video worker timed out')
+        if isinstance(r, Exception):
+            if hasattr(self, '_errors') and not self._errors.closed:
+                self._errors.seek(0)
+                self.last_error = self._errors.read()[-4096:].decode(errors='replace')
+            self.close()
+            raise AriadneError('Video worker failed: ' + str(r))
+        if r[0].get('error'):
+            raise AriadneError(r[0]['error'])
+        return r
+
+    def _request(self, h, body=b''):
+        self._load()
+        h = {**h, 'n': len(body)}
+        head = json.dumps(h).encode()
+        p = self._process
+        try:
+            p.stdin.write(struct.pack('>I', len(head)) + head)
+            p.stdin.write(body)
+            p.stdin.flush()
+        except (BrokenPipeError, OSError):
+            self.close()
+            raise AriadneError('Video worker pipe failed')
+        return self._receive()
+
+    @contextlib.contextmanager
+    def encoding_session(self, token):
+        if not valid_token(token):
+            raise ValueError('Invalid token')
+        with self._lock:
+            self._request({'op': 'begin', 'profile': self.profile, 'token': token})
+            process = self._process
+            self._token = token
+            result = SimpleNamespace(stats={})
+            try:
+                yield result
+                if process.poll() is not None:
+                    raise AriadneError('Video worker exited before export completed')
+                result.stats = self._request({'op': 'end'})[0]
+                if self._process is not process:
+                    raise AriadneError('Video worker restarted before export completed')
+                self.stats = result.stats
+            except BaseException:
+                self.close()
+                raise
+            finally:
+                self._token = None
+
+    def encode_frames(self, images, token):
+        with self._lock:
+            from PIL import Image
+            if self._token != token:
+                raise AriadneError('Video encoding requires a per-export session')
+            result = []
+            for image in images:
+                image = image.convert('RGBA')
+                h, body = self._request({'op': 'encode', 'width': image.width, 'height': image.height}, image.tobytes())
+                if len(body) != image.width * image.height * 4:
+                    raise AriadneError('Incomplete encoded frame')
+                result.append(Image.frombytes('RGBA', image.size, body).convert('RGB'))
+            return result
+
+    def decode_frames(self, frames):
+        with self._lock:
+            self._load()
+            rows = []
+            logits = []
+            for image, timestamp in frames:
+                image = image.convert('RGBA')
+                h, _ = self._request({'op': 'decode', 'width': image.width, 'height': image.height}, image.tobytes())
+                rows.append({'time': timestamp, 'token': h['token']})
+                logits.append(h['logits'])
+            h, _ = self._request({'op': 'aggregate', 'logits': logits}) if logits else ({'token': None}, b'')
+            return (rows, {'token': h['token']} if h['token'] else None)
+
+    def close(self):
+        if self._cleanup_registered:
+            atexit.unregister(self.close)
+            self._cleanup_registered = False
+        p = self._process
+        if p and self._owner == os.getpid():
+            if p.poll() is None:
+                p.terminate()
+            try:
+                p.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                p.kill()
+                p.wait()
+            for f in [p.stdin, p.stdout]:
+                if f:
+                    f.close()
+            self._errors.close()
+        self._process = None
+        self._token = None

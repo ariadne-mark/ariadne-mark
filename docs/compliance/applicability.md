@@ -3,7 +3,7 @@
 Ariadne Mark 0.4 adds an **offline requirements planner**, with an optional
 connection to media export. It distinguishes product declarations, implemented
 technical measures, missing deployment steps and matters requiring review.
-The profile snapshot is `2026-11-03.1`. It covers EU visual-content marking /
+The profile snapshot is `2026-11-04.1`. It covers EU visual-content marking /
 deepfake disclosure and California covered-provider duties, not every AI law.
 
 ## Start without models or a GPU
@@ -42,8 +42,8 @@ privacy, compatibility and accessibility review.
 
 CLI exit **2** means invalid input/unsupported configuration; **3** means open
 actions or review; **0** means no open items in the evaluated scope. None means
-legal certification. In particular, the California source-reconciliation task
-and other-role review remain open even after every deployment field is filled.
+legal certification. Applicability, durability, interoperability and other-role review remain open
+even after every deployment field is filled.
 
 `--as-of YYYY-MM-DD` evaluates a scenario against this snapshot; it does not
 retrieve historical legislation or future amendments. Dates before the mapped

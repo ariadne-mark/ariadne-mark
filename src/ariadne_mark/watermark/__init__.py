@@ -124,3 +124,26 @@ class Watermarker:
             return None
         token = f"{int(bits, 2):016x}"
         return token if valid_token(token) else None
+
+
+class LazyWatermarker:
+    """Load legacy image/PyTorch models only when an image decoder is needed."""
+    algorithm = Watermarker.algorithm
+    payload_format = Watermarker.payload_format
+
+    def __init__(self, *, threads=2):
+        self.threads = threads
+        self._marker = None
+        self._lock = threading.RLock()
+
+    def _get(self):
+        with self._lock:
+            if self._marker is None:
+                self._marker = Watermarker(threads=self.threads)
+            return self._marker
+
+    def encode(self, image, token, *, strength=1):
+        return self._get().encode(image, token, strength=strength)
+
+    def decode(self, image):
+        return self._get().decode(image)

@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-03",
+  "updated_at": "2026-11-04",
   "note": "Versioned executable planner shipped in 0.4.0a0. Technical mapping is not a final legal determination; see packaged profile catalog for retrieval details and open review items.",
   "sources": [
     {
@@ -7,7 +7,7 @@
       "title": "EU AI Act \u2014 Article 50",
       "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50",
       "type": "binding-law",
-      "status": "reviewed_2026-11-03",
+      "status": "official_commission_reproduction_reviewed_2026-11-04",
       "mapping_status": "partial_executable_mapping"
     },
     {
@@ -15,18 +15,17 @@
       "title": "Code of Practice on Transparency of AI-generated Content",
       "url": "https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content",
       "type": "voluntary-code",
-      "status": "source_identified",
-      "mapping_status": "requires_review_for_release"
+      "status": "official_overview_reviewed_2026-11-04",
+      "mapping_status": "full_code_adherence_not_evaluated"
     },
     {
       "id": "CA-22757",
       "title": "California AI Transparency Act \u2014 BPC \u00a7\u00a722757 et seq.; check consolidated version and SB 1000 amendments",
       "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=8.&chapter=25.&part=&lawCode=BPC",
-      "amendment_url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260SB1000",
-      "text_mirror": "https://legiscan.com/CA/text/SB1000/2025",
+      "amendment_url": "https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB1000",
       "type": "binding-law",
-      "status": "chaptered_text_reviewed_via_mirror",
-      "mapping_status": "official_consolidated_reconciliation_open"
+      "status": "official_consolidated_and_chaptered_text_reviewed_2026-11-04",
+      "mapping_status": "partial_executable_provider_mapping"
     },
     {
       "id": "EU-TIMING",

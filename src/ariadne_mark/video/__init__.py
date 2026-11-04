@@ -1,5 +1,6 @@
 """CPU H.264 export with timestamp-preserving frame processing and audio remux."""
 
+from contextlib import nullcontext
 from fractions import Fraction
 import json
 from pathlib import Path
@@ -10,8 +11,8 @@ from ariadne_mark.errors import AriadneError, UnsupportedMedia
 
 def probe(path: Path) -> dict:
     try:
-        process = subprocess.run(["ffprobe", "-v", "error", "-protocol_whitelist", "file,pipe",
-                                  "-show_streams", "-show_format", "-of", "json", str(path)],
+        process = subprocess.run(["ffprobe", "-v", "error", "-protocol_whitelist", "file",
+                                  "-f", "mov", "-codec_whitelist", "h264,hevc,aac", "-show_streams", "-show_format", "-of", "json", str(path)],
                                  capture_output=True, text=True, timeout=30, check=True)
         data = json.loads(process.stdout)
     except (subprocess.SubprocessError, OSError, ValueError) as exc:
@@ -21,6 +22,8 @@ def probe(path: Path) -> dict:
     if len(videos) != 1 or len(audios) > 1 or len(data.get("streams", [])) != len(videos) + len(audios):
         raise UnsupportedMedia("Support is limited to one video stream and at most one audio stream")
     video = videos[0]
+    if video.get("codec_name") not in {"h264", "hevc"}:
+        raise UnsupportedMedia("MP4 input video codec must be H.264 or HEVC")
     duration = float(data.get("format", {}).get("duration", 0))
     width, height = video.get("width", 0), video.get("height", 0)
     if not 0 < duration <= 300 or min(width, height) < 256 or max(width, height) > 1920:
@@ -56,7 +59,7 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
     frames = 0
     last_pts = None
     decoded_end = Fraction(0)
-    with av.open(str(source), options={"protocol_whitelist": "file,pipe"}) as incoming, av.open(str(silent), "w") as outgoing:
+    with (marker.encoding_session(token) if hasattr(marker, "encoding_session") else nullcontext()) as watermark_session, av.open(str(source), format="mp4", options={"protocol_whitelist": "file", "codec_whitelist": "h264,hevc,aac", "enable_drefs": "0"}) as incoming, av.open(str(silent), "w") as outgoing:
         stream = incoming.streams.video[0]
         rate = stream.average_rate or Fraction(24, 1)
         encoded = outgoing.add_stream("libx264", rate=rate)
@@ -113,9 +116,9 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
     if not frames:
         raise UnsupportedMedia("Video contains no decodable frames")
     # Preserve packet timing and AAC bytes; avoid shortening either stream silently.
-    command = ["ffmpeg", "-v", "error", "-nostdin", "-y", "-copyts", "-protocol_whitelist", "file,pipe", "-i", str(silent)]
+    command = ["ffmpeg", "-v", "error", "-nostdin", "-y", "-copyts", "-protocol_whitelist", "file", "-f", "mov", "-i", str(silent)]
     if info["audio"]:
-        command += ["-protocol_whitelist", "file,pipe", "-i", str(source), "-map", "0:v:0", "-map", "1:a:0"]
+        command += ["-protocol_whitelist", "file", "-f", "mov", "-i", str(source), "-map", "0:v:0", "-map", "1:a:0"]
     else:
         command += ["-map", "0:v:0"]
     command += ["-c", "copy", "-map_metadata", "-1", "-metadata:s:v:0", "rotate=0", "-movflags", "+faststart", str(destination)]
@@ -134,14 +137,16 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
     return {"frames_encoded": frames, "duration": final["duration"], "audio": "preserved_aac" if info["audio"] else "none",
             "rotation_normalized": info["rotation"], "width": final["width"], "height": final["height"],
             "watermark_algorithm": getattr(marker, "algorithm", "custom"),
-            "batch_size": getattr(marker, "batch_size", 1), "h264_crf": 18}
+            "batch_size": getattr(marker, "batch_size", 1), "h264_crf": 18,
+            "profile": getattr(marker, "profile", "legacy"),
+            "watermark_stats": getattr(watermark_session, "stats", {})}
 
 
 def sample_frames(path: Path, *, samples: int = 5):
     """Decode a bounded sample; never claim the sample verifies every frame."""
     import av
     info = probe(path)
-    with av.open(str(path), options={"protocol_whitelist": "file,pipe"}) as container:
+    with av.open(str(path), format="mp4", options={"protocol_whitelist": "file", "codec_whitelist": "h264,hevc,aac", "enable_drefs": "0"}) as container:
         stream = container.streams.video[0]
         seen = set()
         start = float((stream.start_time or 0) * stream.time_base)

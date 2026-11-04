@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "id": "resilient-cpu-candidate-v1",
+  "status": "provisional_selection_pending_heldout_validation",
+  "created_at": "2026-11-04",
+  "engine": {
+    "algorithm": "adobe.trustmark.Q",
+    "implementation": "@variax-ai/video-watermark",
+    "version": "0.3.2",
+    "runtime": "onnxruntime-node",
+    "runtime_version": "1.23.2",
+    "execution_provider": "cpu",
+    "threads": {
+      "intra_op": 2,
+      "inter_op": 1
+    },
+    "signature_alias_fix": {
+      "required": true,
+      "patched_js_sha256": "b9a1c7035bed4c35a5a0e61ff423b4fae34781634a565b56d14dfc92e2927b31"
+    }
+  },
+  "models": {
+    "encoder_Q.onnx": "19b3d1b25836130ffd78775a8f61539f993375d1823ef0e59ba5b8dffb4f892d",
+    "decoder_Q.onnx": "ee3268f057c9dabef680e169302f5973d0589feea86189ed229a896cc3aa88df"
+  },
+  "embedding": {
+    "variant": "Q",
+    "strategy": "perFrame",
+    "scene_change_threshold": 0.1,
+    "max_cache_frames": 24,
+    "strength": 1,
+    "schema": "BCH_5",
+    "content_id_bits": 64,
+    "prefix_hex": "014d",
+    "apply_to": "every_frame",
+    "recompute_every_frames": 1,
+    "inactive_in_perframe_mode": [
+      "scene_change_threshold",
+      "max_cache_frames"
+    ]
+  },
+  "detection": {
+    "initial_samples": 5,
+    "fallback_samples": 20,
+    "sampling": "uniform_ceil_duration_minus_0.1s",
+    "aggregation": "upstream_soft_logits_sum",
+    "accept": "one_unique_valid_id_from_individual_or_aggregate",
+    "reject_conflicting_ids": true,
+    "fallback_trigger": "no_id_and_no_conflict",
+    "expected_id_available_to_detector": false
+  },
+  "media_reference": {
+    "input": "SDR 8-bit CFR, square pixels, silent",
+    "output_codec": "libx264",
+    "container": "mp4",
+    "preset": "fast",
+    "crf": 18,
+    "b_frames": 0,
+    "pix_fmt": "yuv420p",
+    "codec_threads": 2,
+    "faststart": true
+  },
+  "scope": {
+    "cpu_only": true,
+    "runtime_backend_integrated_in_sdk": false,
+    "includes_signing_registry_http": false,
+    "production_or_legal_certification": false,
+    "audio_vfr_hdr_not_qualified": true,
+    "tested_dimensions": [
+      [
+        1280,
+        720
+      ]
+    ],
+    "tested_fps": [
+      "24/1"
+    ],
+    "sources": 6,
+    "payloads_per_source": 2,
+    "independent_release_validation": false
+  },
+  "soft_warning": {
+    "recovery_rate": 0.9,
+    "action": "annotate_context_only",
+    "blocks_release_or_excludes_formats": false,
+    "legal_threshold": false
+  },
+  "baseline_evidence": {
+    "folder": "research/profile-selection-2026-11-04",
+    "profile": "q-perframe",
+    "selection_panel_sha256": "1db45964b7f343bdbd66764e3998d1a9636fce4c88b80ec63209dcd7044df2c0",
+    "summary": {
+      "complete": true,
+      "original_exact": 12,
+      "original_total": 12,
+      "transformed_exact": 36,
+      "transformed_total": 36,
+      "wrong_ids": 0,
+      "negative_false": 0,
+      "negative_total": 6,
+      "errors": [],
+      "median_export_s_3s": 23.861179429000913,
+      "min_export_s": 22.917324645997724,
+      "max_export_s": 24.64655916400079,
+      "median_cpu_s": 45.586778,
+      "peak_anon_mib": 719.90234375,
+      "median_inference_calls": 72.0,
+      "median_psnr_db": 38.529538,
+      "median_verify_s": 1.5823331995015906,
+      "soft_warning_below_90pct": false,
+      "soft_warning_is_blocking": false
+    },
+    "paired_vs_fast": {
+      "wins": [
+        [
+          "core-8739-id0",
+          "crf35"
+        ],
+        [
+          "core-8739-id1",
+          "combined"
+        ],
+        [
+          "core-51502-id0",
+          "combined"
+        ],
+        [
+          "core-51502-id1",
+          "combined"
+        ]
+      ],
+      "losses": [],
+      "both_miss": [],
+      "speed_ratio_to_fast": 3.841300424114654
+    }
+  },
+  "known_limits": [
+    "Known-case selection panel, not independent qualification",
+    "No guarantee against arbitrary/adversarial transformations",
+    "Model-call frequency alone is not a legal compliance criterion",
+    "No production SDK media/audio/provenance integration in this experiment",
+    "Decoder false-positive qualification remains open; six negative clips only"
+  ],
+  "selection_profile": "q-perframe"
+}

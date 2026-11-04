@@ -15,6 +15,7 @@ class CheckStatus(str, Enum):
     NOT_CHECKED = "not_checked"
     NOT_FOUND = "not_found"
     INVALID = "invalid"
+    EXPIRED_CREDENTIAL = "expired_credential"
     RECOVERED_CLAIM = "recovered_claim"
     VERIFIED_CLAIM = "verified_claim"
 
@@ -50,13 +51,16 @@ class VerificationResult:
             _text(self.reason, "reason")
         if self.record is not None and not isinstance(self.record, ProvenanceRecord):
             raise ValueError("record must be a ProvenanceRecord")
-        if self.status in {CheckStatus.NOT_CHECKED, CheckStatus.INVALID} and not self.reason:
+        if self.status in {CheckStatus.NOT_CHECKED, CheckStatus.INVALID, CheckStatus.EXPIRED_CREDENTIAL} and not self.reason:
             raise ValueError("not_checked and invalid require a reason")
         if self.status in {CheckStatus.NOT_CHECKED, CheckStatus.NOT_FOUND}:
             if self.record is not None or self.signature is not SignatureStatus.NOT_CHECKED:
                 raise ValueError("unchecked/absent claims cannot contain a record or signature result")
             if self.issuer_trust is not IssuerTrust.NOT_CHECKED:
                 raise ValueError("unchecked/absent claims cannot have an issuer trust result")
+        if self.status is CheckStatus.EXPIRED_CREDENTIAL:
+            if self.signature is not SignatureStatus.NOT_CHECKED or self.issuer_trust is not IssuerTrust.NOT_CHECKED:
+                raise ValueError("Expired credentials without trusted time are not valid signed claims")
         if self.status is CheckStatus.RECOVERED_CLAIM:
             if self.record is None or self.signature not in {SignatureStatus.ABSENT, SignatureStatus.NOT_CHECKED}:
                 raise ValueError("recovered_claim requires a record with an absent/unchecked signature")

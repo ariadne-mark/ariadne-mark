@@ -21,7 +21,7 @@ def main(argv=None) -> int:
     profile_check.add_argument("--as-of", help="Evaluate a YYYY-MM-DD scenario (does not update source knowledge)")
     models = commands.add_parser("models", help="Provision or check pinned watermark models")
     models.add_argument("action", choices=["fetch", "check"])
-    models.add_argument("--engine", choices=["all", "trustmark", "videoseal"], default="all")
+    models.add_argument("--engine", choices=["all", "trustmark", "videoseal", "video"], default="all")
     dev = commands.add_parser("init-dev", help="Generate a DEVELOPMENT signing identity")
     dev.add_argument("directory", type=Path)
     mark = commands.add_parser("mark", help="Watermark, sign and verify a JPEG, PNG or MP4")
@@ -37,13 +37,16 @@ def main(argv=None) -> int:
     mark.add_argument("--allow-dev", action="store_true")
     mark.add_argument("--timestamp-url", help="Optional TSA URL; explicitly enables timestamp network request")
     mark.add_argument("--visible", action="store_true", help="Add an AI-generated/AI-altered visible label")
+    mark.add_argument("--video-profile", choices=["fast", "resilient"], default="fast", help="CPU video watermark profile")
     mark.add_argument("--audio-kind", choices=["none", "original", "synthetic", "unknown"], default="unknown")
     verify = commands.add_parser("verify", help="Verify supported claims without uploading media")
     verify.add_argument("source", type=Path)
+    verify.add_argument("--strict", action="store_true", help="Require a valid credential from a trusted issuer")
     serve = commands.add_parser("serve", help="Run the self-hosted public verifier UI/API")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8080)
-    serve.add_argument("--max-upload-mb", type=int, default=32)
+    serve.add_argument("--max-upload-mb", type=int, default=512)
+    serve.add_argument("--production", action="store_true", help="Require configured issuer roots before serving")
     serve.add_argument("--feedback-url", help="Optional public feedback page URL")
     for sub in (mark, verify, serve):
         sub.add_argument("--registry", type=Path, help="Optional local recovery SQLite database")
@@ -62,9 +65,9 @@ def main(argv=None) -> int:
                 print(json.dumps(result, indent=2))
                 return 2 if result["configuration_status"] == "invalid" else 3 if result["assessment_status"] != "configuration_reviewed" else 0
         elif args.command == "models":
-            from ariadne_mark import watermark, videoseal
+            from ariadne_mark import watermark, videoseal, videoq
             result = {}
-            for name, engine in (("trustmark", watermark), ("videoseal", videoseal)):
+            for name, engine in (("trustmark", watermark), ("videoseal", videoseal), ("video", videoq)):
                 if args.engine in {"all", name}:
                     result[name] = engine.fetch_models() if args.action == "fetch" else engine.check_models()
         elif args.command == "init-dev":
@@ -87,22 +90,24 @@ def main(argv=None) -> int:
                     args.publisher, args.system, args.system_version = expected
                 if not args.publisher or not args.system or not args.system_version:
                     raise ValueError("Supply --publisher, --system and --system-version, or a complete --profile")
-            from ariadne_mark.watermark import Watermarker
+            from ariadne_mark.watermark import LazyWatermarker
             from ariadne_mark.registry import Registry
             from ariadne_mark.pipeline import SDK
-            marker = Watermarker(threads=args.threads)
-            registry = Registry(args.registry) if args.registry else None
-            from ariadne_mark.videoseal import VideoSealWatermarker
+            marker = LazyWatermarker(threads=args.threads)
+            registry = Registry(args.registry, read_only=args.command != "mark") if args.registry else None
+            from ariadne_mark.videoq import VideoWatermarker
             sdk = SDK(marker, registry=registry, trust_anchors=args.trust_anchors,
-                      video_marker=VideoSealWatermarker(threads=args.threads))
+                      video_marker=VideoWatermarker(threads=args.threads, profile=getattr(args, "video_profile", "fast")))
             if args.command == "serve":
                 from ariadne_mark.server import serve
-                serve(sdk, host=args.host, port=args.port, max_upload_mb=args.max_upload_mb, feedback_url=args.feedback_url)
+                serve(sdk, host=args.host, port=args.port, max_upload_mb=args.max_upload_mb, feedback_url=args.feedback_url, production=args.production)
                 return 0
             if args.command == "verify":
                 result = sdk.verify(args.source)
                 print(json.dumps(result, indent=2))
-                if result["c2pa"]["status"] in {"invalid", "not_checked"} or result["watermark"]["status"] in {"invalid", "not_checked"} or result["token_mismatch"]:
+                if args.strict and (result["c2pa"]["status"] != "verified_claim" or result["c2pa"]["issuer_trust"] != "trusted"):
+                    return 2
+                if result["c2pa"]["status"] in {"invalid", "not_checked", "expired_credential"} or result["watermark"]["status"] in {"invalid", "not_checked"} or result["token_mismatch"]:
                     return 2
                 return 0
             from ariadne_mark.signing import SigningIdentity

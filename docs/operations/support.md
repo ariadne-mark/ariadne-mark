@@ -1,12 +1,12 @@
-# Supported scope — 0.4.0a0
+# Supported scope — 0.5.2a0
 
 | Area | Supported | Boundary |
 | --- | --- | --- |
 | Images | Single-frame 8-bit RGB/RGBA PNG; JPEG; normalized EXIF orientation | Each dimension 256–4096 pixels. No animated PNG, HDR, CMYK, WebP export or arbitrary color-profile conversion |
-| Video | SDR MP4, H.264 output; one video stream; optional AAC audio | Even dimensions, each 256–1920 pixels; max 5 min / 18000 frames. Other audio codecs, subtitles, multiple tracks, interlacing, anamorphic pixels and HDR are rejected |
-| Timing | Frame presentation timestamps retained, including tested VFR; display rotation normalized | Verification samples up to 5 positions, not every frame |
+| Video | SDR MP4 with H.264/HEVC input, H.264 output; one video stream; optional AAC audio | Even dimensions, each 256–1920 pixels; max 5 min / 18000 frames. Other audio codecs, subtitles, multiple tracks, interlacing, anamorphic pixels and HDR are rejected |
+| Timing | Frame presentation timestamps retained, including tested VFR; display rotation normalized | Verification starts with5 positions and expands to20 for absent new-profile IDs; does not check every frame |
 | Audio | AAC packets retained; original/synthetic/unknown provenance recorded | No standalone audio processing or independent audio watermark. Extraction/transcoding of synthetic audio is not covered |
-| Watermark | Images: TrustMark Q/BCH-5. Video: VideoSeal 1.0 with BCH-20/CRC; five-frame aggregate. Both carry 48 random ID bits | Recoverable ID, not authentication. Cropping/removal/copying may defeat it |
+| Watermark | Images: TrustMark Q/BCH-5. Video: TrustMark Q Fast/Resilient,5→20-frame aggregate; legacy VideoSeal BCH-20/CRC retained. Both carry 48 random ID bits | Recoverable ID, not authentication. Cropping/removal/copying may defeat it |
 | Provenance | Signed C2PA record: publisher, generator/version, time, UUID, created/altered; parent ingredient when applicable | Caller supplies accurate facts. External certificate issuance and public trust enrollment are operator responsibilities |
 | Recovery | Local SQLite token-to-record lookup | No central resolver, cross-provider routing or guaranteed permanent hosting |
 | Disclosure | Optional baked-in AI-generated/AI-altered label | Caller determines applicability and provides accessible in-app disclosure |
@@ -28,4 +28,32 @@ fetching are disabled. Revocation freshness is therefore not checked offline.
 Only a caller-configured timestamp authority enables a signing-time network
 request. Output receipts document technical actions, not a legal verdict.
 
-Default VideoSeal can fail read-back on saturated synthetic color bars after H.264 compression. Such exports are rejected; no file or receipt is published. This content-dependent boundary is covered by a regression test. Do not infer universal durability from the supported dimensions.
+The retained legacy VideoSeal encoder can fail read-back on saturated synthetic color bars after H.264 compression. Such exports are rejected; no file or receipt is published. This content-dependent boundary is covered by a regression test. Do not infer universal durability from the supported dimensions.
+
+## 0.5.1 additional boundaries
+
+Signed outputs must be at most 512 MiB, matching the default upload verifier.
+ICC-tagged images require explicit color conversion before SDK processing;
+the SDK does not silently drop a tagged color space. The built-in visible
+label remains an English reference component, not a complete localization or
+accessibility solution. Credentialed inputs must use `action=altered` to retain
+their parent history; re-watermarking is not represented as creation from nothing.
+
+The media file is the publication commit marker. Its registry row (if used)
+and a complete, fsynced receipt are written before that file appears. A process
+crash earlier may leave an unpublished registry row/receipt and private temp
+directory; these do not establish a completed export. The single-worker product
+example reconciles its own unpublished job state on retry. Generic applications
+must manage orphan cleanup and retry/idempotency outside `SDK.mark`. No atomic
+transaction spanning SQLite and two arbitrary filesystem paths or universal
+power-loss guarantee is claimed.
+
+## 0.5.2 runtime boundaries
+
+MP4 decoders are restricted to H.264/HEVC and AAC, with file-only protocol
+access. This narrows the accepted format surface; it does not establish safety
+of all malformed media. Run untrusted uploads in the bounded isolated worker
+described in the deployment guide. Standalone verification closes temporary
+video workers; callers retain ownership of reusable workers they provide.
+Production verifier startup validates that a configured trust file contains
+certificates and no private key.

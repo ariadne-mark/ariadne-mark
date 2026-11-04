@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-04",
+  "sdk_baseline_commit": "ba8c19910ac1b10efdcffba375b9942abb0562be",
+  "runtime_changed": false,
+  "files": {
+    "fast-cpu-v1.json": "a718d28177445bf55a2597e81a2053583b3de13c0e84bf4e85ec729b16574021",
+    "resilient-cpu-candidate-v1.json": "d8310302a1febad68436deba318aaa8b7c4169f3128533d5ec5cb1ba9ca2fe8a"
+  },
+  "evidence": "research/profile-selection-2026-11-04",
+  "heldout_validation_pending": true
+}

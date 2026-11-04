@@ -182,7 +182,7 @@ def evaluate(config, *, as_of=None):
                     finding('eu_exception', 'review', f'Claimed exception ({exception}) needs a factual/legal assessment; marking is not automatically disabled.', 'EU-50')
                 applicability['EU']['provider_marking'] = {'state': status, 'effective_on': deadline.isoformat() if launched or not (start <= today < date(2026, 12, 2)) else None}
                 if today >= start:
-                    requirement('eu_machine_mark', 'implemented_measure', 'SDK applies an embedded ID plus signed C2PA; statutory marking does not prescribe these specific algorithms.', 'EU-50', '50(2)', 'sdk')
+                    requirement('eu_machine_mark', 'partial_measure', 'SDK writes a recoverable ID and signed C2PA; persistence, interoperability and actual product coverage require assessment.', 'EU-50', '50(2)', 'sdk')
                     declaration('eu_robustness', dep['durability_evidence'], 'Evaluate reliability and robustness on the actual product pipeline; a report reference is not a passing assessment.', 'EU-50', '50(2)')
                     declaration('eu_interoperability', dep['interoperability_evidence'], 'Test interoperability with intended consumers and document feasibility/state-of-art considerations.', 'EU-50', '50(2)')
                     requirement('eu_code_route', 'review_required', 'Choose and assess the voluntary Code of Practice route or substantiate alternative measures. Full code adherence is not evaluated here.', 'EU-CODE', 'provider measures')
@@ -202,7 +202,6 @@ def evaluate(config, *, as_of=None):
             requirement('eu_other_duties', 'review_required', 'Check other applicable duties, including direct AI interaction under 50(1); this profile covers visual-content marking/disclosure only.', 'EU-50', '50(1), 50(6)')
 
     if 'US-CA' in config['jurisdictions']:
-        finding('ca_primary_reconciliation', 'review', 'Chaptered SB 1000 text was retrieved through a mirror; official LegInfo returned 403. Reconcile the primary consolidated code before a production legal determination.', 'CA-22757')
         ca_state = 'applies_to_declared_scenario'
         if today < date(2026, 9, 30):
             ca_state = 'historical_version_not_supported'
@@ -220,7 +219,7 @@ def evaluate(config, *, as_of=None):
                 finding('ca_assistive_expired', 'review', 'The statutory temporary assistive-technology exclusion ended on 2029-01-01.', 'CA-22757')
         applicability['US-CA'] = {'provider_duties': ca_state, 'effective_on': '2026-09-30', 'monthly_user_threshold': None}
         if ca_state != 'provider_duties_not_triggered_by_declaration' and today >= date(2026, 9, 30):
-            requirement('ca_latent_metadata', 'implemented_measure', 'C2PA records provider, generator/version, time, asset ID and created/altered action; the embedded ID supports recovery. Durability of the full linkage needs assessment.', 'CA-22757', '22757.3(a)(1)', 'sdk')
+            requirement('ca_latent_metadata', 'partial_measure', 'C2PA records the disclosure fields; the watermark contains only an ID. After metadata loss, fields need an accessible resolver; namespace discovery and durable authenticated linkage are not implemented.', 'CA-22757', '22757.3(a)(1)', 'sdk')
             requirement('ca_no_mandatory_overlay', 'information', 'The amended provider duties do not require offering a manifest/visible disclosure. Other laws or product contexts may still require one.', 'CA-22757', 'SB 1000 section 4')
             declaration('ca_verifier_public', _public_https(dep['verifier_url']), 'Publish a working verifier; HTTPS URL syntax is checked, reachability is not.', 'CA-22757', '22757.2(a)(4)')
             declaration('ca_verifier_free', dep['verifier_free'] is True, 'Verification must be free to the user.', 'CA-22757', '22757.2(a)')
@@ -239,11 +238,11 @@ def evaluate(config, *, as_of=None):
         requirement('ca_other_roles', 'review_required', 'Hosting-platform, large-platform and capture-device obligations are outside this covered-provider profile.', 'CA-22757', 'chapter 25 scope')
 
     errors = [x for x in findings if x['level'] == 'error']
-    open_items = [x for x in requirements if x['state'] in {'action_required', 'review_required'}]
+    open_items = [x for x in requirements if x['state'] in {'action_required', 'review_required', 'partial_measure'}]
     needs_action = any(x['state'] == 'action_required' for x in open_items)
     needs_review = bool(open_items or any(x['level'] == 'review' for x in findings))
     options = {'watermark': True, 'c2pa': True, 'image_engine': 'TrustMark Q/BCH-5',
-               'video_engine': 'VideoSeal 1.0/BCH-20', 'visible': dep['disclosure'] in {'baked_in', 'both'},
+               'video_engine': 'TrustMark Q Fast/Resilient; legacy VideoSeal decoder', 'visible': dep['disclosure'] in {'baked_in', 'both'},
                'audio_kind': config['sdk']['audio_kind'], 'configuration_source': 'SDK implementation choices'}
     return {'schema_version': 1, 'profile_version': CATALOG['version'], 'evaluated_on': today.isoformat(),
             'sources_reviewed_on': CATALOG['reviewed_on'],

@@ -27,3 +27,21 @@ Offline verification disables OCSP and remote manifest fetching. Its report
 says `not_checked_offline` for revocation. To request a signing timestamp, pass
 an explicit `--timestamp-url`; failure must fail the export. No default TSA or
 external identity service is contacted.
+
+## Timestamp and expiry policy (0.5.1)
+
+Non-development signing requires an explicit TSA URL and the final read-back
+must report a validated, trusted timestamp. Supply required issuer/TSA roots
+using `SDK(trust_anchors=...)` or the CLI. C2PA's native validator checks the
+signer's validity at the trusted timestamp. The adapter never ignores expiry
+because `timeStamp.validated` alone appears: that code does not establish TSA trust.
+Without an acceptable timestamp, a now-expired signer returns
+`expired_credential`, not a label alleging media tampering. Revocation freshness
+still is not checked offline.
+
+An offline regression creates an RFC3161 TSA, signs with a 10-second signer,
+waits for expiry and checks both stamped and unstamped files. See
+`tests/integration/test_timestamp_expiry.py` and release evidence.
+
+Primary references: [C2PA Python context settings](https://github.com/contentauth/c2pa-python/blob/main/docs/context-settings.md),
+[C2PA implementation guidance — time-stamp authorities](https://spec.c2pa.org/specifications/specifications/2.3/guidance/Guidance.html).

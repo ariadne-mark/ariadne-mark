@@ -12,8 +12,18 @@ from ariadne_mark.errors import AriadneError, UnsupportedMedia, VerificationFail
 from ariadne_mark.provenance import ProvenanceRecord
 from ariadne_mark.signing import SigningIdentity, sign_file, MIME
 from ariadne_mark.verification.media import open_image, verify_file, inspect_c2pa
-from ariadne_mark.watermark import new_token
-from ariadne_mark.videoseal import VideoSealWatermarker
+from ariadne_mark.watermark import new_token, LazyWatermarker
+from ariadne_mark.videoq import VideoWatermarker
+from ariadne_mark.version import sdk_version
+
+MAX_OUTPUT_BYTES = 512 * 1024 * 1024
+
+def sync_directory(path):
+    fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
 
 
 def file_hash(path: Path) -> str:
@@ -26,15 +36,35 @@ def file_hash(path: Path) -> str:
 
 @dataclass
 class SDK:
-    marker: object
+    marker: object = field(default_factory=LazyWatermarker)
     identity: SigningIdentity | None = None
     registry: object | None = None
     trust_anchors: Path | None = None
 
-    video_marker: object = field(default_factory=VideoSealWatermarker)
+    video_marker: object | None = None
+    video_profile: str = "fast"
+
+    def __post_init__(self):
+        if self.video_profile not in {"fast", "resilient"}:
+            raise ValueError("video_profile must be fast or resilient")
+        if self.video_marker is None:
+            self.video_marker = VideoWatermarker(profile=self.video_profile)
+        from ariadne_mark.videoseal import VideoSealWatermarker
+        self._legacy_video_marker = VideoSealWatermarker()
+
+    def close(self):
+        close = getattr(self.video_marker, "close", None)
+        if close:
+            close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
 
     def verify(self, path: Path) -> dict:
-        return verify_file(path, marker=self.marker, video_marker=self.video_marker, registry=self.registry, trust_anchors=self.trust_anchors)
+        return verify_file(path, marker=self.marker, video_marker=self.video_marker, legacy_video_marker=self._legacy_video_marker, registry=self.registry, trust_anchors=self.trust_anchors)
 
     def mark(self, source: Path, destination: Path, record: ProvenanceRecord, *, visible=False, audio_kind="unknown", profile=None) -> dict:
         profile_report = None
@@ -60,9 +90,11 @@ class SDK:
         if destination.exists() or receipt_path.exists() or source == destination:
             raise AriadneError("Output already exists; choose a new destination")
         parent_status = inspect_c2pa(source)
-        if parent_status["status"] in {"invalid", "not_checked"}:
+        if parent_status["status"] in {"invalid", "not_checked", "expired_credential"}:
             raise VerificationFailed("Input C2PA is invalid or could not be checked")
-        parent = source if parent_status["status"] == "verified_claim" or record.action.value == "altered" else None
+        if parent_status["status"] == "verified_claim" and record.action.value == "created":
+            raise UnsupportedMedia("A credentialed input requires action=altered to retain its provenance history")
+        parent = source if record.action.value == "altered" else None
         token = new_token()
         while self.registry is not None and self.registry.contains(token):
             token = new_token()
@@ -98,7 +130,8 @@ class SDK:
             engine = self.video_marker if video else self.marker
             sign_file(marked, signed, record, token, self.identity, parent=parent, disclosure=visible, audio=audio,
                       algorithm=getattr(engine, "algorithm", "adobe.trustmark.Q.bch5"),
-                      payload_format=getattr(engine, "payload_format", "ariadne-v1"))
+                      payload_format=getattr(engine, "payload_format", "ariadne-v1"),
+                      watermark_profile=getattr(engine, "profile_id", None))
             checked = self.verify(signed)
             samples = checked["watermark"].get("samples", [])
             if (checked["c2pa"]["status"] != "verified_claim" or checked["c2pa"].get("token") != token
@@ -109,8 +142,14 @@ class SDK:
                     or (not video and any(row["token"] != token for row in samples))):
                 matches = sum(row["token"] == token for row in samples)
                 raise VerificationFailed(f"Final read-back failed: C2PA={checked['c2pa']['status']}, watermark={checked['watermark']['status']}, matching frames={matches}/{len(samples)}; no output published")
+            if signed.stat().st_size > MAX_OUTPUT_BYTES:
+                raise UnsupportedMedia("Signed export exceeds the 512 MiB verifier/export boundary")
+            if not self.identity.development and checked["c2pa"].get("timestamp_trust") != "trusted":
+                raise VerificationFailed("Production export requires a validated trusted timestamp")
+            with signed.open("rb") as media_file:
+                os.fsync(media_file.fileno())
             digest = file_hash(signed)
-            receipt = {"schema_version": 1, "sdk_version": "0.4.0a0", "asset_id": str(record.asset_id),
+            receipt = {"schema_version": 1, "sdk_version": sdk_version(), "asset_id": str(record.asset_id),
                        "token": token, "sha256": digest, "seconds": round(time.monotonic() - start, 3),
                        "development_identity": self.identity.development, "audio_kind": audio,
                        "export_settings": {"visible_disclosure": bool(visible), "audio_kind": audio},
@@ -121,18 +160,32 @@ class SDK:
                 receipt["profile_assessment"] = profile_report
             receipt["registry_recorded"] = self.registry is not None
             checked["recovery"] = {"status": "not_attempted", "reason": "export_readback_before_registry_commit"}
-            # Hard-link publication is atomic and refuses overwrite, including races.
-            os.link(signed, destination)
-            receipt_created = False
+            # Store recovery data durably before exposing the media commit marker.
+            # A crash can leave an orphan registry row/receipt, never published
+            # media with a receipt claiming a missing registry insert.
+            registry_added = receipt_created = media_created = False
             try:
-                with receipt_path.open("x") as file:
-                    receipt_created = True
-                    json.dump(receipt, file, indent=2)
                 if self.registry is not None:
                     self.registry.add(token, record, digest, receipt)
-            except Exception:
-                destination.unlink(missing_ok=True)
+                    registry_added = True
+                pending_receipt = work / "receipt.json"
+                with pending_receipt.open("x") as file:
+                    json.dump(receipt, file, indent=2)
+                    file.flush()
+                    os.fsync(file.fileno())
+                os.link(pending_receipt, receipt_path)
+                receipt_created = True
+                sync_directory(destination.parent)
+                # Publish media last. Its existence is the result commit marker.
+                os.link(signed, destination)
+                media_created = True
+                sync_directory(destination.parent)
+            except BaseException:
+                if media_created:
+                    destination.unlink(missing_ok=True)
                 if receipt_created:
                     receipt_path.unlink(missing_ok=True)
+                if registry_added and hasattr(self.registry, "remove"):
+                    self.registry.remove(token, digest)
                 raise
         return receipt

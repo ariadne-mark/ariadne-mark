@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "fast-cpu-v1",
+  "status": "frozen_experimental_reference",
+  "created_at": "2026-11-04",
+  "engine": {
+    "algorithm": "adobe.trustmark.Q",
+    "implementation": "@variax-ai/video-watermark",
+    "version": "0.3.2",
+    "runtime": "onnxruntime-node",
+    "runtime_version": "1.23.2",
+    "execution_provider": "cpu",
+    "threads": {
+      "intra_op": 2,
+      "inter_op": 1
+    },
+    "signature_alias_fix": {
+      "required": true,
+      "patched_js_sha256": "b9a1c7035bed4c35a5a0e61ff423b4fae34781634a565b56d14dfc92e2927b31"
+    }
+  },
+  "models": {
+    "encoder_Q.onnx": "19b3d1b25836130ffd78775a8f61539f993375d1823ef0e59ba5b8dffb4f892d",
+    "decoder_Q.onnx": "ee3268f057c9dabef680e169302f5973d0589feea86189ed229a896cc3aa88df"
+  },
+  "embedding": {
+    "variant": "Q",
+    "strategy": "sharedResidual",
+    "scene_change_threshold": 0.1,
+    "max_cache_frames": 24,
+    "strength": 1,
+    "schema": "BCH_5",
+    "content_id_bits": 64,
+    "prefix_hex": "014d",
+    "apply_to": "every_frame"
+  },
+  "detection": {
+    "initial_samples": 5,
+    "fallback_samples": 20,
+    "sampling": "uniform_ceil_duration_minus_0.1s",
+    "aggregation": "upstream_soft_logits_sum",
+    "accept": "one_unique_valid_id_from_individual_or_aggregate",
+    "reject_conflicting_ids": true,
+    "fallback_trigger": "no_id_and_no_conflict",
+    "expected_id_available_to_detector": false
+  },
+  "media_reference": {
+    "input": "SDR 8-bit CFR, square pixels, silent",
+    "output_codec": "libx264",
+    "container": "mp4",
+    "preset": "fast",
+    "crf": 18,
+    "b_frames": 0,
+    "pix_fmt": "yuv420p",
+    "codec_threads": 2,
+    "faststart": true
+  },
+  "scope": {
+    "cpu_only": true,
+    "runtime_backend_integrated_in_sdk": false,
+    "includes_signing_registry_http": false,
+    "production_or_legal_certification": false,
+    "audio_vfr_hdr_not_qualified": true
+  },
+  "soft_warning": {
+    "recovery_rate": 0.9,
+    "action": "annotate_context_only",
+    "blocks_release_or_excludes_formats": false,
+    "legal_threshold": false
+  },
+  "baseline_evidence": {
+    "folder": "research/expanded-video-benchmark-2026-11-04",
+    "originals_exact": [
+      41,
+      41
+    ],
+    "transformed_exact": [
+      79,
+      84
+    ],
+    "negative_false_ids": [
+      0,
+      12
+    ],
+    "median_720p24_export_3s": 6.322042293002596,
+    "peak_anon_mib": 760.46484375
+  },
+  "known_limits": [
+    "Face: combined transform, both payloads; CRF35, second payload",
+    "Waves: combined transform, both payloads",
+    "High motion increases model calls and latency",
+    "4K 2-second proxy took 63.72 seconds on two vCPUs",
+    "Small negative sample does not qualify FPR",
+    "Payload layout requires explicit SDK/verifier integration"
+  ]
+}

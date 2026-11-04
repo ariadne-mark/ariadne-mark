@@ -2,7 +2,7 @@
 
 ## Current support status
 
-Ariadne Mark is a pre-alpha scaffold. There are no supported production releases yet. Do not treat the repository as a production compliance or security service.
+Ariadne Mark is an experimental developer preview for local image/video processing. There are no supported production releases yet. Do not treat the repository as a production compliance or security service.
 
 ## Report a vulnerability
 

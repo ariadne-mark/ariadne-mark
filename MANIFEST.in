@@ -1,0 +1,16 @@
+include Dockerfile compose.yaml .dockerignore THIRD_PARTY.md CHANGELOG.md CONTRIBUTING.md SECURITY.md CODE_OF_CONDUCT.md
+recursive-include docs *.md *.txt *.json
+recursive-include compliance *.md *.json
+recursive-include scripts *.py
+recursive-include benchmarks *.md *.txt *.py *.json
+recursive-include examples *.py *.md *.txt *.json *.html *.yaml *.yml
+recursive-include tests *.py *.md
+prune examples/stateless_product
+prune dist
+prune build
+global-exclude *.pyc
+global-exclude ._* .DS_Store
+recursive-include apps *.md *.conf *.yaml *.yml
+recursive-include src *.md
+recursive-include .github *.md *.yml *.yaml
+include .gitignore

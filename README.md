@@ -2,16 +2,16 @@
 
 **Open-source watermarking, provenance and verification for AI-generated images and video.**
 
-A local Python SDK and CLI that adds a recoverable ID (TrustMark for images, VideoSeal for video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
+A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Fast/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer preview · 0.4.0a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer preview · 0.5.2a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 ## Quick start with Docker
 
 ```sh
 git clone https://github.com/ariadne-mark/ariadne-mark.git
 cd ariadne-mark
-docker build -t ariadne-mark:local .
+docker build --platform linux/amd64 -t ariadne-mark:local .
 ```
 
 The build downloads CPU dependencies and verifies pinned model files. Processing can then run without a network connection:
@@ -33,7 +33,16 @@ docker run --rm --network none --user "$(id -u):$(id -g)" \
   --registry .ariadne/registry.sqlite3
 ```
 
-Video uses the official VideoSeal model on CPU with BCH error correction and five-frame aggregate verification. Existing TrustMark video IDs remain readable.
+Video uses TrustMark Q on CPU. `--video-profile fast` reuses a signal with adaptive refresh (at most 24 frames); `--video-profile resilient` calculates a signal for each frame. Both mark every frame and verify 5 samples, expanding to 20 when no ID is found. Existing VideoSeal and older TrustMark IDs remain readable in the full media installation.
+
+```sh
+ariadne mark input.mp4 output.mp4 --video-profile resilient \
+  --publisher "Example Studio" --system "Example Generator" --system-version "1.0" \
+  --created-at "2026-11-04T10:00:00Z" --identity .ariadne/dev --allow-dev \
+  --audio-kind original --registry .ariadne/registry.sqlite3
+```
+
+[Video installation, profiles and limits](docs/implementation/video-profiles.md).
 
 For video use `input.mp4 output.mp4` and set `--audio-kind original`, `synthetic`, or `unknown` when appropriate. Add `--visible` for a visible disclosure, or `--action altered` for AI-altered material. Existing output files are never overwritten.
 
@@ -41,17 +50,24 @@ The output includes a `.receipt.json` file containing its SHA-256, processing ti
 
 ## Python installation and API
 
-The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free record core is also tested on Python 3.11–3.14. Native video use also requires FFmpeg/ffprobe on PATH; the Docker image includes them.
+The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free record core is also tested on Python 3.11–3.14. Native video use requires FFmpeg/ffprobe and Node.js (tested 24); npm is needed only during explicit model/runtime setup. The Docker recipe provisions them and omits npm from the final runtime. The Node/ONNX worker is persistent and receives binary frames; audio/timestamps remain in the Python exporter.
 
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
+python -m pip install .
+# Official patched C2PA 0.38.3 is not yet on PyPI; explicit verified setup:
+python -m ariadne_mark.bootstrap_c2pa
 python -m pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cpu
 python -m pip install '.[media]'
 ariadne models fetch
 ```
 
-`models fetch` provisions both engines. Use `--engine trustmark` for an image-only installation, or `--engine videoseal` to add video later. `ARIADNE_VIDEOSEAL_MODEL` can point to a shared, checksum-verified model file.
+The explicit C2PA bootstrap builds the official tagged Python wrapper with the
+SHA-256-pinned upstream native library 0.91.7. It is qualified on Linux x86-64;
+use the Docker recipe for the supported media environment.
+
+`models fetch` provisions image, new video and legacy VideoSeal engines. Use `--engine trustmark` for images, `--engine video` for Fast/Resilient, or `--engine videoseal` for legacy compatibility. `ARIADNE_VIDEOSEAL_MODEL` can point to a shared, checksum-verified model file.
 
 `models fetch` is an explicit setup step. Later requests fail clearly if models are missing or have incorrect checksums. They do not silently download models.
 
@@ -102,7 +118,7 @@ reported as verified legal compliance. [Profile guide](docs/compliance/applicabi
 docker compose up --build
 ```
 
-Open **http://localhost:8080**. It accepts uploads without registration, exposes a binary-upload API at `POST /verify?format=png` (also `jpg`, `jpeg`, `mp4`), and deletes temporary media after each request. The default Compose service binds only to localhost. See [deployment](docs/operations/verifier.md) to attach a recovery registry, trust roots or feedback link and publish it behind a reverse proxy.
+Open **http://localhost:8080**. It accepts uploads without registration, exposes a binary-upload API at `POST /verify?format=png` (also `jpg`, `jpeg`, `mp4`), and deletes temporary media after each request. The default Compose service binds only to localhost. Public service mode requires configured roots (`--production --trust-anchors roots.pem`). Uploads are bounded separately from inference; the default 512 MiB ceiling matches export. See [deployment](docs/operations/verifier.md) to attach a recovery registry, trust roots or feedback link and publish it behind a reverse proxy.
 
 ## Try a complete product integration
 
@@ -114,12 +130,12 @@ acceptance script that deliberately interrupts and restarts services.
 
 ## What verification means
 
-- **Valid signed claim:** the C2PA signature and content binding validate. Issuer trust is a separate field.
-- **Recovered watermark:** a supported ID was extracted. The optional registry can identify its source record after metadata loss; this is not a cryptographic binding of a transformed copy.
+- **Valid signed claim:** signature and content binding validate. An untrusted issuer gets an unverified headline; use `verify --strict` when trusted credentials are required.
+- **Recovered watermark:** a supported ID was extracted. Registry lookup returns the record associated with that ID; a transformed copy has no authenticated content binding from the ID alone.
 - **Not found:** a supported check ran and found no mark. This does not establish human origin.
-- **Not checked / invalid:** an operational failure or invalid evidence, never a successful negative detection.
+- **Not checked / invalid / expired credential:** operational failure, invalid evidence and unresolved signing time are distinguished. None is a successful negative detection.
 
-Watermarks can be removed or copied. The tool does not detect every AI image, verify factual truth, or call other providers' closed detectors. Video watermark verification samples frames; C2PA verifies the signed asset binding.
+Watermarks can be removed or copied. The tool does not detect every AI image, verify factual truth, or call other providers' closed detectors. Video watermark verification reports sample coverage and aggregate-only recovery; C2PA verifies the signed asset binding. No whole-video watermark percentage is inferred from the samples.
 
 ## Tests and evidence
 
@@ -132,7 +148,9 @@ docker run --rm --network none --cpus 2 --memory 6g \
   ariadne-mark:local -m unittest discover -s tests -t . -v
 ```
 
-The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.4.0a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.5.2a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+
+[Public alpha checklist](docs/operations/public-alpha-checklist.md).
 
 ## Contribute
 

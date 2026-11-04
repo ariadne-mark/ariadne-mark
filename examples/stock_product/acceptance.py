@@ -85,17 +85,29 @@ def main():
         job = wait(queued['id'])
         status, result = api('/api/jobs/'+job['id']+'/verify', {})
         check('verify_'+job['fixture'], status==200 and result['c2pa']['status']=='verified_claim'
-              and result['watermark'].get('token')==job['result']['token'] and result['recovery']['status']=='found',
+              and result['watermark'].get('token')==job['result']['token'] and result['recovery']['status']=='found' and result['c2pa']['issuer_trust']=='trusted',
               {'sdk_seconds':job['result']['sdk_seconds'],'issuer_trust':result.get('c2pa',{}).get('issuer_trust'),'response':result if status!=200 else None})
         status, data = request(job['download'])
         check('download_'+job['fixture'], status==200 and hashlib.sha256(data).hexdigest()==job['result']['sha256'])
         _, receipt = request(job['receipt'])
         receipt = json.loads(receipt)
-        check('profile_receipt_'+job['fixture'], receipt['sdk_version']=='0.4.0a0'
+        check('profile_receipt_'+job['fixture'], receipt['sdk_version']=='0.5.1a0'
               and receipt['profile_assessment']['legal_determination']=='not_performed'
               and receipt['profile_assessment']['configuration_status']=='valid')
         report['exports'].append({'job_id':job['id'], 'fixture':job['fixture'], 'kind':job['fixture_info']['kind'],
                                  **job['result'], 'worker_seconds':job['seconds']})
+        save()
+    for fixture in [x for x in catalog if x['kind']=='video']:
+        status, queued = api('/api/jobs', {'fixture':fixture['id'], 'request_key':prefix+'-resilient-'+fixture['id'], 'video_profile':'resilient'})
+        check('enqueue_resilient_'+fixture['id'], status==202)
+        job = wait(queued['id'])
+        status, result = api('/api/jobs/'+job['id']+'/verify', {})
+        _, receipt_bytes = request(job['receipt'])
+        receipt = json.loads(receipt_bytes)
+        check('resilient_roundtrip_'+fixture['id'], status==200 and result['watermark'].get('token')==job['result']['token']
+              and result['c2pa']['issuer_trust']=='trusted' and receipt['video']['profile']=='resilient'
+              and receipt['video']['watermark_stats']['inference_calls']==receipt['video']['frames_encoded'])
+        report['exports'].append({'job_id':job['id'], 'fixture':job['fixture'], 'kind':'video', 'video_profile':'resilient', **job['result']})
         save()
     video = next(j for j in batch if j['fixture_info']['kind']=='video')
     video = api('/api/jobs/'+video['id'])[1]
@@ -150,7 +162,9 @@ def main():
     check('metadata_stripped_image_recovers_source_record', status==200
           and recovered_mark['c2pa']['status']=='not_found'
           and recovered_mark['watermark'].get('token')==image['result']['token']
-          and recovered_mark['recovery']['status']=='found')
+          and recovered_mark['recovery']['status']=='found'
+          and recovered_mark['recovery']['content_binding']=='not_verified'
+          and 'unverified' in recovered_mark['label'])
     report['completed_utc'] = datetime.now(timezone.utc).isoformat()
     report['passed'] = sum(x['passed'] for x in report['checks'])
     report['total'] = len(report['checks'])

@@ -1,3 +1,3 @@
 # video
 
-Working implementation is in this module. See [integration documentation](../../../docs/implementation/video.md), [supported scope](../../../docs/operations/support.md) and [release evidence](../../../docs/validation/0.2.0a0.md).
+Working implementation is in this module. See [integration documentation](../../../docs/implementation/video.md), [supported scope](../../../docs/operations/support.md) and [release evidence](../../../docs/validation/0.5.0a0.md).
