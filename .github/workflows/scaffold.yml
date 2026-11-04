@@ -56,6 +56,21 @@ jobs:
           --read-only --tmpfs /tmp:rw,noexec,nosuid,size=512m
           -e ARIADNE_MEDIA_TESTS=1 -w /app --entrypoint python
           ariadne-mark:test -m unittest discover -s tests -t . -v
+      - name: Collect tested distributions and dependency inventory
+        run: |
+          mkdir release-dist
+          container=$(docker create ariadne-mark:test true)
+          docker cp "$container":/opt/dist/. release-dist/
+          docker rm "$container"
+          docker run --rm --network none --entrypoint python ariadne-mark:test -c 'import importlib.metadata as m,json; print(json.dumps({p.metadata["Name"]:p.version for p in m.distributions()},indent=2))' > release-dist/installed-packages.json
+          python3 scripts/package_release_evidence.py
+      - name: Retain tested alpha candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: alpha-candidate-${{ github.sha }}
+          path: release-dist/
+          if-no-files-found: error
+          retention-days: 30
   requirements:
     name: Requirements traceability
     needs: [sdk, media]
