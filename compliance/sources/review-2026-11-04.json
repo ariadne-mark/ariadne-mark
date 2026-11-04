@@ -1,0 +1,34 @@
+{
+  "reviewed_on": "2026-11-04",
+  "profile_version": "2026-11-04.1",
+  "california": {
+    "method": "Read rendered DOM of official LegInfo pages in Chrome; no archived HTML/PDF snapshot claimed.",
+    "sources": [
+      "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=8.&chapter=25.&part=&lawCode=BPC",
+      "https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB1000"
+    ],
+    "reviewed_provisions": [
+      "22757.1 provider scope; no monthly-user threshold",
+      "22757.2 free verification, upload or URL, API, feedback, privacy and third-party UI access",
+      "22757.3 latent fields, durability/interoperability, licensing workflow",
+      "22757.4/22757.4.1 exclusions; assistive technology until 2029",
+      "22757.6 operative date; SB 1000 effective 2026-09-30",
+      "AB 853 platform/hosting and capture-device roles outside provider profile"
+    ],
+    "conclusion": "Executable provider mapping reconciled to official text; remaining partial technical measures and operator duties unchanged."
+  },
+  "eu": {
+    "sources": [
+      "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50",
+      "https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act",
+      "https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content"
+    ],
+    "method": "Official Commission statutory reproduction and guidance read; direct EUR-Lex consolidated text retrieval did not complete.",
+    "conclusion": "Provider marking and deployer disclosure remain separate; voluntary Code overview reviewed, full Code provisions/signatory adherence not evaluated."
+  },
+  "not_performed": [
+    "Legal opinion on any particular product",
+    "Full EU Code of Practice conformance assessment",
+    "Certification of removal resistance or independent interoperability"
+  ]
+}

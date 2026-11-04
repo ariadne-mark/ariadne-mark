@@ -1,13 +1,13 @@
 """Executable scenarios, not legal certification tests."""
 from contextlib import redirect_stdout, redirect_stderr
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 import io
 import json
 from pathlib import Path
 import tempfile
 import unittest
 
-from ariadne_mark.profiles import template, evaluate, load, export_settings
+from ariadne_mark.profiles import CATALOG, template, evaluate, load, export_settings
 from ariadne_mark.provenance import ProvenanceRecord, GenerativeSystem, MediaKind, Action
 from ariadne_mark.cli import main
 
@@ -86,7 +86,8 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(self.requirements(r)['ca_no_mandatory_overlay']['state'], 'information')
         self.assertEqual(self.report(c, '2026-09-29')['applicability']['US-CA']['provider_duties'], 'historical_version_not_supported')
         self.assertEqual(self.report(c, '2026-09-30')['applicability']['US-CA']['provider_duties'], 'applies_to_declared_scenario')
-        self.assertIn('retrieved_via', r['sources']['CA-22757'])
+        self.assertEqual(r['sources']['CA-22757']['kind'], 'consolidated_statute_official')
+        self.assertNotIn('ca_primary_reconciliation', [f['id'] for f in r['findings']])
 
     def test_ca_upload_or_url_and_third_party_ui(self):
         c = self.config(['US-CA']); d = c['deployment']
@@ -120,7 +121,7 @@ class ProfileTests(unittest.TestCase):
 
     def test_stale_snapshot_and_future_schema_gap(self):
         c = self.config(['US-CA'])
-        r = self.report(c, '2026-12-04')
+        r = evaluate(c, as_of=date.fromisoformat(CATALOG['reviewed_on']) + timedelta(days=CATALOG['review_interval_days'] + 1))
         self.assertIn('source_refresh', [f['id'] for f in r['findings']])
         r = self.report(c, '2029-01-01')
         self.assertFalse(r['export_supported'])

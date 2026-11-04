@@ -1,8 +1,8 @@
 # Technical coverage, not a jurisdictional certification
 
-Review date: 2026-11-03. This release implements measures and records evidence;
+Review date: 2026-11-04. This release implements measures and records evidence;
 it does not decide a product's legal role, territorial scope or exceptions.
-The executable planner in 0.4.0a0 maps declared product facts to technical
+The executable planner maps declared product facts to technical
 settings and remaining actions. It never returns `compliant=true`.
 See the [profile guide](applicability.md).
 
@@ -39,11 +39,12 @@ obligations. No stale million-user exemption is encoded in this SDK. The mapped 
 also removes the previous mandatory offer of a visible disclosure. Upload or
 URL submission can meet the submission-mode provision; our verifier uses upload.
 
-[Official bill page](https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260SB1000)
-was inaccessible (403) during this review. The [chaptered text mirror](https://legiscan.com/CA/text/SB1000/2025)
-was reviewed; reconcile it with the official consolidated code before approving
-a production legal profile. A working watermark does not by itself establish
-the required resistance to removal or full statutory coverage.
+The [official consolidated Chapter 25](https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=8.&chapter=25.&part=&lawCode=BPC)
+and [chaptered SB 1000](https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB1000)
+were read directly in Chrome on 4 November 2026. This closes the previous
+mirror-to-primary reconciliation item. A working watermark does not establish
+statutory permanence, authenticated recovery after metadata loss or full coverage.
+See [source-review record](../../compliance/sources/review-2026-11-04.json).
 
 ## Developer release checklist
 

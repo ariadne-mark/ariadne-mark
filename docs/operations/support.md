@@ -1,9 +1,9 @@
-# Supported scope — 0.5.0a0
+# Supported scope — 0.5.2a0
 
 | Area | Supported | Boundary |
 | --- | --- | --- |
 | Images | Single-frame 8-bit RGB/RGBA PNG; JPEG; normalized EXIF orientation | Each dimension 256–4096 pixels. No animated PNG, HDR, CMYK, WebP export or arbitrary color-profile conversion |
-| Video | SDR MP4, H.264 output; one video stream; optional AAC audio | Even dimensions, each 256–1920 pixels; max 5 min / 18000 frames. Other audio codecs, subtitles, multiple tracks, interlacing, anamorphic pixels and HDR are rejected |
+| Video | SDR MP4 with H.264/HEVC input, H.264 output; one video stream; optional AAC audio | Even dimensions, each 256–1920 pixels; max 5 min / 18000 frames. Other audio codecs, subtitles, multiple tracks, interlacing, anamorphic pixels and HDR are rejected |
 | Timing | Frame presentation timestamps retained, including tested VFR; display rotation normalized | Verification starts with5 positions and expands to20 for absent new-profile IDs; does not check every frame |
 | Audio | AAC packets retained; original/synthetic/unknown provenance recorded | No standalone audio processing or independent audio watermark. Extraction/transcoding of synthetic audio is not covered |
 | Watermark | Images: TrustMark Q/BCH-5. Video: TrustMark Q Fast/Resilient,5→20-frame aggregate; legacy VideoSeal BCH-20/CRC retained. Both carry 48 random ID bits | Recoverable ID, not authentication. Cropping/removal/copying may defeat it |
@@ -47,3 +47,13 @@ example reconciles its own unpublished job state on retry. Generic applications
 must manage orphan cleanup and retry/idempotency outside `SDK.mark`. No atomic
 transaction spanning SQLite and two arbitrary filesystem paths or universal
 power-loss guarantee is claimed.
+
+## 0.5.2 runtime boundaries
+
+MP4 decoders are restricted to H.264/HEVC and AAC, with file-only protocol
+access. This narrows the accepted format surface; it does not establish safety
+of all malformed media. Run untrusted uploads in the bounded isolated worker
+described in the deployment guide. Standalone verification closes temporary
+video workers; callers retain ownership of reusable workers they provide.
+Production verifier startup validates that a configured trust file contains
+certificates and no private key.

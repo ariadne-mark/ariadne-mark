@@ -113,12 +113,15 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
             else:
                 frames = [(open_image(path), None)]
             candidates = []
+            owned_engines = []
             # Signed engine identifiers route directly; stripped metadata needs
             # explicit new + legacy decoding. Never relabel an old bit layout.
             if algorithm in {None, "adobe.trustmark.Q.variax-bch5"}:
                 from ariadne_mark.videoq import VideoWatermarker
                 engine = video_marker if getattr(video_marker, "algorithm", None) == VideoWatermarker.algorithm else VideoWatermarker()
                 candidates.append(engine)
+                if engine is not video_marker:
+                    owned_engines.append(engine)
             if algorithm in {None, "meta.videoseal.1.0.bch20"} and video:
                 from ariadne_mark.videoseal import VideoSealWatermarker
                 engine = video_marker if getattr(video_marker, "algorithm", None) == VideoSealWatermarker.algorithm else (legacy_video_marker or VideoSealWatermarker())
@@ -148,6 +151,11 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                     engines.append(name)
                 except (AriadneError, OSError, ValueError, ImportError) as exc:
                     unavailable.append({"algorithm": name, "reason": type(exc).__name__})
+                finally:
+                    if any(engine is owned for owned in owned_engines):
+                        close = getattr(engine, "close", None)
+                        if close:
+                            close()
             watermark = summarize_watermarks(observations, aggregates, video=video)
             watermark.update(engines_checked=engines, unavailable_engines=unavailable,
                              checked_frames=len({row.get("time") for attempt in attempts for row in attempt["samples"]}),

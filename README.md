@@ -4,14 +4,14 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Fast/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer preview · 0.5.1a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer preview · 0.5.2a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 ## Quick start with Docker
 
 ```sh
 git clone https://github.com/ariadne-mark/ariadne-mark.git
 cd ariadne-mark
-docker build -t ariadne-mark:local .
+docker build --platform linux/amd64 -t ariadne-mark:local .
 ```
 
 The build downloads CPU dependencies and verifies pinned model files. Processing can then run without a network connection:
@@ -50,15 +50,22 @@ The output includes a `.receipt.json` file containing its SHA-256, processing ti
 
 ## Python installation and API
 
-The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free record core is also tested on Python 3.11–3.14. Native video use requires FFmpeg/ffprobe, Node.js 20+ and npm on PATH; the Docker image includes them. The Node/ONNX worker is persistent and receives binary frames; audio/timestamps remain in the Python exporter.
+The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free record core is also tested on Python 3.11–3.14. Native video use requires FFmpeg/ffprobe and Node.js (tested 24); npm is needed only during explicit model/runtime setup. The Docker recipe provisions them and omits npm from the final runtime. The Node/ONNX worker is persistent and receives binary frames; audio/timestamps remain in the Python exporter.
 
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
+python -m pip install .
+# Official patched C2PA 0.38.3 is not yet on PyPI; explicit verified setup:
+python -m ariadne_mark.bootstrap_c2pa
 python -m pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cpu
 python -m pip install '.[media]'
 ariadne models fetch
 ```
+
+The explicit C2PA bootstrap builds the official tagged Python wrapper with the
+SHA-256-pinned upstream native library 0.91.7. It is qualified on Linux x86-64;
+use the Docker recipe for the supported media environment.
 
 `models fetch` provisions image, new video and legacy VideoSeal engines. Use `--engine trustmark` for images, `--engine video` for Fast/Resilient, or `--engine videoseal` for legacy compatibility. `ARIADNE_VIDEOSEAL_MODEL` can point to a shared, checksum-verified model file.
 
@@ -141,7 +148,9 @@ docker run --rm --network none --cpus 2 --memory 6g \
   ariadne-mark:local -m unittest discover -s tests -t . -v
 ```
 
-The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.5.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.5.2a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+
+[Public alpha checklist](docs/operations/public-alpha-checklist.md).
 
 ## Contribute
 

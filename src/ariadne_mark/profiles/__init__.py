@@ -202,7 +202,6 @@ def evaluate(config, *, as_of=None):
             requirement('eu_other_duties', 'review_required', 'Check other applicable duties, including direct AI interaction under 50(1); this profile covers visual-content marking/disclosure only.', 'EU-50', '50(1), 50(6)')
 
     if 'US-CA' in config['jurisdictions']:
-        finding('ca_primary_reconciliation', 'review', 'Chaptered SB 1000 text was retrieved through a mirror; official LegInfo returned 403. Reconcile the primary consolidated code before a production legal determination.', 'CA-22757')
         ca_state = 'applies_to_declared_scenario'
         if today < date(2026, 9, 30):
             ca_state = 'historical_version_not_supported'

@@ -72,6 +72,18 @@ def create_development_identity(directory: Path) -> None:
     (directory / "identity.json").write_text(json.dumps({"development": True, "expires_at": (now + timedelta(days=30)).isoformat()}))
 
 
+def validate_trust_roots(path: Path):
+    """Fail before serving on missing/empty/malformed public root configuration."""
+    data = Path(path).read_bytes()
+    if not data.strip() or b'PRIVATE KEY' in data:
+        raise ValueError('Trust roots must contain public certificates only')
+    from cryptography import x509
+    roots = x509.load_pem_x509_certificates(data)
+    if not roots:
+        raise ValueError('Trust roots contain no certificates')
+    return len(roots)
+
+
 def context(trust_anchors: Path | None = None):
     import c2pa
     settings = {

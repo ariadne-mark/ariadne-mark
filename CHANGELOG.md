@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.2a0 — release-readiness candidate
+
+- Explicit SHA-verified upstream C2PA 0.38.3/native 0.91.7 bootstrap; pip 26.3 and patched adm-zip dependency policy.
+- Multi-stage runtime with Node 24 and no npm/build toolchain in the final image.
+- Temporary decoder cleanup, non-retaining exit handlers and startup trust-file validation.
+- H.264/HEVC/AAC decoder allowlist for supported MP4 inputs.
+- California source catalog reconciled to official consolidated/chaptered text; partial-coverage statements retained.
+
+
 ## 0.5.1a0 — audit follow-up
 
 - Bounded upload slots/deadline separated from inference; production trust configuration and strict CLI verification.

@@ -18,3 +18,13 @@ class UploadIsolationTests(unittest.TestCase):
             slow.close();server.shutdown();server.server_close();thread.join()
     def test_production_requires_roots(self):
         with self.assertRaisesRegex(ValueError,'trust anchors'):make_server(object(),production=True,port=0)
+
+class ProductionConfigurationTests(unittest.TestCase):
+    def test_empty_roots_are_rejected_before_binding(self):
+        from pathlib import Path
+        import tempfile
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder)/'roots.pem';root.touch()
+            with self.assertRaisesRegex(ValueError,'public certificates'):
+                make_server(SimpleNamespace(trust_anchors=root),port=0,production=True)

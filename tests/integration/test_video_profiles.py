@@ -90,3 +90,13 @@ class VideoProfileTests(unittest.TestCase):
    self.assertFalse((self.path/'end-crash.mp4').exists())
    self.assertFalse((self.path/'end-crash.mp4.receipt.json').exists())
   finally:sdk.close()
+
+ def test_closed_worker_can_restart_without_retained_exit_callback(self):
+  from ariadne_mark.videoq import VideoWatermarker
+  marker=VideoWatermarker()
+  try:
+   marker._load();self.assertTrue(marker._cleanup_registered)
+   first=marker._process
+   marker.close();self.assertFalse(marker._cleanup_registered);self.assertIsNotNone(first.poll())
+   marker._load();self.assertTrue(marker._cleanup_registered);self.assertIsNot(marker._process,first)
+  finally:marker.close()

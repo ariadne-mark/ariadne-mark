@@ -21,3 +21,35 @@ class AuditPolicyTests(unittest.TestCase):
         r=summarize_watermarks([{'token':None}]*5,[{'token':'014d000000000001'}],video=True)
         self.assertEqual(r['sample_coverage']['interpretation'],'aggregate_only_evidence')
         self.assertEqual(r['sample_coverage']['matched_frames'],0)
+
+class ResourceOwnershipTests(unittest.TestCase):
+    def test_temporary_decoder_is_closed_on_failure(self):
+        import tempfile
+        from ariadne_mark.verification.media import verify_file
+        from ariadne_mark.errors import MissingModel
+        closed=[]
+        class Temporary:
+            algorithm='adobe.trustmark.Q.variax-bch5'
+            def decode_frames(self,frames):raise MissingModel('fixture')
+            def close(self):closed.append(True)
+        class Legacy:
+            algorithm='adobe.trustmark.Q.bch5'
+            def decode(self,image):return None
+        with tempfile.TemporaryDirectory() as folder:
+            file=Path(folder)/'fixture.png';file.touch()
+            with patch('ariadne_mark.videoq.VideoWatermarker',Temporary),patch('ariadne_mark.verification.media.open_image',return_value=object()),patch('ariadne_mark.verification.media.inspect_c2pa',return_value={'status':'not_found'}):
+                verify_file(file,marker=Legacy())
+        self.assertEqual(closed,[True])
+    def test_caller_owned_decoder_is_retained(self):
+        import tempfile
+        from ariadne_mark.verification.media import verify_file
+        closed=[]
+        class Supplied:
+            algorithm='adobe.trustmark.Q.variax-bch5'
+            def decode_frames(self,frames):return ([{'time':0,'token':None}],None)
+            def close(self):closed.append(True)
+        with tempfile.TemporaryDirectory() as folder:
+            file=Path(folder)/'fixture.png';file.touch()
+            with patch('ariadne_mark.verification.media.open_image',return_value=object()),patch('ariadne_mark.verification.media.inspect_c2pa',return_value={'status':'verified_claim','watermark_algorithm':Supplied.algorithm}):
+                verify_file(file,video_marker=Supplied())
+        self.assertEqual(closed,[])

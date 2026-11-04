@@ -21,8 +21,19 @@ def digest(p):
             h.update(b)
     return h.hexdigest()
 
+def installation_matches(d):
+    receipt = d / 'runtime/ariadne-install.json'
+    adm = d / 'runtime/node_modules/adm-zip/package.json'
+    try:
+        return (json.loads(receipt.read_text()).get('lock_sha256') == digest(ROOT / 'package-lock.json')
+                and json.loads(adm.read_text()).get('version') == '0.6.1')
+    except (OSError, ValueError):
+        return False
+
 def check_models():
     d = data_dir()
+    if not installation_matches(d):
+        raise MissingModel('Video dependency policy changed; run ariadne models fetch --engine video')
     p = d / 'runtime/node_modules/@variax-ai/video-watermark/dist/index.cjs'
     if not p.is_file() or digest(p) != PATCHED:
         raise MissingModel('Video runtime missing/checksum mismatch; run ariadne models fetch --engine video')
@@ -38,6 +49,11 @@ def check_models():
     return {'runtime_js_sha256': PATCHED, **MODELS}
 
 def fetch_models():
+    # Frozen Docker runtime needs only Node; npm belongs to the build stage.
+    try:
+        return check_models()
+    except MissingModel:
+        pass
     import urllib.request
     d = data_dir()
     runtime = d / 'runtime'
@@ -48,7 +64,7 @@ def fetch_models():
         shutil.copyfile(ROOT / name, runtime / name)
     p = runtime / 'node_modules/@variax-ai/video-watermark/dist/index.cjs'
     ort = runtime / 'node_modules/onnxruntime-node/package.json'
-    if not p.exists() or digest(p) != PATCHED or (not ort.is_file()) or (json.loads(ort.read_text()).get('version') != '1.23.2'):
+    if not installation_matches(d) or not p.exists() or digest(p) != PATCHED or (not ort.is_file()) or (json.loads(ort.read_text()).get('version') != '1.23.2'):
         env = {**os.environ, 'ONNXRUNTIME_NODE_INSTALL_CUDA': 'skip'}
         try:
             subprocess.run(['npm', 'ci', '--omit=dev', '--no-audit', '--no-fund'], cwd=runtime, env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
@@ -61,6 +77,7 @@ def fetch_models():
         if s.count(old) != 1:
             raise MissingModel('Unsupported upstream signature cache layout')
         p.write_text(s.replace(old, '          signature: signature.slice(),\n          region'))
+        (runtime / 'ariadne-install.json').write_text(json.dumps({'lock_sha256': digest(ROOT / 'package-lock.json'), 'runtime_js_sha256': PATCHED}))
     model = d / 'models'
     model.mkdir(exist_ok=True)
     for name, sha in MODELS.items():
@@ -104,7 +121,7 @@ class VideoWatermarker:
         self._token = None
         self.stats = {}
         self.last_error = None
-        atexit.register(self.close)
+        self._cleanup_registered = False
 
     def _load(self):
         if self._process and self._owner == os.getpid() and (self._process.poll() is None):
@@ -117,6 +134,9 @@ class VideoWatermarker:
         self._responses = queue.Queue()
         self._process = subprocess.Popen(['node', str(ROOT / 'worker.mjs'), str(d / 'runtime'), str(d / 'models'), str(self.threads)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self._errors)
         self._owner = os.getpid()
+        if not self._cleanup_registered:
+            atexit.register(self.close)
+            self._cleanup_registered = True
         process = self._process
         responses = self._responses
 
@@ -227,6 +247,9 @@ class VideoWatermarker:
             return (rows, {'token': h['token']} if h['token'] else None)
 
     def close(self):
+        if self._cleanup_registered:
+            atexit.unregister(self.close)
+            self._cleanup_registered = False
         p = self._process
         if p and self._owner == os.getpid():
             if p.poll() is None:

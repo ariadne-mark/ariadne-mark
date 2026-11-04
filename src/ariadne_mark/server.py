@@ -31,8 +31,11 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
         raise ValueError("feedback URL must use HTTPS or HTTP")
     if not 0 < upload_timeout <= 3600 or not 1 <= upload_slots <= 16:
         raise ValueError("Invalid upload deadline or slots")
-    if production and not getattr(sdk, "trust_anchors", None):
-        raise ValueError("Production verification requires configured trust anchors")
+    if production:
+        if not getattr(sdk, "trust_anchors", None):
+            raise ValueError("Production verification requires configured trust anchors")
+        from ariadne_mark.signing import validate_trust_roots
+        validate_trust_roots(sdk.trust_anchors)
     gate = threading.BoundedSemaphore(1)
     uploads = threading.BoundedSemaphore(upload_slots)
     limit = max_upload_mb * 1024 * 1024

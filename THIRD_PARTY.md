@@ -1,4 +1,4 @@
-# Third-party components — 0.5.1a0
+# Third-party components — 0.5.2a0
 
 The wheel contains Ariadne Mark's code and a model checksum manifest, not model
 weights or third-party source copies. Pip/Docker installation obtains upstream
@@ -9,7 +9,7 @@ their SHA-256 hashes; runtime processing can be offline.
 | --- | --- | --- | --- |
 | TrustMark | 0.9.2, Q/BCH-5 | https://github.com/adobe/trustmark | MIT; upstream README states it covers code and downloaded models |
 | VideoSeal | official 1.0 TorchScript y_256b_img.jit | https://github.com/facebookresearch/videoseal | MIT; model hash and official Meta download URL in src/ariadne_mark/videoseal/__init__.py |
-| C2PA Python | 0.38.1 | https://github.com/contentauth/c2pa-python | MIT OR Apache-2.0; bundles native C2PA |
+| C2PA Python | 0.38.3 / native 0.91.7 | https://github.com/contentauth/c2pa-python | MIT OR Apache-2.0; bundles native C2PA |
 | PyTorch CPU | 2.14.1+cpu | https://pytorch.org/ | BSD-style; use the official CPU wheel index |
 | torchvision CPU | 0.29.1+cpu | https://github.com/pytorch/vision | BSD-3-Clause |
 | Pillow | 13.0.0 | https://python-pillow.org/ | MIT-CMU |
@@ -35,4 +35,25 @@ release validation artifacts.
 - `@variax-ai/video-watermark` 0.3.2: MIT, copyright 2026 Variax. Upstream commit 2fa85425546e. The original license is packaged in `ariadne_mark/videoq/VARIAX-LICENSE.txt`. A one-line aliasing fix copies the cached scene signature; upstream/patched SHA-256 are pinned.
 - `onnxruntime-node` 1.23.2: MIT; CPU installation, CUDA download disabled. npm integrity lockfile packaged in the wheel.
 - Official Adobe TrustMark Q ONNX models: same MIT upstream as TrustMark; hashes pinned in the adapter.
-- Node.js and npm retain their own licenses and are external dependencies; included by the Docker OS packages. No Node executable or model weights are embedded in the Python wheel.
+- Node.js and npm retain their own licenses and are external dependencies; the Docker recipe copies Node from a pinned official image and uses npm only in its build stage. No Node executable or model weights are embedded in the Python wheel.
+
+## Distribution boundary
+
+The Ariadne wheel/source contain original adapters, upstream attribution,
+lockfiles and hash manifests. They do not bundle FFmpeg, PyAV, Torch, Node or
+model weights. The C2PA bootstrap obtains unmodified official upstream sources
+and native release bytes; origin and SHA-256 are recorded in the locally built
+wheel. C2PA Python 0.38.3 is not currently available from PyPI.
+
+The Docker recipe is provided as source. A combined prebuilt Docker binary is
+a separate distribution: the tested Debian FFmpeg reports GPLv2-or-later and
+PyAV's bundled codec libraries have their own terms. Before distributing such
+an image, supply applicable notices and corresponding source/build information
+for its exact GPL components. No combined Docker binary is included in the
+first public alpha assets. MIT upstream licenses for TrustMark/VideoSeal cover
+code and the official downloaded models; verify alternative weights separately.
+
+`adm-zip` is overridden to 0.6.1. Provisioning records the packaged lockfile
+SHA and rejects an older vulnerable runtime cache. Model/runtime requests never
+perform automatic dependency installation. See the release security evidence
+for scanner coverage and remaining native advisories.

@@ -25,14 +25,16 @@ there is no accuracy cutoff in the SDK and no claimed statutory percentage.
 Use Docker for the complete CPU bundle, including old-format compatibility:
 
 ```sh
-docker build -t ariadne-mark:0.5 .
+docker build --platform linux/amd64 -t ariadne-mark:0.5 .
 docker run --rm --network none ariadne-mark:0.5 models check
 ```
 
-For a new-video-only Python installation, install Node.js 20+ and npm plus
+For a new-video-only Python installation, install Node.js (tested 24) and npm plus
 FFmpeg/ffprobe, then install `.[video]` (or the wheel with the video extra):
 
 ```sh
+python -m pip install .
+python -m ariadne_mark.bootstrap_c2pa
 python -m pip install '.[video]'
 ariadne models fetch --engine video
 ```
@@ -45,7 +47,7 @@ Provisioning is explicit and uses the packaged npm lockfile plus SHA-256 model
 and source checks. Runtime requests never download code/models. The dependency
 cache is `~/.cache/ariadne-mark/video-v1`, configurable by `ARIADNE_VIDEO_DATA`.
 Docker preprovisions it under `/opt/ariadne-video`, readable by the runtime user.
-Node20.19.2/Linux x86-64 is the tested release environment; other platforms require validation.
+Node24.22.2/Linux x86-64 is the tested 0.5.2 environment; other platforms require validation.
 
 ## Python
 
