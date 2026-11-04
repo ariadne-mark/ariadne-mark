@@ -1,4 +1,4 @@
-# Third-party components — 0.3.0a0
+# Third-party components — 0.5.1a0
 
 The wheel contains Ariadne Mark's code and a model checksum manifest, not model
 weights or third-party source copies. Pip/Docker installation obtains upstream
@@ -29,3 +29,10 @@ Reference designs and audits informed the architecture; this implementation
 wraps the upstream libraries directly and does not copy a competitor's server
 or reuse a cloud credential. Runtime dependency inventory is captured with the
 release validation artifacts.
+
+## Fast/Resilient video runtime (0.5)
+
+- `@variax-ai/video-watermark` 0.3.2: MIT, copyright 2026 Variax. Upstream commit 2fa85425546e. The original license is packaged in `ariadne_mark/videoq/VARIAX-LICENSE.txt`. A one-line aliasing fix copies the cached scene signature; upstream/patched SHA-256 are pinned.
+- `onnxruntime-node` 1.23.2: MIT; CPU installation, CUDA download disabled. npm integrity lockfile packaged in the wheel.
+- Official Adobe TrustMark Q ONNX models: same MIT upstream as TrustMark; hashes pinned in the adapter.
+- Node.js and npm retain their own licenses and are external dependencies; included by the Docker OS packages. No Node executable or model weights are embedded in the Python wheel.

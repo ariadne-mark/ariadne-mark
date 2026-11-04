@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.5.1a0 — audit follow-up
+
+- Bounded upload slots/deadline separated from inference; production trust configuration and strict CLI verification.
+- Clear unverified-issuer, expired-credential, registry-ID binding and partial video-sample results.
+- Trusted timestamp expiry regression; custom roots preserve C2PA/TSA defaults.
+- Registry and fsynced receipt precede media publication; process-death regressions; read-only verifier registry.
+- 512 MiB export/upload alignment, pinned MP4 demux, explicit ICC conversion and credentialed-input action handling.
+- Test product supports both video profiles and bounded worker retries.
+
+## 0.5.0a0 — 2026-11-04
+
+- Fast and Resilient CPU video profiles, persistent binary Node/ONNX bridge.
+- Explicit runtime/model provisioning with integrity checks, separate video extra.
+- New payload routing and bounded 5→20 sample verification; legacy decoding retained.
+- Shared exporter preserves AAC, PTS, duration and rotation; signed profile identifier and per-export statistics.
+- Lazy image models, concurrent export isolation, wheel/Docker and real-media validation.
+
+
 ## 0.2.0a0 — Developer preview
 
 - Local CPU TrustMark-Q image and video watermarking, pinned model hashes and explicit setup.

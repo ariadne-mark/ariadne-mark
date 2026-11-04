@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 import tempfile
 import threading
+import time
+import socket
 from urllib.parse import parse_qs, urlsplit
 
 HTML = b'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
@@ -21,12 +23,18 @@ try{let ext=f.name.split('.').pop().toLowerCase();let r=await fetch('/verify?for
 </script></html>'''
 
 
-def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=32, feedback_url=None):
+def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback_url=None,
+                upload_timeout=120, upload_slots=4, production=False):
     if not 1 <= max_upload_mb <= 512:
         raise ValueError("max_upload_mb must be between 1 and 512")
     if feedback_url and urlsplit(feedback_url).scheme not in {"https", "http"}:
         raise ValueError("feedback URL must use HTTPS or HTTP")
+    if not 0 < upload_timeout <= 3600 or not 1 <= upload_slots <= 16:
+        raise ValueError("Invalid upload deadline or slots")
+    if production and not getattr(sdk, "trust_anchors", None):
+        raise ValueError("Production verification requires configured trust anchors")
     gate = threading.BoundedSemaphore(1)
+    uploads = threading.BoundedSemaphore(upload_slots)
     limit = max_upload_mb * 1024 * 1024
 
     class Handler(BaseHTTPRequestHandler):
@@ -72,29 +80,70 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=32, feedback_
             if not 0 < length <= limit or self.headers.get("Transfer-Encoding"):
                 self.respond(413, {"error": "invalid_upload_size"})
                 return
-            if not gate.acquire(blocking=False):
-                self.respond(429, {"error": "verifier_busy"})
+            if not uploads.acquire(blocking=False):
+                self.respond(429, {"error": "upload_slots_busy"})
+                self.close_connection = True
                 return
+            inference_acquired = False
             try:
                 with tempfile.TemporaryDirectory(prefix="ariadne-upload-") as directory:
                     path = Path(directory) / ("upload." + ext)
                     with path.open("wb") as file:
                         remaining = length
+                        deadline = time.monotonic() + upload_timeout
                         while remaining:
-                            chunk = self.rfile.read(min(65536, remaining))
+                            left = deadline - time.monotonic()
+                            if left <= 0:
+                                raise TimeoutError("upload_deadline")
+                            self.connection.settimeout(min(5, left))
+                            chunk = self.rfile.read1(min(65536, remaining))
                             if not chunk:
                                 raise ValueError("incomplete_upload")
                             file.write(chunk)
                             remaining -= len(chunk)
+                    # Slow senders consume a bounded upload slot, never the
+                    # model's only inference slot.
+                    inference_acquired = gate.acquire(blocking=False)
+                    if not inference_acquired:
+                        self.respond(429, {"error": "verifier_busy"})
+                        return
                     report = sdk.verify(path)
                 # Temporary files are deleted before the response is returned.
                 self.respond(200, report)
+            except (TimeoutError, socket.timeout):
+                self.close_connection = True
+                self.respond(408, {"error": "upload_timeout", "status": "not_checked"})
             except Exception:
                 self.respond(422, {"error": "verification_failed", "status": "not_checked"})
             finally:
-                gate.release()
+                if inference_acquired:
+                    gate.release()
+                uploads.release()
 
     class Server(ThreadingHTTPServer):
+        daemon_threads = True
+        block_on_close = False
+
+        def __init__(self, *args, **kwargs):
+            self.handlers = threading.BoundedSemaphore(16)
+            super().__init__(*args, **kwargs)
+
+        def process_request(self, request, address):
+            if not self.handlers.acquire(blocking=False):
+                self.shutdown_request(request)
+                return
+            try:
+                super().process_request(request, address)
+            except BaseException:
+                self.handlers.release()
+                raise
+
+        def process_request_thread(self, request, address):
+            try:
+                super().process_request_thread(request, address)
+            finally:
+                self.handlers.release()
+
         def handle_error(self, request, client_address):
             # The stdlib default includes client IPs in exception logs.
             # Do not retain them for failed/disconnected uploads either.

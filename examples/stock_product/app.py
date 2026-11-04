@@ -11,6 +11,7 @@ import re
 import sqlite3
 import sys
 import time
+import shutil
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
@@ -23,6 +24,9 @@ CODE = Path(__file__).resolve().parent
 CATALOG = {x['id']: x for x in json.loads((CODE / 'catalog.json').read_text())}
 PROFILE = json.loads((CODE / 'product.json').read_text())
 VERIFIER = os.environ.get('VERIFIER_URL', 'http://verifier:8080')
+MAX_ATTEMPTS = int(os.environ.get('PRODUCT_MAX_ATTEMPTS', '3'))
+if not 1 <= MAX_ATTEMPTS <= 10:
+    raise ValueError('PRODUCT_MAX_ATTEMPTS must be 1–10')
 
 
 def now():
@@ -59,6 +63,11 @@ def init():
             visible INTEGER NOT NULL, record TEXT NOT NULL, status TEXT NOT NULL,
             created TEXT NOT NULL, started TEXT, finished TEXT, attempts INTEGER DEFAULT 0,
             seconds REAL, error TEXT, result TEXT, verification TEXT)''')
+        columns = {row[1] for row in db.execute('PRAGMA table_info(jobs)')}
+        if 'video_profile' not in columns:
+            db.execute("ALTER TABLE jobs ADD COLUMN video_profile TEXT NOT NULL DEFAULT 'fast'")
+        if 'next_attempt' not in columns:
+            db.execute("ALTER TABLE jobs ADD COLUMN next_attempt REAL NOT NULL DEFAULT 0")
 
 
 def view(row):
@@ -85,11 +94,14 @@ class Conflict(ValueError):
 
 
 def submit(body):
-    if set(body) - {'fixture', 'visible', 'request_key'}:
+    if set(body) - {'fixture', 'visible', 'request_key', 'video_profile'}:
         raise ValueError('Unknown request fields')
     fixture = body.get('fixture')
     visible = body.get('visible', False)
     key = body.get('request_key', str(uuid4()))
+    video_profile = body.get('video_profile', 'fast')
+    if not isinstance(video_profile, str) or video_profile not in {'fast', 'resilient'}:
+        raise ValueError('video_profile must be fast or resilient')
     if not isinstance(fixture, str) or fixture not in CATALOG or type(visible) is not bool:
         raise ValueError('Select a fixture and a boolean visible option')
     if not isinstance(key, str) or not re.fullmatch(r'[a-zA-Z0-9-]{1,80}', key):
@@ -98,7 +110,7 @@ def submit(body):
         db.execute('BEGIN IMMEDIATE')
         old = db.execute('SELECT * FROM jobs WHERE request_key=?', (key,)).fetchone()
         if old:
-            if old['fixture'] != fixture or bool(old['visible']) != visible:
+            if old['fixture'] != fixture or bool(old['visible']) != visible or old['video_profile'] != video_profile:
                 raise Conflict('Request key already belongs to another export')
             return view(old), False
         if db.execute("SELECT count(*) FROM jobs WHERE status IN ('queued','processing')").fetchone()[0] >= 64:
@@ -109,9 +121,25 @@ def submit(body):
             system=GenerativeSystem(**PROFILE['system']), media_kind=MediaKind(CATALOG[fixture]['kind']),
             action=Action.CREATED, created_at=datetime.fromisoformat(stamp))
         job_id = str(uuid4())
-        db.execute('INSERT INTO jobs(id,request_key,fixture,visible,record,status,created) VALUES(?,?,?,?,?,?,?)',
-                   (job_id, key, fixture, int(visible), record.to_json(), 'queued', stamp))
+        db.execute('INSERT INTO jobs(id,request_key,fixture,visible,record,status,created,video_profile) VALUES(?,?,?,?,?,?,?,?)',
+                   (job_id, key, fixture, int(visible), record.to_json(), 'queued', stamp, video_profile))
     return get(job_id), True
+
+
+def recover_interrupted_jobs():
+    """Only called while holding the exclusive single-worker flock."""
+    failed = []
+    with connect() as db:
+        for row in db.execute("SELECT id,attempts FROM jobs WHERE status='processing'").fetchall():
+            if row['attempts'] >= MAX_ATTEMPTS:
+                db.execute("UPDATE jobs SET status='failed', finished=?, error='worker_retry_limit' WHERE id=?", (now(), row['id']))
+                failed.append(row['id'])
+            else:
+                db.execute("UPDATE jobs SET status='queued', next_attempt=? WHERE id=?", (time.time() + min(2 ** row['attempts'], 30), row['id']))
+    for job_id in failed:
+        if re.fullmatch(r'[0-9a-f-]{36}', job_id):
+            shutil.rmtree(ROOT / 'staging' / job_id, ignore_errors=True)
+    return failed
 
 
 def worker():
@@ -124,20 +152,22 @@ def worker():
     lock = (ROOT / 'worker.lock').open('w')
     fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     registry = Registry(ROOT / 'registry/assets.sqlite3')
-    sdk = SDK(Watermarker(threads=2), SigningIdentity.from_directory(ROOT / 'identity', allow_dev=True), registry)
-    with connect() as db:
-        db.execute("UPDATE jobs SET status='queued' WHERE status='processing'")
+    marker = Watermarker(threads=2)
+    identity = SigningIdentity.from_directory(ROOT / 'identity', allow_dev=True)
+    sdks = {p: SDK(marker, identity, registry, video_profile=p) for p in ('fast', 'resilient')}
+    recover_interrupted_jobs()
     print('Worker ready; model instances reused across jobs', flush=True)
     while True:
         with connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            row = db.execute("SELECT * FROM jobs WHERE status='queued' ORDER BY created LIMIT 1").fetchone()
+            row = db.execute("SELECT * FROM jobs WHERE status='queued' AND next_attempt<=? ORDER BY created LIMIT 1", (time.time(),)).fetchone()
             if row:
                 db.execute("UPDATE jobs SET status='processing', started=?, attempts=attempts+1, error=NULL WHERE id=?", (now(), row['id']))
         if not row:
             time.sleep(0.25)
             continue
         job = view(row)
+        sdk = sdks[job['video_profile']]
         start = time.monotonic()
         stage = ROOT / 'staging' / job['id']
         final = ROOT / 'results' / job['id']
@@ -153,6 +183,18 @@ def worker():
             output = directory / ('media' + extension)
             receipt_path = output.with_name(output.name + '.receipt.json')
             receipt = None
+            # A crash before the media commit marker may leave a durable
+            # receipt/registry row. This single-worker wrapper owns the job and
+            # can remove only its unpublished binding before retrying.
+            if not final.exists() and not output.exists():
+                with registry.connect() as db:
+                    abandoned = db.execute('SELECT token,sha256 FROM assets WHERE asset_id=?', (str(record.asset_id),)).fetchone()
+                if abandoned:
+                    registry.remove(abandoned[0], abandoned[1])
+                receipt_path.unlink(missing_ok=True)
+                for leftover in directory.glob('.ariadne-*'):
+                    if leftover.is_dir():
+                        shutil.rmtree(leftover)
             if receipt_path.exists():
                 try:
                     receipt = json.loads(receipt_path.read_text())

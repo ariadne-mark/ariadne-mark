@@ -42,11 +42,14 @@ services:
       retries: 12
       start_period: 10s
     entrypoint: ["ariadne"]
-    command: ["serve", "--host", "0.0.0.0", "--registry", "/data/registry/assets.sqlite3"]
+    command: ["serve", "--host", "0.0.0.0", "--registry", "/data/registry/assets.sqlite3", "--trust-anchors", "/trust/provider.pem", "--production"]
     networks: [lab, front]
     ports: ["127.0.0.1:8021:8080"]
     volumes:
-      - ${PRODUCT_DATA}/registry:/data/registry
+      - ${PRODUCT_DATA}/registry:/data/registry:ro
+      - ${PRODUCT_DATA}/identity/trust.pem:/trust/provider.pem:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=2g,mode=1777
     mem_limit: 3g
     cpus: 2
 networks:

@@ -33,3 +33,22 @@ keys, upload contents or private identifiers.
 Executable tests: [test_results.py](../../tests/verification/test_results.py).
 The media adapters now exercise these distinctions on actual signed,
 transformed, unmarked and corrupted files; see [release evidence](../validation/0.2.0a0.md).
+
+## Media API additions in 0.5.1
+
+- `expired_credential`: the native validator cannot establish a valid signing
+  time for an expired credential. This is distinct from detected tampering.
+- Untrusted, mathematically valid signatures retain their raw signed claims in
+  JSON, but the headline is `Signature valid; issuer unverified`.
+- `recovery.content_binding`: `exact_registered_file` only when SHA-256 matches
+  the registry's original; otherwise `not_verified`. A matching public ID alone
+  is not authenticated source attribution. Even perceptual similarity would not
+  make a copy-resistant signature.
+- Video `watermark.sample_coverage` reports matched/sample counts per engine,
+  partial/aggregate-only evidence and `whole_video_coverage: not_established`.
+  It does not invent a whole-file confidence percentage from sampled frames.
+  No new acceptance percentage is imposed; conflicts and absent read-back IDs
+  still fail export as before.
+
+A valid C2PA binding covers its signed asset; that is separate from the extent
+to which watermark IDs can be recovered across a video's timeline.

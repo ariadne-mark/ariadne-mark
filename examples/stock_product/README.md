@@ -75,3 +75,17 @@ on this small fixture set, not performance or durability guarantees.
 Stop the product with `docker compose -p ariadne-stock down`. Persistent data
 remains available for the next start. Stop the EC2 instance separately when it
 is no longer needed.
+
+## 0.5.1 profile and audit follow-up
+
+Jobs accept `video_profile: "fast" | "resilient"` (default Fast). The request key
+includes this setting in its conflict check. One persistent SDK exists per
+profile. The HTTP acceptance run additionally exports all three video fixtures
+with Resilient and checks its per-frame inference count.
+
+The verifier mounts only the public root certificate and a read-only registry
+directory. It uses production trust configuration but this remains a private
+development-certificate lab, not public trust enrollment. Interrupted jobs have
+three maximum attempts (configurable via PRODUCT_MAX_ATTEMPTS, 1–10) with bounded
+backoff. A poison job fails and its partial staging is removed. A surviving
+worker owns the exclusive flock before it reconciles unpublished job artifacts.

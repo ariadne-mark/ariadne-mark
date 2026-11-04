@@ -1,5 +1,12 @@
 # Video export
 
+In0.5.0a0, the default encoder is CPU TrustMark Q with Fast/Resilient profiles.
+See [current profiles and installation](video-profiles.md). The common PyAV
+exporter preserves timing/AAC and signs C2PA. The following describes the
+retained legacy VideoSeal format and its original0.3 implementation.
+
+## Legacy VideoSeal implementation
+
 REQ-005. VideoSeal 1.0 is the default video engine in 0.3.0a0. Images retain TrustMark Q/BCH-5. The official Meta TorchScript model is loaded on CPU only after SHA-256 verification. Provision it during setup; inference never downloads weights.
 
 PyAV processes four frames at a time. The pinned model uses temporal repetition with step size four; this is not four independent model calls. The last incomplete batch is processed too. Original presentation timestamps survive VFR export and display rotation is normalized into pixels. H.264 uses CRF 18 and two encoding threads; FFmpeg remuxes original AAC packets. C2PA signs the resulting MP4. Failed final verification publishes neither media nor receipt.

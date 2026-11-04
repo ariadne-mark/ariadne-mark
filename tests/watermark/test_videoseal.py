@@ -73,7 +73,10 @@ class VideoRoutingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "fixture.mp4"
             path.touch()
-            with patch("ariadne_mark.verification.media.inspect_c2pa", return_value=claim), patch("ariadne_mark.video.sample_frames", return_value=[(object(), 0.0)]):
+            class NewMissing:
+                algorithm = "adobe.trustmark.Q.variax-bch5"
+                def decode_frames(self, frames): raise MissingModel("not provisioned")
+            with patch("ariadne_mark.videoq.VideoWatermarker", NewMissing), patch("ariadne_mark.verification.media.inspect_c2pa", return_value=claim), patch("ariadne_mark.video.sample_frames", return_value=[(object(), 0.0)]):
                 return verify_file(path, video_marker=video_marker, marker=marker)
 
     def test_missing_video_model_is_not_reported_as_absent_mark(self):

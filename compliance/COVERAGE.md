@@ -2,7 +2,7 @@
 
 Все 15 пунктов включены в план. **Учтено в плане ≠ реализовано ≠ проверено ≠ полное юридическое соответствие.**
 
-Текущий статус: **6 из 15 реализовано и проверено в указанном техническом scope**, 9 в работе. См. [границы поддержки](../docs/operations/support.md) и [доказательства](../docs/validation/0.4.0a0.md). Юридическая применимость не становится подтверждённой автоматически.
+Текущий статус: **8 из 15 реализовано и проверено в указанном техническом scope**, 7 в работе. См. [границы поддержки](../docs/operations/support.md) и [доказательства](../docs/validation/0.5.1a0.md). Юридическая применимость не становится подтверждённой автоматически.
 
 Машиночитаемый источник: [requirements.json](requirements.json). Нормативные источники: [sources/index.json](sources/index.json).
 
@@ -10,7 +10,7 @@
 |---|---|---|---|---|---|
 | REQ-001 | Определить применимые требования | [compliance/profiles](../compliance/profiles/README.md) | [tests/compliance](../tests/compliance/README.md) | [Руководство](../docs/compliance/applicability.md) | ☐ |
 | REQ-002 | Записать машиночитаемую маркировку изображения | [src/ariadne_mark/watermark](../src/ariadne_mark/watermark/README.md) | [tests/watermark](../tests/watermark/README.md) | [Руководство](../docs/implementation/image-marking.md) | ✓ |
-| REQ-003 | Сформировать сведения о происхождении | [src/ariadne_mark/provenance](../src/ariadne_mark/provenance/README.md) | [tests/provenance](../tests/provenance/README.md) | [Руководство](../docs/implementation/provenance.md) | ☐ |
+| REQ-003 | Сформировать сведения о происхождении | [src/ariadne_mark/provenance](../src/ariadne_mark/provenance/README.md) | [tests/provenance](../tests/provenance/README.md) | [Руководство](../docs/implementation/provenance.md) | ✓ |
 | REQ-004 | Подписать и проверить C2PA | [src/ariadne_mark/signing](../src/ariadne_mark/signing/README.md) | [tests/signing](../tests/signing/README.md) | [Руководство](../docs/implementation/signing.md) | ✓ |
 | REQ-005 | Реализовать полный путь для видео | [src/ariadne_mark/video](../src/ariadne_mark/video/README.md) | [tests/video](../tests/video/README.md) | [Руководство](../docs/implementation/video.md) | ✓ |
 | REQ-006 | Обеспечить восстановление связи с источником | [src/ariadne_mark/registry](../src/ariadne_mark/registry/README.md) | [tests/registry](../tests/registry/README.md) | [Руководство](../docs/implementation/recovery.md) | ✓ |
@@ -20,7 +20,7 @@
 | REQ-010 | Сохранять историю преобразований | [src/ariadne_mark/provenance](../src/ariadne_mark/provenance/README.md) | [tests/provenance](../tests/provenance/README.md) | [Руководство](../docs/implementation/provenance-relay.md) | ✓ |
 | REQ-011 | Ограничить обработку данных в verifier | [apps/verifier](../apps/verifier/README.md) | [tests/privacy](../tests/privacy/README.md) | [Руководство](../docs/operations/privacy.md) | ☐ |
 | REQ-012 | Измерить устойчивость и качество | [benchmarks/durability](../benchmarks/durability/README.md) | [tests/robustness](../tests/robustness/README.md) | [Руководство](../docs/benchmarks/durability.md) | ☐ |
-| REQ-013 | Обеспечить работу на CPU и явный отказ | [src/ariadne_mark/pipeline](../src/ariadne_mark/pipeline/README.md) | [tests/integration](../tests/integration/README.md) | [Руководство](../docs/operations/cpu-deployment.md) | ☐ |
+| REQ-013 | Обеспечить работу на CPU и явный отказ | [src/ariadne_mark/pipeline](../src/ariadne_mark/pipeline/README.md) | [tests/integration](../tests/integration/README.md) | [Руководство](../docs/operations/cpu-deployment.md) | ✓ |
 | REQ-014 | Организовать production-подписание | [src/ariadne_mark/signing](../src/ariadne_mark/signing/README.md) | [tests/signing](../tests/signing/README.md) | [Руководство](../docs/operations/keys-and-trust.md) | ☐ |
 | REQ-015 | Версионировать правила и выпускать доказательства | [compliance/profiles](../compliance/profiles/README.md) | [tests/compliance](../tests/compliance/README.md) | [Руководство](../docs/operations/releases.md) | ☐ |
 
@@ -37,3 +37,7 @@
 ## Три типа связей
 
 Законодательные требования привязываются к источнику и применимости. Технические меры (например, C2PA или реестр) объясняют выбранный способ реализации. Инженерные требования (например, CPU и fail-closed) нужны для качества продукта. Эти категории не подменяют друг друга.
+
+В 0.5.1 технические evidence обновлены, но 7 открытых критериев не отмечены готовыми автоматически. `partial_measure` в профиле явно отделяет запись C2PA/ID от доказанной долговечной связи и публичного resolver. См. [разбор аудита](../docs/validation/0.5.1a0.md).
+
+REQ-003 и REQ-013 закрыты в техническом scope на основании 81 теста установленного пакета и 45 HTTP-проверок продукта. Это не подтверждение правдивости полей, универсальной устойчивости или полной юридической применимости.

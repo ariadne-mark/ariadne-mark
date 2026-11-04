@@ -1,0 +1,9 @@
+{
+  "name": "ariadne-mark-video-runtime",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "@variax-ai/video-watermark": "0.3.2",
+    "onnxruntime-node": "1.23.2"
+  }
+}

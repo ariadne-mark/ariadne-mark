@@ -8,6 +8,7 @@ from pathlib import Path
 
 from ariadne_mark.errors import AriadneError
 from ariadne_mark.provenance import ProvenanceRecord
+from ariadne_mark.version import sdk_version
 
 ASSERTION = "org.ariadne-mark.provenance"
 MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".mp4": "video/mp4"}
@@ -75,23 +76,26 @@ def context(trust_anchors: Path | None = None):
     import c2pa
     settings = {
         "verify": {"verify_after_reading": True, "verify_after_sign": True, "verify_trust": True,
-                   "remote_manifest_fetch": False, "ocsp_fetch": False},
+                   "remote_manifest_fetch": False, "ocsp_fetch": False, "verify_timestamp_trust": True},
         "builder": {"thumbnail": {"enabled": False}},
     }
     if trust_anchors:
-        settings["trust"] = {"trust_anchors": Path(trust_anchors).read_text()}
+        # Add operator roots without removing the built-in TSA trust store.
+        settings["trust"] = {"user_anchors": Path(trust_anchors).read_text()}
     return c2pa.Context.from_dict(settings)
 
 
 def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: str,
               identity: SigningIdentity, *, parent: Path | None = None, disclosure: bool = False,
               audio: str = "none", algorithm: str = "adobe.trustmark.Q.bch5",
-              payload_format: str = "ariadne-v1") -> None:
+              payload_format: str = "ariadne-v1", watermark_profile: str | None = None) -> None:
     import c2pa
+    if not identity.development and not identity.timestamp_url:
+        raise AriadneError("Production signing requires an explicit TSA URL; development fixtures use allow_dev")
     action = "c2pa.created" if record.action.value == "created" else "c2pa.edited"
     source_type = "trainedAlgorithmicMedia" if record.action.value == "created" else "compositeWithTrainedAlgorithmicMedia"
     manifest = {
-        "claim_generator_info": [{"name": "Ariadne Mark", "version": "0.4.0a0"}],
+        "claim_generator_info": [{"name": "Ariadne Mark", "version": sdk_version()}],
         "title": "AI-generated media" if record.action.value == "created" else "AI-altered media",
         "format": MIME[source.suffix.lower()],
         "assertions": [
@@ -100,7 +104,8 @@ def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: 
                 "when": record.to_dict()["created_at"],
                 "softwareAgent": {"name": record.system.name, "version": record.system.version}}]}},
             {"label": ASSERTION, "data": {"record": record.to_dict(), "watermark": {
-                "algorithm": algorithm, "format": payload_format, "token": token},
+                "algorithm": algorithm, "format": payload_format, "token": token,
+                **({"profile": watermark_profile} if watermark_profile else {})},
                 "development_identity": identity.development, "visible_disclosure": disclosure,
                 "audio": audio}},
         ],
