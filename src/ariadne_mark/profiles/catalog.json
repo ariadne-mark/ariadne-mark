@@ -1,13 +1,13 @@
 {
-  "version": "2026-11-05.1",
-  "reviewed_on": "2026-11-05",
+  "version": "2026-11-06.1",
+  "reviewed_on": "2026-11-06",
   "review_interval_days": 30,
   "scope": "Image/video provider marking and EU deployer deepfake disclosure; requirements planning, not a legal determination",
   "sources": {
     "EU-50": {
       "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50",
       "kind": "statute_official_explainer",
-      "basis": "Consolidated AI Act 2026-07-27 as reproduced by European Commission"
+      "basis": "Current Commission reproduction of consolidated AI Act2026-07-27, Article50(2),(4),(5) re-read2026-11-06; direct EUR-Lex robot gate not bypassed."
     },
     "EU-TIMING": {
       "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-111",
@@ -24,12 +24,18 @@
       "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=8.&chapter=25.&part=&lawCode=BPC",
       "amendment_url": "https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB1000",
       "kind": "consolidated_statute_official",
-      "basis": "Official consolidated BPC Chapter 25 and chaptered SB 1000 read in Chrome on 2026-11-04; Stats. 2026, Ch. 861, effective 2026-09-30. Partial provider mapping; other roles and full legal determination excluded."
+      "basis": "Official consolidated BPC Chapter25 re-read in browser2026-11-06; SB1000 amendment notes effective2026-09-30. Sections22757.2/.3 require no-cost upload OR URL + programmatic verifier, system-only disclosure, feedback, minimization and latent durability. Provider scope partial; other roles excluded."
     },
     "SDK": {
       "url": "https://github.com/ariadne-mark/ariadne-mark",
       "kind": "implementation_choice",
       "basis": "C2PA + watermark is the SDK implementation, not a statutory mandate to use these particular algorithms"
+    },
+    "EU-GUIDANCE": {
+      "url": "https://digital-strategy.ec.europa.eu/en/policies/guidelines-ai-transparency-obligations",
+      "document_url": "https://ec.europa.eu/newsroom/dae/redirection/document/131215",
+      "kind": "official_nonbinding_guidance",
+      "basis": "Commission final Article50 guidelines, library updated2026-11-05; sections4.2.1\u20134.2.3 read from the official PDF2026-11-06. Marking/detection, reliability/robustness including common alterations and adversarial attacks, proportionality and narrow closed-environment cases. Not a statutory cadence rule."
     }
   }
 }

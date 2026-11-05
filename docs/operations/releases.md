@@ -42,5 +42,5 @@ that binary, complete applicable corresponding-source/notices obligations and
 native vulnerability triage for its exact bytes. This is distinct from
 publishing Ariadne's own wheel/source and the Docker recipe.
 
-[Current candidate evidence](../validation/0.5.3a0.md) ·
+[Current candidate scope](../compliance/launch-mapping.md) · [Economy modes](../implementation/video-profiles.md) · [Prior candidate evidence](../validation/0.5.3a0.md) ·
 [Previous validation](../validation/0.5.1a0.md)

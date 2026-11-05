@@ -256,6 +256,8 @@ def _verification_result(path, c2pa, watermark, *, registry, video):
     elif c2pa["status"] == "verified_claim" and c2pa.get("record"):
         label = "AI-generated" if c2pa["record"]["action"] == "created" else "AI-altered"
         label += " (signed claim; issuer " + c2pa["issuer_trust"] + ")"
+    elif c2pa["status"] == "verified_claim":
+        label = "C2PA signature valid; no supported AI-origin claim"
     elif recovery["status"] == "found":
         label = "Watermark ID found in registry; content match unverified" if recovery.get("content_binding") != "exact_registered_file" else "Watermark ID matches the registered file"
     elif token:

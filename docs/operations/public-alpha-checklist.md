@@ -1,7 +1,7 @@
-# Public alpha checklist — 0.5.2 candidate
+# Public alpha checklist — 0.6 candidate
 
 Release target: local CPU SDK for JPEG/PNG and supported SDR MP4, with
-Fast/Resilient video, signed provenance, self-hosted verification and partial
+Economy5s/2s and Resilient video, signed provenance, self-hosted verification and partial
 EU/California requirements planning. Assets: Ariadne wheel + source + Docker
 recipe. A maintained hosted service and a prebuilt combined image are separate.
 
@@ -24,5 +24,5 @@ endpoint, configure trust/privacy/feedback, and assess its own duties. Public
 hosting of an Ariadne-operated verifier is not a prerequisite for this local
 alpha.
 
-See [release evidence](../validation/0.5.2a0.md) for current results and
+See [release evidence](../validation/0.6.0a0.md) for current results and
 [qualification rules](releases.md) for publication gates.

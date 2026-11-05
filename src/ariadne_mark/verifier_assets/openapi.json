@@ -1,0 +1,160 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Ariadne Mark public verifier",
+    "version": "0.6.0a0",
+    "description": "Self-hosted, no-account, supported-scheme provenance verification. Operator must configure reviewed public sources, trust roots, feedback and durable registry as applicable."
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Read capabilities and upload limit",
+        "responses": {
+          "200": {
+            "description": "Service configuration; readiness is not a legal determination"
+          }
+        }
+      }
+    },
+    "/verify": {
+      "post": {
+        "summary": "Inspect a local upload without an account",
+        "description": "C2PA and supported Ariadne watermark schemes only. Returns a compact public report, not a universal AI-origin verdict. Files are deleted before response. Search exhaustion due to a budget is not an absence result.",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "png",
+                "jpg",
+                "jpeg",
+                "mp4"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Report; inspect c2pa/watermark status and public_output redactions"
+          },
+          "408": {
+            "description": "Upload timed out; not_checked"
+          },
+          "413": {
+            "description": "Invalid or excessive upload length"
+          },
+          "415": {
+            "description": "Unsupported extension"
+          },
+          "422": {
+            "description": "Unsupported content or operational verification failure; not_checked"
+          },
+          "429": {
+            "description": "Upload or inference capacity busy"
+          },
+          "504": {
+            "description": "Whole-job verification deadline exceeded; worker/children terminated; not_checked, never a negative"
+          }
+        }
+      }
+    },
+    "/records/{token}": {
+      "get": {
+        "summary": "Resolve a public opaque asset ID in the operator registry",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^014d[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public provenance fields; not authentication of a media copy"
+          },
+          "400": {
+            "description": "Invalid ID"
+          },
+          "404": {
+            "description": "ID not present or no registry configured"
+          },
+          "503": {
+            "description": "Registry could not be read"
+          }
+        }
+      }
+    },
+    "/feedback": {
+      "post": {
+        "summary": "Add one anonymous efficacy-category counter",
+        "description": "Enabled only when the operator configures a feedback database. No free text, media, IDs, contact information or event history is accepted.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "rating",
+                  "media"
+                ],
+                "properties": {
+                  "rating": {
+                    "type": "string",
+                    "enum": [
+                      "correct_result",
+                      "incorrect_result",
+                      "unable_to_check"
+                    ]
+                  },
+                  "media": {
+                    "type": "string",
+                    "enum": [
+                      "image",
+                      "video",
+                      "unknown"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Aggregate counter updated"
+          },
+          "400": {
+            "description": "Invalid feedback; no extra fields allowed"
+          },
+          "413": {
+            "description": "Payload too large"
+          },
+          "503": {
+            "description": "Feedback unavailable or not configured"
+          }
+        }
+      }
+    }
+  },
+  "security": []
+}

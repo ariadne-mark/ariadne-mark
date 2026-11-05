@@ -25,7 +25,7 @@ COPY --from=build /opt/ariadne-video /opt/ariadne-video
 COPY --from=build /opt/dist /opt/dist
 COPY --from=build /app /app
 ENV ARIADNE_VIDEO_DATA=/opt/ariadne-video
-RUN useradd --create-home --uid 10001 ariadne && mkdir /data && chown ariadne:ariadne /data
+RUN useradd --create-home --uid 10001 ariadne && mkdir /data /state && chown ariadne:ariadne /data /state
 USER ariadne
 WORKDIR /data
 EXPOSE 8080

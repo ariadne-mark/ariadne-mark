@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "publisher": "Example Studio",
+      "system": {
+        "name": "Example Generator",
+        "version": "1.0"
+      }
+    }
+  ]
+}

@@ -23,3 +23,13 @@ See [0.5.3 candidate validation](../validation/0.5.3a0.md).
 Legal metadata: statutory Article 111(4), voluntary Code 3.4(c), California
 exception-section reference and licensing-workflow details corrected. The full
 Article 50 Guidelines assessment remains a separate source-review task.
+
+## 0.6 follow-up
+
+The CLI public verifier now has a verification-only child process and whole-job
+deadline, including process-group cleanup/restart tests, addressing the supplied
+service path of P2-3. Direct synchronous `SDK.verify` and custom in-process
+`make_server` embeddings remain explicitly outside that process boundary.
+The final Article50 Guidelines sections4.2.1–4.2.3 were reviewed for the launch
+map. Sparse-window adversarial removal is a documented limitation, not a closed
+robustness/legal finding. Other open items above are not silently closed.

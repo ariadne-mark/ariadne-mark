@@ -89,8 +89,8 @@ compliance, copyright ownership or truth.
 Use Docker for the complete CPU bundle, including old-format compatibility:
 
 ```sh
-docker build --platform linux/amd64 -t ariadne-mark:0.5 .
-docker run --rm --network none ariadne-mark:0.5 models check
+docker build --platform linux/amd64 -t ariadne-mark:0.6 .
+docker run --rm --network none ariadne-mark:0.6 models check
 ```
 
 For a new-video-only Python installation, install Node.js (tested 24) and npm plus

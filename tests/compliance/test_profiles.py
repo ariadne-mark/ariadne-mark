@@ -166,6 +166,15 @@ class ProfileTests(unittest.TestCase):
         c['system']['version'] = '2'
         self.assertNotEqual(first, self.report(c)['configuration_sha256'])
 
+    def test_economy_retains_durability_review_without_changing_requested_preset(self):
+        c = self.config()
+        for mode in ['economy_5s', 'economy_2s']:
+            c['sdk']['video_profile'] = mode
+            report = self.report(c)
+            self.assertEqual(report['sdk_options']['video_profile'], mode)
+            self.assertIn('economy_durability_review', [f['id'] for f in report['findings']])
+            self.assertEqual(report['legal_determination'], 'not_performed')
+
     def test_cli_without_models_and_exit_status(self):
         with redirect_stdout(io.StringIO()) as out:
             self.assertEqual(main(['profile', 'init']), 0)

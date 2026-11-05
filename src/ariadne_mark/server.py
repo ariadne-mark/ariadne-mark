@@ -9,19 +9,21 @@ import threading
 import time
 import socket
 from urllib.parse import parse_qs, urlsplit
+from ariadne_mark.errors import VerificationTimeout
 
-HTML = b'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<title>Ariadne Mark verifier</title><style>body{font:17px system-ui;max-width:760px;margin:60px auto;padding:24px;background:#f7f8f5;color:#17382c}button{padding:12px 20px;background:#17382c;color:white;border:0;border-radius:8px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:white;padding:20px;border-radius:12px}small{display:block;margin:20px 0}</style>
-<h1>Check content provenance</h1><p>Inspect C2PA credentials and Ariadne Mark watermarks in JPEG, PNG or MP4.</p>
-<input id="file" type="file" accept=".jpg,.jpeg,.png,.mp4"><button id="check">Check file</button>
-<small>Files are processed by this server and deleted after the request. No account required. An absent mark does not establish human origin. A valid credential does not establish factual truth.</small>
-<h2 id="label"></h2><pre id="result">Choose a file to begin.</pre><p id="feedback"></p>
-<script>
-fetch('/health').then(r=>r.json()).then(x=>{if(x.feedback_url){let a=document.createElement('a');a.href=x.feedback_url;a.textContent='Report an issue with this verification';a.rel='noopener noreferrer';document.getElementById('feedback').append(a)}});
-document.getElementById('check').onclick=async()=>{let f=document.getElementById('file').files[0];if(!f)return;
-let b=document.getElementById('check');b.disabled=true;document.getElementById('label').textContent='Checking...';
-try{let ext=f.name.split('.').pop().toLowerCase();let r=await fetch('/verify?format='+encodeURIComponent(ext),{method:'POST',body:f,headers:{'Content-Type':'application/octet-stream'}});let x=await r.json();document.getElementById('label').textContent=x.label||x.error||'Unable to check';document.getElementById('result').textContent=JSON.stringify(x,null,2)}catch(e){document.getElementById('label').textContent='Check failed'}finally{b.disabled=false}};
-</script></html>'''
+from importlib.resources import files
+from ariadne_mark.public_verifier import public_report, public_record, load_public_sources, FeedbackStore
+from ariadne_mark.watermark import valid_token
+from ariadne_mark.version import sdk_version
+
+ASSETS = {"/": ("index.html", "text/html; charset=utf-8"),
+          "/app.js": ("app.js", "application/javascript; charset=utf-8"),
+          "/style.css": ("style.css", "text/css; charset=utf-8"),
+          "/privacy": ("privacy.html", "text/html; charset=utf-8"),
+          "/feedback": ("feedback.html", "text/html; charset=utf-8"),
+          "/feedback.js": ("feedback.js", "application/javascript; charset=utf-8"),
+          "/openapi.json": ("openapi.json", "application/json")}
+
 
 
 class _DeadlineReader(io.RawIOBase):
@@ -44,7 +46,8 @@ class _DeadlineReader(io.RawIOBase):
 
 
 def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback_url=None,
-                upload_timeout=120, upload_slots=4, production=False, header_timeout=10):
+                upload_timeout=120, upload_slots=4, production=False, header_timeout=10,
+                public_sources=None, feedback_db=None):
     if not 1 <= max_upload_mb <= 512:
         raise ValueError("max_upload_mb must be between 1 and 512")
     if feedback_url and urlsplit(feedback_url).scheme not in {"https", "http"}:
@@ -56,6 +59,8 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
             raise ValueError("Production verification requires configured trust anchors")
         from ariadne_mark.signing import validate_trust_roots
         validate_trust_roots(sdk.trust_anchors)
+    sources = load_public_sources(public_sources)
+    feedback = FeedbackStore(feedback_db) if feedback_db is not None else None
     gate = threading.BoundedSemaphore(1)
     uploads = threading.BoundedSemaphore(upload_slots)
     limit = max_upload_mb * 1024 * 1024
@@ -89,19 +94,86 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("X-Frame-Options", "DENY")
+            self.send_header("Referrer-Policy", "no-referrer")
+            self.send_header("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")
             self.end_headers()
             self.wfile.write(payload)
 
         def do_GET(self):
-            if self.path == "/":
-                self.respond(200, HTML, "text/html; charset=utf-8")
-            elif self.path == "/health":
-                self.respond(200, {"status": "ready", "max_upload_bytes": limit, "feedback_url": feedback_url})
+            url = urlsplit(self.path)
+            if url.path in ASSETS:
+                name, content_type = ASSETS[url.path]
+                payload = files('ariadne_mark').joinpath('verifier_assets', name).read_bytes()
+                self.respond(200, json.loads(payload) if content_type == "application/json" else payload, content_type)
+            elif url.path == "/health":
+                self.respond(200, {"status": "ready", "version": sdk_version(),
+                    "max_upload_bytes": limit, "formats": ["jpg", "jpeg", "png", "mp4"],
+                    "feedback_enabled": feedback is not None, "feedback_url": feedback_url,
+                    "public_source_profiles": len(sources), "public_output": "reviewed_system_fields_only",
+                    "video_search": {"max_frames": 2000, "max_seconds": 120},
+                    "universal_ai_detector": False})
+            elif url.path.startswith('/records/'):
+                token = url.path[len('/records/'):]
+                if not valid_token(token):
+                    self.respond(400, {"error": "invalid_asset_id"})
+                    return
+                registry = getattr(sdk, 'registry', None)
+                try:
+                    stored = registry.get(token) if registry is not None else None
+                    if stored is None:
+                        self.respond(404, {"status": "unknown_id"})
+                    else:
+                        record, redacted = public_record(stored.get('record'), sources)
+                        self.respond(200, {"status": "found", "token": token, "record": record,
+                            "binding": "registry_entry_not_authentication_of_a_copy",
+                            "public_output": {"policy": "reviewed_system_fields_only", "redacted_fields": redacted}})
+                except Exception:
+                    self.respond(503, {"status": "not_checked", "error": "registry_unavailable"})
             else:
                 self.respond(404, {"error": "not_found"})
 
+        def receive_feedback(self):
+            if feedback is None:
+                self.respond(503, {"error": "feedback_not_configured"})
+                return
+            acquired = False
+            try:
+                length = int(self.headers.get('Content-Length', '0'))
+                if not 0 < length <= 2048 or self.headers.get('Transfer-Encoding'):
+                    self.respond(413, {"error": "invalid_feedback_size"})
+                    return
+                acquired = uploads.acquire(blocking=False)
+                if not acquired:
+                    self.respond(429, {"error": "upload_slots_busy"})
+                    return
+                deadline, raw = time.monotonic() + 5, bytearray()
+                while len(raw) < length:
+                    left = deadline - time.monotonic()
+                    if left <= 0:
+                        raise TimeoutError('feedback_deadline')
+                    self.connection.settimeout(min(1, left))
+                    chunk = self.rfile.read1(length - len(raw))
+                    if not chunk:
+                        raise ValueError('incomplete_feedback')
+                    raw.extend(chunk)
+                feedback.add(json.loads(raw))
+                self.respond(202, {"status": "recorded", "storage": "aggregate_counters_only"})
+            except (ValueError, UnicodeError):
+                self.respond(400, {"error": "invalid_feedback", "allowed": "rating_and_media_enums_only"})
+            except (TimeoutError, socket.timeout):
+                self.close_connection = True
+                self.respond(408, {"error": "feedback_timeout"})
+            except Exception:
+                self.respond(503, {"error": "feedback_unavailable"})
+            finally:
+                if acquired:
+                    uploads.release()
+
         def do_POST(self):
             url = urlsplit(self.path)
+            if url.path == "/feedback":
+                self.receive_feedback()
+                return
             if url.path != "/verify":
                 self.respond(404, {"error": "not_found"})
                 return
@@ -145,10 +217,12 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
                         return
                     report = sdk.verify(path)
                 # Temporary files are deleted before the response is returned.
-                self.respond(200, report)
+                self.respond(200, public_report(report, sources))
             except (TimeoutError, socket.timeout):
                 self.close_connection = True
                 self.respond(408, {"error": "upload_timeout", "status": "not_checked"})
+            except VerificationTimeout:
+                self.respond(504, {"error": "verification_timeout", "status": "not_checked"})
             except Exception:
                 self.respond(422, {"error": "verification_failed", "status": "not_checked"})
             finally:
@@ -195,3 +269,6 @@ def serve(sdk, **kwargs):
         server.serve_forever()
     finally:
         server.server_close()
+        close = getattr(sdk, 'close', None)
+        if close:
+            close()

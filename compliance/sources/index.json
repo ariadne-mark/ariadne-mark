@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-05",
+  "updated_at": "2026-11-06",
   "note": "Versioned executable planner shipped in 0.4.0a0. Technical mapping is not a final legal determination; see packaged profile catalog for retrieval details and open review items.",
   "sources": [
     {
@@ -34,6 +34,14 @@
       "type": "binding-law",
       "status": "official_commission_reproduction_reviewed_2026-11-05",
       "mapping_status": "partial_executable_mapping"
+    },
+    {
+      "id": "EU-GUIDANCE",
+      "title": "Commission Guidelines on the transparency obligations under Article50 AI Act",
+      "url": "https://digital-strategy.ec.europa.eu/en/policies/guidelines-ai-transparency-obligations",
+      "type": "official-guidance",
+      "status": "official_pdf_sections_4_2_reviewed_2026-11-06",
+      "mapping_status": "partial_guidance_mapping_not_binding_law"
     }
   ]
 }

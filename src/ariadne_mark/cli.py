@@ -16,6 +16,8 @@ def main(argv=None) -> int:
     profile_commands = profile.add_subparsers(dest="profile_command", required=True)
     profile_commands.add_parser("init", help="Print a configuration template; null means unknown")
     profile_commands.add_parser("sources", help="Show the versioned source catalog and review limits")
+    feedback = commands.add_parser("feedback-summary", help="Read aggregate efficacy feedback counters; no media or user data")
+    feedback.add_argument("database", type=Path)
     profile_check = profile_commands.add_parser("check", help="Print a requirement plan; does not certify compliance")
     profile_check.add_argument("config", type=Path)
     profile_check.add_argument("--as-of", help="Evaluate a YYYY-MM-DD scenario (does not update source knowledge)")
@@ -49,13 +51,22 @@ def main(argv=None) -> int:
     serve.add_argument("--max-upload-mb", type=int, default=512)
     serve.add_argument("--production", action="store_true", help="Require configured issuer roots before serving")
     serve.add_argument("--feedback-url", help="Optional public feedback page URL")
+    serve.add_argument("--feedback-db", type=Path, help="Persist anonymous category counts only, in a writable state directory")
+    serve.add_argument("--public-sources", type=Path, help="Operator-reviewed public provider/system names; other free-text metadata is withheld")
+    serve.add_argument("--verification-timeout", type=float, default=180,
+                       help="Whole-job model deadline in seconds; timed-out worker and children are terminated")
     for sub in (mark, verify, serve):
         sub.add_argument("--registry", type=Path, help="Optional local recovery SQLite database")
         sub.add_argument("--trust-anchors", type=Path, help="PEM trust roots supplied by the operator")
         sub.add_argument("--threads", type=int, default=2)
     args = parser.parse_args(argv)
     try:
-        if args.command == "profile":
+        if args.command == "feedback-summary":
+            from ariadne_mark.public_verifier import FeedbackStore
+            if not args.database.is_file():
+                raise ValueError("Feedback database does not exist")
+            result = FeedbackStore.read_summary(args.database)
+        elif args.command == "profile":
             from ariadne_mark.profiles import CATALOG, template, load, evaluate, parse_date
             if args.profile_command == "init":
                 result = template()
@@ -108,7 +119,13 @@ def main(argv=None) -> int:
                           profile=getattr(args, "video_profile", None) or DEFAULT_PROFILE))
             if args.command == "serve":
                 from ariadne_mark.server import serve
-                serve(sdk, host=args.host, port=args.port, max_upload_mb=args.max_upload_mb, feedback_url=args.feedback_url, production=args.production)
+                from ariadne_mark.isolated_verifier import IsolatedVerifier
+                sdk.close()
+                isolated = IsolatedVerifier(registry=args.registry, trust_anchors=args.trust_anchors,
+                                            threads=args.threads, timeout=args.verification_timeout)
+                serve(isolated, host=args.host, port=args.port, max_upload_mb=args.max_upload_mb,
+                      feedback_url=args.feedback_url, production=args.production,
+                      public_sources=args.public_sources, feedback_db=args.feedback_db)
                 return 0
             if args.command == "verify":
                 result = sdk.verify(args.source)

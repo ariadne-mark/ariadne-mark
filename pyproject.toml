@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ariadne-mark"
-version = "0.5.3a0"
+version = "0.6.0a0"
 description = "Open-source labeling and provenance tools for AI-generated images and video"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -33,7 +33,7 @@ include = ["ariadne_mark*"]
 namespaces = false
 
 [tool.setuptools.package-data]
-ariadne_mark = ["py.typed", "c2pa-bootstrap.json", "bootstrap-linux-py312.lock"]
+ariadne_mark = ["py.typed", "c2pa-bootstrap.json", "bootstrap-linux-py312.lock", "verifier_assets/*"]
 
 "ariadne_mark.watermark" = ["models.json"]
 

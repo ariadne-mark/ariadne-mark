@@ -1,4 +1,4 @@
-# Supported scope — 0.5.3a0
+# Supported scope — 0.6.0a0
 
 | Area | Supported | Boundary |
 | --- | --- | --- |

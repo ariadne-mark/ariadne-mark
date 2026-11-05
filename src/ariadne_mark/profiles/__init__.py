@@ -162,6 +162,9 @@ def evaluate(config, *, as_of=None):
         finding('unsupported_media', 'error', 'This SDK profile exports images/video only; audio/text require a separate solution.')
     if 'video' in config['media_kinds'] and config['sdk']['audio_kind'] in {'synthetic', 'unknown'}:
         finding('audio_scope', 'error' if config['sdk']['audio_kind'] == 'synthetic' else 'review', 'Audio is retained but not independently watermarked. Resolve unknown/synthetic audio outside the visual profile.')
+    if 'video' in config['media_kinds'] and config['sdk']['video_profile'].startswith('economy_'):
+        finding('economy_durability_review', 'review',
+                'Economy is a cost preset, not a statutory marking-frequency minimum. A documented known-window frame-replacement stress removed sparse marks. Review delivery/adversarial durability and detection evidence for your use case; passing ordinary transforms does not certify EU/CA sufficiency.')
     if config['role'] == 'unknown' and 'EU' in config['jurisdictions']:
         finding('eu_role', 'review', 'Determine whether the product is a provider, deployer, or both.', 'EU-50')
 
@@ -226,7 +229,7 @@ def evaluate(config, *, as_of=None):
                 finding('ca_assistive_expired', 'review', 'The statutory temporary assistive-technology exclusion ended on 2029-01-01.', 'CA-22757')
         applicability['US-CA'] = {'provider_duties': ca_state, 'effective_on': '2026-09-30', 'monthly_user_threshold': None}
         if ca_state != 'provider_duties_not_triggered_by_declaration' and today >= date(2026, 9, 30):
-            requirement('ca_latent_metadata', 'partial_measure', 'C2PA records the disclosure fields; the watermark contains only an ID. After metadata loss, fields need an accessible resolver; namespace discovery and durable authenticated linkage are not implemented.', 'CA-22757', '22757.3(a)(1)', 'sdk')
+            requirement('ca_latent_metadata', 'partial_measure', 'C2PA records the disclosure fields; the watermark contains only an ID. After metadata loss, fields need the operator’s persistent registry and deployed /records resolver. Cross-provider discovery, deployment permanence and authenticated linkage of edited copies are not established.', 'CA-22757', '22757.3(a)(1)', 'sdk')
             requirement('ca_no_mandatory_overlay', 'information', 'The amended provider duties do not require offering a manifest/visible disclosure. Other laws or product contexts may still require one.', 'CA-22757', 'SB 1000 section 4')
             declaration('ca_verifier_public', _public_https(dep['verifier_url']), 'Publish a working verifier; HTTPS URL syntax is checked, reachability is not.', 'CA-22757', '22757.2(a)(4)')
             declaration('ca_verifier_free', dep['verifier_free'] is True, 'Verification must be free to the user.', 'CA-22757', '22757.2(a)')

@@ -54,3 +54,23 @@ edge-proxy controls. Development roots and invalid/non-CA roots are rejected
 in production. Development assertions always receive a development headline.
 CORS is not enabled by default; cross-origin browser clients need a controlled
 proxy or their own explicitly reviewed CORS layer.
+
+## 0.6 public interface and isolated inference
+
+See [the current quickstart](verifier-quickstart.md). `ariadne serve` now wraps
+its verification-only SDK in `IsolatedVerifier`: one persistent child, a total
+180-second model deadline including startup, and qualified POSIX process-group
+termination on timeout/crash, including any Node child. Failed jobs are never
+negative detections; HTTP504 reports `not_checked`. The next request can start
+a new worker. The parent has no signing key. Construct services after forking;
+inherited service instances fail without killing a parent's worker. Local
+`SDK.verify` remains a direct synchronous inspection API. Low-level
+`make_server(custom_sdk)` uses the supplied object; embeddings requiring the
+same boundary must supply `IsolatedVerifier`.
+
+The packaged UI separates credential trust, watermark evidence and source
+claims. Public reports whitelist reviewed system fields, not arbitrary user
+metadata. The anonymous feedback route persists category counts only. A
+read-only operator registry can serve `/records/{token}`. These implementation
+controls require actual operator configuration/hosting; they do not establish
+statutory permanence, independent source authentication or legal compliance.
