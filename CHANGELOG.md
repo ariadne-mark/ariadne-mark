@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.3a0 — external-review follow-up candidate
+
+- Fresh-export sample gate and anchor-aware Fast v2 refresh; motion can reduce the speed advantage.
+- Total HTTP header deadline, stricter production CA configuration and development-signature headlines.
+- Scoped image negatives without Node; actual PyAV decoder-context validation.
+- Hash-locked bootstrap/full CPU dependency graph; npm scripts disabled and native ONNX integrity receipts.
+- Bundled PyAV binary inventory, upstream notices and corrected statutory transition source type.
+
+
 ## 0.5.2a0 — release-readiness candidate
 
 - Explicit SHA-verified upstream C2PA 0.38.3/native 0.91.7 bootstrap; pip 26.3 and patched adm-zip dependency policy.

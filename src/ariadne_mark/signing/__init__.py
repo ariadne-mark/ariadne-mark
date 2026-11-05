@@ -81,6 +81,23 @@ def validate_trust_roots(path: Path):
     roots = x509.load_pem_x509_certificates(data)
     if not roots:
         raise ValueError('Trust roots contain no certificates')
+    now = datetime.now(timezone.utc)
+    for root in roots:
+        if 'Ariadne Mark development' in root.subject.rfc4514_string() or 'Ariadne Mark development' in root.issuer.rfc4514_string():
+            raise ValueError('Development roots are not allowed in production')
+        if not root.not_valid_before_utc <= now <= root.not_valid_after_utc:
+            raise ValueError('Production trust root is not currently valid')
+        try:
+            constraints = root.extensions.get_extension_for_class(x509.BasicConstraints).value
+        except x509.ExtensionNotFound as exc:
+            raise ValueError('Production trust roots require CA basic constraints') from exc
+        if not constraints.ca:
+            raise ValueError('Production trust root must be a CA certificate')
+        try:
+            if not root.extensions.get_extension_for_class(x509.KeyUsage).value.key_cert_sign:
+                raise ValueError('Production trust root cannot sign certificates')
+        except x509.ExtensionNotFound:
+            pass
     return len(roots)
 
 

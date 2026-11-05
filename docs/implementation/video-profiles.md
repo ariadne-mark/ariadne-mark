@@ -1,13 +1,13 @@
 # CPU video profiles — 0.5 developer preview
 
 The CLI `--video-profile fast|resilient` and Python `SDK(video_profile="fast")`
-select the encoder. Both mark every frame and use the same TrustMark Q models
+select the encoder. Both apply a residual to every frame and use the same TrustMark Q models
 and new `ariadne-vq1` payload format. Older `ariadne-v1` and VideoSeal
 `ariadne-vs1` are routed to their respective legacy decoders.
 
 | Profile | Computation | Detection |
 |---|---|---|
-| fast (default) | Refresh when scene distance exceeds 0.10, at most 24 frames | 5 uniform timeline samples, then 20 if absent |
+| fast (default) | Refresh on anchor-frame RGB change (sample-grid RMSE > 0.5/255), scene change, or 24-frame cap | 5 uniform timeline samples, then 20 if absent |
 | resilient | New signal for every frame, strength 1 | Same |
 
 The detector receives no expected ID. Individual decoded IDs and aggregate
@@ -35,13 +35,13 @@ FFmpeg/ffprobe, then install `.[video]` (or the wheel with the video extra):
 ```sh
 python -m pip install .
 python -m ariadne_mark.bootstrap_c2pa
-python -m pip install '.[video]'
+python -m pip install --require-hashes -r requirements/video-linux-py312.lock
+python -m pip install --no-deps '.[video]'
 ariadne models fetch --engine video
 ```
 
 This avoids PyTorch for new-video encoding. The full `[media]` extra and all
-model sets are needed for images and complete legacy compatibility. Install
-CPU PyTorch wheels first as shown in README; the Dockerfile does this.
+model sets are needed for images and complete legacy compatibility. Use the qualified CPU lock shown in README; it includes CPU PyTorch.
 
 Provisioning is explicit and uses the packaged npm lockfile plus SHA-256 model
 and source checks. Runtime requests never download code/models. The dependency
@@ -97,3 +97,16 @@ pipeline and its timings must be measured again. Selection used six known
 720p24 scenes; matched transform recovery was 32/36 for Fast and 36/36 for
 Resilient. Those figures are not independent validation or legal certification.
 See `docs/validation/0.5.0a0.md` for installed-package results and timings.
+
+## 0.5.3 fresh-export checks and motion
+
+Fast profile `fast-cpu-v2` compares a 64×36 RGB point sample with the frame
+that generated the cached residual. The 0.5 intensity-unit refresh setting is
+a cache policy, not a robustness/legal threshold. On substantial movement it
+can run inference every frame and approach Resilient's cost. Static content
+can still reuse the residual. Historical v1 benchmark files remain unchanged.
+
+After encoding/signing, every independently checked fresh-export sample must
+return the expected ID or the SDK publishes no output. This checks our own
+output, not every frame or resilience after transformations. The verifier
+retains partial/aggregate-only evidence states for arbitrary input assets.

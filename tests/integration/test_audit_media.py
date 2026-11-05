@@ -24,7 +24,7 @@ class AuditMediaTests(unittest.TestCase):
   self.sdk.trust_anchors=self.root/'identity/trust.pem'
   report=self.sdk.verify(out)
   self.assertEqual(report['c2pa']['issuer_trust'],'untrusted')
-  self.assertEqual(report['label'],'Signature valid; issuer unverified')
+  self.assertEqual(report['label'],'Development signature; not a production identity')
   with redirect_stdout(io.StringIO()):self.assertEqual(main(['verify',str(out),'--strict','--trust-anchors',str(self.sdk.trust_anchors)]),2)
   attacker.close()
  def test_copied_id_is_not_authenticated_as_the_source_content(self):

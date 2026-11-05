@@ -57,3 +57,14 @@ code and the official downloaded models; verify alternative weights separately.
 SHA and rejects an older vulnerable runtime cache. Model/runtime requests never
 perform automatic dependency installation. See the release security evidence
 for scanner coverage and remaining native advisories.
+
+## PyAV and redistributed environments
+
+PyAV wheels carry separate FFmpeg/codec binaries, including GPL-bearing x264
+and x265 builds; the SDK's encoder uses PyAV's libx264 in-process. Inventory
+those binaries independently of Debian's CLI FFmpeg. Applicable obligations
+apply to redistribution of a bundled venv as well as a container. Ariadne's
+wheel does not contain those binaries; it includes this third-party notice.
+The exact bootstrap/media package graph is hash-locked for Linux x86-64 and
+Python 3.12. Apt package repositories remain an external mutable build input;
+these locks are not a claim that the entire OS image is bit-reproducible.

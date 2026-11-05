@@ -4,6 +4,7 @@ recursive-include compliance *.md *.json
 recursive-include scripts *.py
 recursive-include benchmarks *.md *.txt *.py *.json
 recursive-include examples *.py *.md *.txt *.json *.html *.yaml *.yml
+include examples/stock_product/Dockerfile examples/stock_product/.dockerignore
 recursive-include tests *.py *.md
 prune examples/stateless_product
 prune dist
@@ -14,3 +15,5 @@ recursive-include apps *.md *.conf *.yaml *.yml
 recursive-include src *.md
 recursive-include .github *.md *.yml *.yaml
 include .gitignore
+
+recursive-include requirements *.lock

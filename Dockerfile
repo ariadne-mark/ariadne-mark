@@ -5,11 +5,10 @@ COPY --from=node /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
 RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg ca-certificates libstdc++6 \
     && rm -rf /var/lib/apt/lists/*
-COPY src/ariadne_mark/bootstrap_c2pa.py src/ariadne_mark/c2pa-bootstrap.json /bootstrap/
-RUN python /bootstrap/bootstrap_c2pa.py --allow-system --cache-dir /opt/bootstrap-cache \
-    && python -m pip install --no-cache-dir setuptools==84.2.1
-RUN python -m pip install --no-cache-dir torch==2.14.1 torchvision==0.29.1 \
-    --index-url https://download.pytorch.org/whl/cpu
+COPY src/ariadne_mark/bootstrap_c2pa.py src/ariadne_mark/c2pa-bootstrap.json src/ariadne_mark/bootstrap-linux-py312.lock /bootstrap/
+RUN python /bootstrap/bootstrap_c2pa.py --allow-system --cache-dir /opt/bootstrap-cache
+COPY requirements/media-linux-py312.lock /requirements/media-linux-py312.lock
+RUN python -m pip install --no-cache-dir --require-hashes --no-build-isolation -r /requirements/media-linux-py312.lock
 ENV ARIADNE_VIDEO_DATA=/opt/ariadne-video
 WORKDIR /app
 COPY . /app

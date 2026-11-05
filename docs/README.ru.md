@@ -1,8 +1,8 @@
 # Ariadne Mark
 
-**Open-source compliance toolkit for AI-generated images and video.**
+**Open-source labeling/provenance toolkit for AI-generated images and video.**
 
-Статус: рабочая developer-preview сборка SDK 0.5.2a0. Реализованы CPU-маркировка изображений через TrustMark и MP4 через TrustMark Q (Fast/Resilient) с коррекцией ошибок и чтением прежних VideoSeal-меток, C2PA-подписание, локальный реестр и self-hosted verifier. Границы поддержки и оставшиеся юридические/эксплуатационные задачи указаны в документации. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#quick-start-with-docker) и [очередность реализации](implementation/sequence.md).
+Статус: рабочая developer-preview сборка SDK 0.5.3a0. Реализованы CPU-маркировка изображений через TrustMark и MP4 через TrustMark Q (Fast/Resilient) с коррекцией ошибок и чтением прежних VideoSeal-меток, C2PA-подписание, локальный реестр и self-hosted verifier. Границы поддержки и оставшиеся юридические/эксплуатационные задачи указаны в документации. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#quick-start-with-docker) и [очередность реализации](implementation/sequence.md).
 
 ## Требования → код → тесты
 

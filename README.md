@@ -4,7 +4,7 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Fast/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer preview · 0.5.2a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer preview · 0.5.3a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 ## Quick start with Docker
 
@@ -33,7 +33,7 @@ docker run --rm --network none --user "$(id -u):$(id -g)" \
   --registry .ariadne/registry.sqlite3
 ```
 
-Video uses TrustMark Q on CPU. `--video-profile fast` reuses a signal with adaptive refresh (at most 24 frames); `--video-profile resilient` calculates a signal for each frame. Both mark every frame and verify 5 samples, expanding to 20 when no ID is found. Existing VideoSeal and older TrustMark IDs remain readable in the full media installation.
+Video uses TrustMark Q on CPU. `--video-profile fast` reuses a signal while anchor content remains stable (at most 24 frames); `--video-profile resilient` calculates a signal for each frame. Both apply a signal to every frame. Fast refreshes against anchor-frame changes; its cost approaches Resilient on motion. Fresh export requires the expected ID in every checked sample. Independent verification checks 5 samples, expanding to 20 when no ID is found, and does not establish whole-video coverage. Existing VideoSeal and older TrustMark IDs remain readable in the full media installation.
 
 ```sh
 ariadne mark input.mp4 output.mp4 --video-profile resilient \
@@ -46,7 +46,7 @@ ariadne mark input.mp4 output.mp4 --video-profile resilient \
 
 For video use `input.mp4 output.mp4` and set `--audio-kind original`, `synthetic`, or `unknown` when appropriate. Add `--visible` for a visible disclosure, or `--action altered` for AI-altered material. Existing output files are never overwritten.
 
-The output includes a `.receipt.json` file containing its SHA-256, processing time and verification results. A development signature is valid but **not publicly trusted**. `--trust-anchors .ariadne/dev/trust.pem` is only for explicitly trusting your own test root.
+The output includes a `.receipt.json` file containing its SHA-256, processing time and verification results. A development signature is valid but **not a production identity**; its headline remains marked development even if its test root is explicitly trusted. `--trust-anchors .ariadne/dev/trust.pem` is only for explicitly trusting your own test root.
 
 ## Python installation and API
 
@@ -58,8 +58,8 @@ python3.12 -m venv .venv
 python -m pip install .
 # Official patched C2PA 0.38.3 is not yet on PyPI; explicit verified setup:
 python -m ariadne_mark.bootstrap_c2pa
-python -m pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cpu
-python -m pip install '.[media]'
+python -m pip install --require-hashes --no-build-isolation -r requirements/media-linux-py312.lock
+python -m pip install --no-deps '.[media]'
 ariadne models fetch
 ```
 
@@ -118,7 +118,7 @@ reported as verified legal compliance. [Profile guide](docs/compliance/applicabi
 docker compose up --build
 ```
 
-Open **http://localhost:8080**. It accepts uploads without registration, exposes a binary-upload API at `POST /verify?format=png` (also `jpg`, `jpeg`, `mp4`), and deletes temporary media after each request. The default Compose service binds only to localhost. Public service mode requires configured roots (`--production --trust-anchors roots.pem`). Uploads are bounded separately from inference; the default 512 MiB ceiling matches export. See [deployment](docs/operations/verifier.md) to attach a recovery registry, trust roots or feedback link and publish it behind a reverse proxy.
+Open **http://localhost:8080**. It accepts uploads without registration, exposes a binary-upload API at `POST /verify?format=png` (also `jpg`, `jpeg`, `mp4`), and deletes temporary media after each request. The default Compose service binds only to localhost. Public service mode requires valid, non-development CA roots and deployment behind a buffering/rate-limiting reverse proxy. It requires configured roots (`--production --trust-anchors roots.pem`). Uploads are bounded separately from inference; the default 512 MiB ceiling matches export. See [deployment](docs/operations/verifier.md) to attach a recovery registry, trust roots or feedback link and publish it behind a reverse proxy.
 
 ## Try a complete product integration
 
@@ -148,7 +148,7 @@ docker run --rm --network none --cpus 2 --memory 6g \
   ariadne-mark:local -m unittest discover -s tests -t . -v
 ```
 
-The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.5.2a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.5.3a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
 
 [Public alpha checklist](docs/operations/public-alpha-checklist.md).
 
