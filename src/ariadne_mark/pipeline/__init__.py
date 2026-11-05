@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import tempfile
 import time
+import threading
 
 from ariadne_mark.errors import AriadneError, UnsupportedMedia, VerificationFailed
 from ariadne_mark.provenance import ProvenanceRecord
@@ -15,6 +16,7 @@ from ariadne_mark.verification.media import open_image, verify_file, inspect_c2p
 from ariadne_mark.watermark import new_token, LazyWatermarker
 from ariadne_mark.videoq import VideoWatermarker
 from ariadne_mark.version import sdk_version
+from ariadne_mark.video.policy import DEFAULT_PROFILE, validate_profile
 
 MAX_OUTPUT_BYTES = 512 * 1024 * 1024
 
@@ -42,20 +44,36 @@ class SDK:
     trust_anchors: Path | None = None
 
     video_marker: object | None = None
-    video_profile: str = "fast"
+    video_profile: str = DEFAULT_PROFILE
 
     def __post_init__(self):
-        if self.video_profile not in {"fast", "resilient"}:
-            raise ValueError("video_profile must be fast or resilient")
+        validate_profile(self.video_profile)
         if self.video_marker is None:
             self.video_marker = VideoWatermarker(profile=self.video_profile)
         from ariadne_mark.videoseal import VideoSealWatermarker
         self._legacy_video_marker = VideoSealWatermarker()
+        self._video_markers = {}
+        self._video_markers_lock = threading.Lock()
 
     def close(self):
-        close = getattr(self.video_marker, "close", None)
-        if close:
-            close()
+        for marker in [self.video_marker, *self._video_markers.values()]:
+            close = getattr(marker, "close", None)
+            if close:
+                close()
+
+    def _select_video_marker(self, profile):
+        if profile is None:
+            return self.video_marker
+        validate_profile(profile)
+        if getattr(self.video_marker, "profile", None) == profile:
+            return self.video_marker
+        if not isinstance(self.video_marker, VideoWatermarker):
+            raise ValueError("A video profile override requires the built-in VideoWatermarker")
+        with self._video_markers_lock:
+            if profile not in self._video_markers:
+                self._video_markers[profile] = VideoWatermarker(profile=profile,
+                    threads=self.video_marker.threads, timeout=self.video_marker.timeout)
+            return self._video_markers[profile]
 
     def __enter__(self):
         return self
@@ -64,9 +82,17 @@ class SDK:
         self.close()
 
     def verify(self, path: Path) -> dict:
-        return verify_file(path, marker=self.marker, video_marker=self.video_marker, legacy_video_marker=self._legacy_video_marker, registry=self.registry, trust_anchors=self.trust_anchors)
+        # All new presets share a decoder. Reuse a configured export's resident
+        # worker instead of loading the otherwise-unused default worker as well.
+        engine = self.video_marker
+        if isinstance(engine, VideoWatermarker) and engine._process is None:
+            with self._video_markers_lock:
+                engine = next((m for m in self._video_markers.values() if m._process is not None), engine)
+        return verify_file(path, marker=self.marker, video_marker=engine, legacy_video_marker=self._legacy_video_marker, registry=self.registry, trust_anchors=self.trust_anchors)
 
-    def mark(self, source: Path, destination: Path, record: ProvenanceRecord, *, visible=False, audio_kind="unknown", profile=None) -> dict:
+    def mark(self, source: Path, destination: Path, record: ProvenanceRecord, *, visible=False, audio_kind="unknown", profile=None, video_profile=None) -> dict:
+        if video_profile is not None:
+            validate_profile(video_profile)
         profile_report = None
         if profile is not None:
             from ariadne_mark.profiles import export_settings
@@ -84,6 +110,12 @@ class SDK:
         video = source.suffix.lower() == ".mp4"
         if video != (destination.suffix.lower() == ".mp4") or record.media_kind.value != ("video" if video else "image"):
             raise UnsupportedMedia("Input, output and provenance media kinds must match")
+        video_engine = self.video_marker
+        if video:
+            configured = profile_report["sdk_options"]["video_profile"] if profile_report else None
+            if video_profile is not None and configured is not None and video_profile != configured:
+                raise ValueError("video_profile conflicts with the selected product profile")
+            video_engine = self._select_video_marker(video_profile or configured)
         if audio_kind not in {"original", "synthetic", "unknown", "none"}:
             raise ValueError("audio_kind must be original, synthetic, unknown or none")
         receipt_path = destination.with_name(destination.name + ".receipt.json")
@@ -110,7 +142,7 @@ class SDK:
                 from ariadne_mark.video import encode_video, probe
                 if probe(source)["audio"] and audio_kind == "none":
                     raise UnsupportedMedia("Input contains audio; select its provenance explicitly")
-                details = encode_video(source, marked, self.video_marker, token, visible=visible, altered=record.action.value == "altered")
+                details = encode_video(source, marked, video_engine, token, visible=visible, altered=record.action.value == "altered")
                 audio = audio_kind if details["audio"] != "none" else "none"
             else:
                 from ariadne_mark.disclosure import apply_label
@@ -127,19 +159,27 @@ class SDK:
                     image.save(marked, "JPEG", quality=95, subsampling=0)
                 else:
                     image.save(marked, "PNG")
-            engine = self.video_marker if video else self.marker
+            engine = video_engine if video else self.marker
             sign_file(marked, signed, record, token, self.identity, parent=parent, disclosure=visible, audio=audio,
                       algorithm=getattr(engine, "algorithm", "adobe.trustmark.Q.bch5"),
                       payload_format=getattr(engine, "payload_format", "ariadne-v1"),
                       watermark_profile=getattr(engine, "profile_id", None))
-            checked = self.verify(signed)
+            economy = video and getattr(engine, "profile", None) in {"economy_5s", "economy_2s"}
+            if video and isinstance(engine, VideoWatermarker):
+                from ariadne_mark.verification.media import verify_video_export
+                checked = verify_video_export(signed, engine,
+                    [w["index"] for w in details["watermark_windows"]], trust_anchors=self.trust_anchors)
+            else:
+                checked = self.verify(signed)
             samples = checked["watermark"].get("samples", [])
             if (checked["c2pa"]["status"] != "verified_claim" or checked["c2pa"].get("token") != token
                     or checked["c2pa"].get("record") != record.to_dict()
                     or checked["watermark"].get("status") != "recovered_claim"
                     or checked["watermark"].get("token") != token
                     or not samples
-                    or any(row["token"] != token for row in samples)):
+                    or any(row["token"] not in {None, token} for row in samples)
+                    or (economy and not checked["watermark"]["export_window_readback"]["all_windows_have_id"])
+                    or (not economy and any(row["token"] != token for row in samples))):
                 matches = sum(row["token"] == token for row in samples)
                 raise VerificationFailed(f"Final read-back failed: C2PA={checked['c2pa']['status']}, watermark={checked['watermark']['status']}, matching frames={matches}/{len(samples)}; no output published")
             if signed.stat().st_size > MAX_OUTPUT_BYTES:

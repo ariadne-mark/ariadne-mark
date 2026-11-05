@@ -73,6 +73,11 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
     info = probe(source)
     silent = destination.with_name("frames.mp4")
     frames = 0
+    marked_frames = 0
+    windows = {}
+    from ariadne_mark.video.policy import WindowSelector, period_for
+    profile = getattr(marker, "profile", "resilient")
+    selector = WindowSelector(profile)
     last_pts = None
     decoded_end = Fraction(0)
     with (marker.encoding_session(token) if hasattr(marker, "encoding_session") else nullcontext()) as watermark_session, av.open(str(source), format="mp4", options={"protocol_whitelist": "file", "codec_whitelist": "h264,hevc,aac", "enable_drefs": "0"}) as incoming, av.open(str(silent), "w") as outgoing:
@@ -116,13 +121,32 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
             last_pts = frame.pts
             if frames >= 18000:
                 raise UnsupportedMedia("Video exceeds 18000-frame limit")
-            image = _orient(frame.to_image(), info["rotation"])
-            if visible:
-                image = apply_label(image, altered=altered)
+            selected, window = selector.select(frame.pts * frame.time_base)
             duration = frame.duration * frame.time_base
             decoded_end = max(decoded_end, frame.pts * frame.time_base + duration)
             durations[frame.pts * frame.time_base] = duration
-            pending.append((image, frame.pts, frame.time_base))
+            if selected:
+                image = _orient(frame.to_image(), info["rotation"])
+                if visible:
+                    image = apply_label(image, altered=altered)
+                pending.append((image, frame.pts, frame.time_base))
+                marked_frames += 1
+                if window is not None:
+                    windows[window] = windows.get(window, 0) + 1
+            else:
+                if pending:
+                    flush()
+                # Bypass PIL/RGBA/Node for unmarked frames; visible disclosure
+                # and display rotation still apply to the complete export.
+                output = frame
+                if visible or info["rotation"] % 360:
+                    image = _orient(frame.to_image(), info["rotation"])
+                    if visible:
+                        image = apply_label(image, altered=altered)
+                    output = av.VideoFrame.from_image(image)
+                    output.pts, output.time_base = frame.pts, frame.time_base
+                for packet in encoded.encode(output):
+                    mux(packet)
             frames += 1
             if len(pending) == getattr(marker, "batch_size", 1):
                 flush()
@@ -156,7 +180,37 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
             "watermark_algorithm": getattr(marker, "algorithm", "custom"),
             "batch_size": getattr(marker, "batch_size", 1), "h264_crf": 18,
             "profile": getattr(marker, "profile", "legacy"),
+            "marked_frames": marked_frames,
+            "watermark_period_s": period_for(profile),
+            "watermark_window_ms": 125 if selector.period else None,
+            "watermark_windows": [{"index": i, "marked_frames": n} for i, n in windows.items()],
             "watermark_stats": getattr(watermark_session, "stats", {})}
+
+
+def selected_window_frames(path: Path, profile):
+    """Decode scheduled export positions for read-back; no token is supplied.
+
+    This is an export diagnostic for a known preset, not a blind detector.
+    """
+    import av
+    from ariadne_mark.video.policy import WindowSelector
+    selector = WindowSelector(profile)
+    info = probe(path)
+    with av.open(str(path), format="mp4", options={"protocol_whitelist": "file", "codec_whitelist": "h264,hevc,aac", "enable_drefs": "0"}) as container:
+        validate_decoder_streams(container)
+        last = None
+        for index, frame in enumerate(container.decode(video=0)):
+            if index >= 18000 or frame.pts is None or frame.time_base is None:
+                raise UnsupportedMedia("Invalid or excessive video timeline during read-back")
+            timestamp = frame.pts * frame.time_base
+            if last is not None and timestamp <= last:
+                raise UnsupportedMedia("Non-monotonic read-back timestamps")
+            last = timestamp
+            selected, window = selector.select(timestamp)
+            if selected:
+                # Defer the image conversion so callers can skip the rest of a
+                # window after one independently decoded ID.
+                yield frame, float(timestamp), window, info["rotation"]
 
 
 def sample_frames(path: Path, *, samples: int = 5):

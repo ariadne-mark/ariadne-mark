@@ -2,7 +2,7 @@
 
 **Open-source labeling/provenance toolkit for AI-generated images and video.**
 
-Статус: рабочая developer-preview сборка SDK 0.5.3a0. Реализованы CPU-маркировка изображений через TrustMark и MP4 через TrustMark Q (Fast/Resilient) с коррекцией ошибок и чтением прежних VideoSeal-меток, C2PA-подписание, локальный реестр и self-hosted verifier. Границы поддержки и оставшиеся юридические/эксплуатационные задачи указаны в документации. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#quick-start-with-docker) и [очередность реализации](implementation/sequence.md).
+Статус: developer-preview кандидат SDK 0.5.3a0. CPU-маркировка изображений через TrustMark и MP4 через TrustMark Q: Economy 5s по умолчанию, Economy 2s и Resilient в одной сборке. Выбор: `SDK(video_profile="economy_2s")`, параметр `sdk.mark(..., video_profile="resilient")`, CLI `--video-profile` или поле `sdk.video_profile` в конфиге продукта. Сохраняются чтение прежних форматов, C2PA-подписание, локальный реестр и self-hosted verifier. Границы поддержки и оставшиеся юридические/эксплуатационные задачи указаны в документации. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#quick-start-with-docker) и [режимы видео](implementation/video-profiles.md).
 
 ## Требования → код → тесты
 

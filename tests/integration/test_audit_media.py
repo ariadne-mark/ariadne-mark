@@ -47,8 +47,8 @@ class AuditMediaTests(unittest.TestCase):
     report=sdk.verify(spliced)
     self.assertEqual(report['watermark']['token'],receipt['token'])
     coverage=report['watermark']['sample_coverage']
-    self.assertEqual(coverage['interpretation'],'partial_sample_evidence')
-    self.assertLess(coverage['matched_frames'],coverage['sampled_frames'])
+    self.assertIn(coverage['interpretation'],{'partial_sample_evidence','early_stop_evidence'})
+    self.assertEqual(coverage['whole_video_coverage'],'not_established')
     self.assertIn('sampled video evidence only',report['label'])
  def test_icc_input_requires_explicit_color_conversion(self):
   from ariadne_mark.errors import UnsupportedMedia

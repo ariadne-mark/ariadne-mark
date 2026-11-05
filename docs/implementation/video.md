@@ -1,6 +1,6 @@
 # Video export
 
-In0.5.0a0, the default encoder is CPU TrustMark Q with Fast/Resilient profiles.
+The current default encoder is CPU TrustMark Q with Economy5s, optional Economy2s and Resilient profiles. The0.5.0 historical default was Fast.
 See [current profiles and installation](video-profiles.md). The common PyAV
 exporter preserves timing/AAC and signs C2PA. The following describes the
 retained legacy VideoSeal format and its original0.3 implementation.

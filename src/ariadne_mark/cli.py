@@ -37,7 +37,8 @@ def main(argv=None) -> int:
     mark.add_argument("--allow-dev", action="store_true")
     mark.add_argument("--timestamp-url", help="Optional TSA URL; explicitly enables timestamp network request")
     mark.add_argument("--visible", action="store_true", help="Add an AI-generated/AI-altered visible label")
-    mark.add_argument("--video-profile", choices=["fast", "resilient"], default="fast", help="CPU video watermark profile")
+    mark.add_argument("--video-profile", choices=["economy_5s", "economy_2s", "resilient", "fast"],
+                      help="CPU video preset (default: economy_5s; fast is legacy)")
     mark.add_argument("--audio-kind", choices=["none", "original", "synthetic", "unknown"], default="unknown")
     verify = commands.add_parser("verify", help="Verify supported claims without uploading media")
     verify.add_argument("source", type=Path)
@@ -101,8 +102,10 @@ def main(argv=None) -> int:
             marker = LazyWatermarker(threads=args.threads)
             registry = Registry(args.registry, read_only=args.command != "mark") if args.registry else None
             from ariadne_mark.videoq import VideoWatermarker
+            from ariadne_mark.video.policy import DEFAULT_PROFILE
             sdk = SDK(marker, registry=registry, trust_anchors=args.trust_anchors,
-                      video_marker=VideoWatermarker(threads=args.threads, profile=getattr(args, "video_profile", "fast")))
+                      video_marker=VideoWatermarker(threads=args.threads,
+                          profile=getattr(args, "video_profile", None) or DEFAULT_PROFILE))
             if args.command == "serve":
                 from ariadne_mark.server import serve
                 serve(sdk, host=args.host, port=args.port, max_upload_mb=args.max_upload_mb, feedback_url=args.feedback_url, production=args.production)
@@ -112,7 +115,7 @@ def main(argv=None) -> int:
                 print(json.dumps(result, indent=2))
                 if args.strict and (result["c2pa"]["status"] != "verified_claim" or result["c2pa"]["issuer_trust"] != "trusted" or result["c2pa"].get("development_identity")):
                     return 2
-                if result["c2pa"]["status"] in {"invalid", "not_checked", "expired_credential"} or result["watermark"]["status"] in {"invalid", "not_checked"} or result["token_mismatch"]:
+                if result["c2pa"]["status"] in {"invalid", "not_checked", "expired_credential"} or result["watermark"]["status"] in {"invalid", "not_checked", "single_observation"} or result["token_mismatch"]:
                     return 2
                 return 0
             from ariadne_mark.signing import SigningIdentity
@@ -123,7 +126,8 @@ def main(argv=None) -> int:
                 media_kind=MediaKind.VIDEO if args.source.suffix.lower() == ".mp4" else MediaKind.IMAGE,
                 action=Action(args.action), created_at=datetime.fromisoformat(args.created_at.replace("Z", "+00:00")),
             )
-            result = sdk.mark(args.source, args.destination, record, visible=args.visible, audio_kind=args.audio_kind, profile=selected_profile)
+            result = sdk.mark(args.source, args.destination, record, visible=args.visible, audio_kind=args.audio_kind,
+                              profile=selected_profile, video_profile=args.video_profile)
         print(json.dumps(result, indent=2))
         return 0
     except (AriadneError, OSError, ValueError, ImportError) as exc:

@@ -129,10 +129,19 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
             if algorithm in {None, "adobe.trustmark.Q.bch5"} and marker is not None:
                 candidates.append(marker)
             observations, aggregates, engines, unavailable, attempts = [], [], [], [], []
+            search_results, confirmed_engines = [], []
             for engine in candidates:
                 name = getattr(engine, "algorithm", "custom")
                 try:
-                    if hasattr(engine, "decode_frames"):
+                    if video and hasattr(engine, "scan_video"):
+                        result = engine.scan_video(path)
+                        rows = result["samples"]
+                        aggregates.extend({**a, "algorithm": name} for a in result["aggregates"])
+                        attempts.append({"algorithm": name, "samples": rows, "status": result["status"], "search": result["search"]})
+                        search_results.append(result)
+                        if result["status"] == "recovered_claim":
+                            confirmed_engines.append(name)
+                    elif hasattr(engine, "decode_frames"):
                         rows, aggregate = engine.decode_frames(frames)
                         first = summarize_watermarks(rows, [aggregate] if aggregate else [], video=video)
                         attempts.append({"algorithm": name, "samples": rows, "aggregate": aggregate, "status": first["status"]})
@@ -144,9 +153,13 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                                              "status": summarize_watermarks(rows, [aggregate] if aggregate else [], video=video)["status"]})
                         if aggregate:
                             aggregates.append({**aggregate, "algorithm": name})
+                        if any(row.get("token") for row in rows) or aggregate:
+                            confirmed_engines.append(name)
                     else:
                         rows = [{"time": timestamp, "token": engine.decode(frame)} for frame, timestamp in frames]
                         attempts.append({"algorithm": name, "samples": rows})
+                        if any(row.get("token") for row in rows):
+                            confirmed_engines.append(name)
                     observations.extend({**row, "algorithm": name} for row in rows)
                     engines.append(name)
                 except (AriadneError, OSError, ValueError, ImportError) as exc:
@@ -157,6 +170,14 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                         if close:
                             close()
             watermark = summarize_watermarks(observations, aggregates, video=video)
+            if search_results and any(r["search"]["reason"] == "two_concordant_ids" for r in search_results):
+                watermark["sample_coverage"]["interpretation"] = "early_stop_evidence"
+            if search_results and not confirmed_engines and watermark["status"] != "invalid":
+                if any(r["status"] == "not_checked" for r in search_results):
+                    watermark.update(status="not_checked", reason="incomplete_video_search")
+                elif any(r["status"] == "single_observation" for r in search_results):
+                    watermark.update(status="single_observation", reason="id_not_confirmed")
+                watermark.pop("token", None)
             watermark.update(algorithm_scope="configured_video_schemes" if video else "signed_scheme" if algorithm else "trustmark_image_scheme",
                              engines_checked=engines, unavailable_engines=unavailable,
                              checked_frames=len({row.get("time") for attempt in attempts for row in attempt["samples"]}),
@@ -167,6 +188,46 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                 watermark["coverage"] = "partial"
         except (AriadneError, OSError, ValueError, ImportError) as exc:
             watermark = {"status": "not_checked", "reason": type(exc).__name__}
+    return _verification_result(path, c2pa, watermark, registry=registry, video=video)
+
+
+def verify_video_export(path, engine, expected_windows, *, trust_anchors=None):
+    """Known-schedule export read-back, separate from blind public verification.
+
+    At least one independently decoded ID per occupied window. Failed decoder
+    observations remain in the receipt. The expected payload is never passed
+    to the decoder; SDK.mark compares the returned evidence after this call.
+    """
+    from ariadne_mark.video import selected_window_frames, sample_frames, _orient
+    if engine.profile not in {"economy_5s", "economy_2s"}:
+        rows, aggregate = engine.decode_frames(list(sample_frames(path)))
+        rows = [{**r, "algorithm": engine.algorithm} for r in rows]
+        watermark = summarize_watermarks(rows, [aggregate] if aggregate else [], video=True)
+        return _verification_result(path, inspect_c2pa(path, trust_anchors=trust_anchors),
+                                    watermark, registry=None, video=True)
+    rows, found, seen = [], set(), set()
+    for frame, timestamp, window, rotation in selected_window_frames(path, engine.profile):
+        seen.add(window)
+        if window in found:
+            continue
+        observations, _ = engine.decode_frames([(_orient(frame.to_image(), rotation), timestamp)])
+        if len(observations) != 1:
+            raise AriadneError("Incomplete Economy read-back")
+        row = {**observations[0], "window": window, "algorithm": engine.algorithm}
+        rows.append(row)
+        if row.get("token"):
+            found.add(window)
+    watermark = summarize_watermarks(rows, [], video=True)
+    watermark["export_window_readback"] = {
+        "profile": engine.profile, "expected_windows": sorted(expected_windows),
+        "observed_windows": sorted(seen), "windows_with_id": sorted(found),
+        "all_windows_have_id": seen == set(expected_windows) == found,
+        "interpretation": "known_schedule_export_check_not_blind_search"}
+    c2pa = inspect_c2pa(path, trust_anchors=trust_anchors)
+    return _verification_result(path, c2pa, watermark, registry=None, video=True)
+
+
+def _verification_result(path, c2pa, watermark, *, registry, video):
     if c2pa.get("record"):
         c2pa["record_scope"] = ("development_signer_claim" if c2pa.get("development_identity") else
                                 "trusted_signer_claim" if c2pa.get("issuer_trust") == "trusted" else

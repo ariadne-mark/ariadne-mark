@@ -2,7 +2,7 @@
 
 **Open-source watermarking, provenance and verification for AI-generated images and video.**
 
-A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Fast/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
+A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
 **Developer preview · 0.5.3a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
@@ -33,7 +33,9 @@ docker run --rm --network none --user "$(id -u):$(id -g)" \
   --registry .ariadne/registry.sqlite3
 ```
 
-Video uses TrustMark Q on CPU. `--video-profile fast` reuses a signal while anchor content remains stable (at most 24 frames); `--video-profile resilient` calculates a signal for each frame. Both apply a signal to every frame. Fast refreshes against anchor-frame changes; its cost approaches Resilient on motion. Fresh export requires the expected ID in every checked sample. Independent verification checks 5 samples, expanding to 20 when no ID is found, and does not establish whole-video coverage. Existing VideoSeal and older TrustMark IDs remain readable in the full media installation.
+Video uses TrustMark Q on CPU. The default `economy_5s` marks 125 ms windows every 5 seconds; `economy_2s` uses 2 seconds. Each selected frame receives a fresh signal. `resilient` processes every frame. All three presets are in the same SDK/wheel and need the same video runtime. Select with `SDK(video_profile="economy_2s")`, a per-export `sdk.mark(..., video_profile="resilient")`, `--video-profile`, or `sdk.video_profile` in a product JSON configuration.
+
+Economy export checks require an independently decoded matching ID in every occupied watermark window; Resilient retains its five-sample read-back gate. Independent verification does not need the export profile: it scans for IDs and can recover weak signals from cached logits without a second CNN pass. Search budgets and incomplete/conflicting results are explicit. A recovered ID does not establish whole-video coverage or legal compliance. Legacy Fast, VideoSeal and older TrustMark IDs remain readable; `fast` is an explicit compatibility encoder, no longer the default.
 
 ```sh
 ariadne mark input.mp4 output.mp4 --video-profile resilient \
@@ -67,7 +69,7 @@ The explicit C2PA bootstrap builds the official tagged Python wrapper with the
 SHA-256-pinned upstream native library 0.91.7. It is qualified on Linux x86-64;
 use the Docker recipe for the supported media environment.
 
-`models fetch` provisions image, new video and legacy VideoSeal engines. Use `--engine trustmark` for images, `--engine video` for Fast/Resilient, or `--engine videoseal` for legacy compatibility. `ARIADNE_VIDEOSEAL_MODEL` can point to a shared, checksum-verified model file.
+`models fetch` provisions image, new video and legacy VideoSeal engines. Use `--engine trustmark` for images, `--engine video` for Economy/Resilient, or `--engine videoseal` for legacy compatibility. `ARIADNE_VIDEOSEAL_MODEL` can point to a shared, checksum-verified model file.
 
 `models fetch` is an explicit setup step. Later requests fail clearly if models are missing or have incorrect checksums. They do not silently download models.
 

@@ -2,6 +2,9 @@
 
 ## 0.5.3a0 — external-review follow-up candidate
 
+- One SDK with default Economy 5s, configurable Economy 2s and Resilient; legacy Fast remains explicit compatibility.
+- PTS-based 125 ms windows with fresh per-frame inference, bypass for unselected frames, AAC/rotation/visible-label preservation and per-window export read-back.
+- Bounded blind video search and cached-logit aggregate recovery, with explicit single-observation, incomplete and conflicting-ID results.
 - Fresh-export sample gate and anchor-aware Fast v2 refresh; motion can reduce the speed advantage.
 - Total HTTP header deadline, stricter production CA configuration and development-signature headlines.
 - Scoped image negatives without Node; actual PyAV decoder-context validation.

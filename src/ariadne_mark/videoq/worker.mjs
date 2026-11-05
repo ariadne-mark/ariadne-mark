@@ -35,7 +35,7 @@ await send({ready:true});
 while(true){const size=await read(4);if(!size)break;const len=size.readUInt32BE();if(len>65536)throw Error('header too large');const raw=await read(len);const c=JSON.parse(raw.toString());if(!Number.isInteger(c.n)||c.n<0||c.n>67108864)throw Error('invalid payload size');const body=await read(c.n)||Buffer.alloc(0);
  try{
   if(c.op==='begin'){
-   if(!['fast','resilient'].includes(c.profile)||!/^014d[0-9a-f]{12}$/.test(c.token))throw Error('invalid profile/token');
+   if(!['economy_5s','economy_2s','fast','resilient'].includes(c.profile)||!/^014d[0-9a-f]{12}$/.test(c.token))throw Error('invalid profile/token');
    await reset();state={profile:c.profile,token:c.token,frames:0,anchor:null,motionRefreshes:0,startCalls:calls,startMs:inferenceMs};await send({ok:true});
   }else if(c.op==='encode'||c.op==='decode'){
    if(!Number.isInteger(c.width)||!Number.isInteger(c.height)||Math.min(c.width,c.height)<256||Math.max(c.width,c.height)>4096||body.length!==c.width*c.height*4)throw Error('invalid frame dimensions');

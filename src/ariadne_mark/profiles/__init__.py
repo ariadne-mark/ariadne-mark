@@ -20,7 +20,7 @@ def template():
                     'deepfake': None, 'creative_work': None, 'eu_exception': 'none',
                     'ca_public_access': None, 'ca_produces_system': None, 'ca_exception': 'none',
                     'licenses_system_to_third_parties': None},
-        'sdk': {'audio_kind': 'unknown'},
+        'sdk': {'audio_kind': 'unknown', 'video_profile': 'economy_5s'},
         'deployment': {'disclosure': 'none', 'accessibility_review': False,
                        'verifier_url': None, 'verifier_free': None, 'verifier_upload': None,
                        'verifier_api': None, 'verifier_url_submission': None, 'verifier_provider': 'unknown',
@@ -61,6 +61,10 @@ def parse_date(value, name):
 def validate(config):
     default = template()
     _object(config, default, 'config')
+    config = deepcopy(config)
+    # Older schema1 files remain valid; the new preset has a documented default.
+    if isinstance(config['sdk'], dict):
+        config['sdk'].setdefault('video_profile', 'economy_5s')
     for section in ('context', 'sdk', 'deployment', 'system'):
         _object(config[section], default[section], section)
     if type(config['schema_version']) is not int or config['schema_version'] != 1:
@@ -82,6 +86,8 @@ def validate(config):
     _enum(ctx['eu_exception'], {'none', 'standard_editing', 'law_enforcement', 'other', 'unknown'}, 'eu_exception')
     _enum(ctx['ca_exception'], {'none', 'minor_modification', 'assistive_technology', 'non_user_generated_videogames', 'other', 'unknown'}, 'ca_exception')
     _enum(config['sdk']['audio_kind'], {'none', 'original', 'synthetic', 'unknown'}, 'audio_kind')
+    from ariadne_mark.video.policy import validate_profile
+    validate_profile(config['sdk']['video_profile'])
     _enum(dep['disclosure'], {'none', 'in_app', 'baked_in', 'both'}, 'disclosure')
     _enum(dep['verifier_provider'], {'own', 'third_party', 'unknown'}, 'verifier_provider')
     for key in ('accessibility_review', 'privacy_review'):
@@ -243,7 +249,8 @@ def evaluate(config, *, as_of=None):
     needs_action = any(x['state'] == 'action_required' for x in open_items)
     needs_review = bool(open_items or any(x['level'] == 'review' for x in findings))
     options = {'watermark': True, 'c2pa': True, 'image_engine': 'TrustMark Q/BCH-5',
-               'video_engine': 'TrustMark Q Fast/Resilient; legacy VideoSeal decoder', 'visible': dep['disclosure'] in {'baked_in', 'both'},
+               'video_engine': 'TrustMark Q Economy/Resilient; legacy Fast and VideoSeal compatibility',
+               'video_profile': config['sdk']['video_profile'], 'visible': dep['disclosure'] in {'baked_in', 'both'},
                'audio_kind': config['sdk']['audio_kind'], 'configuration_source': 'SDK implementation choices'}
     return {'schema_version': 1, 'profile_version': CATALOG['version'], 'evaluated_on': today.isoformat(),
             'sources_reviewed_on': CATALOG['reviewed_on'],

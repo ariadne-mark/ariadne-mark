@@ -4,6 +4,7 @@ import atexit, contextlib, hashlib, json, os, queue, shutil, struct, subprocess,
 from pathlib import Path
 from ariadne_mark.errors import AriadneError, MissingModel, UnsupportedMedia
 from ariadne_mark.watermark import valid_token
+from ariadne_mark.video.policy import DEFAULT_PROFILE, validate_profile
 ROOT = Path(__file__).parent
 ALGORITHM = 'adobe.trustmark.Q.variax-bch5'
 FORMAT = 'ariadne-vq1'
@@ -120,13 +121,14 @@ class VideoWatermarker:
     payload_format = FORMAT
     batch_size = 1
 
-    def __init__(self, *, profile='fast', threads=2, timeout=120):
-        if profile not in {'fast', 'resilient'}:
-            raise ValueError('video profile must be fast or resilient')
+    def __init__(self, *, profile=DEFAULT_PROFILE, threads=2, timeout=120):
+        validate_profile(profile)
         if not 1 <= threads <= 64:
             raise ValueError('threads must be1–64')
         self.profile = profile
-        self.profile_id = 'fast-cpu-v2' if profile == 'fast' else 'resilient-cpu-candidate-v1'
+        self.profile_id = {'fast': 'fast-cpu-v2', 'resilient': 'resilient-cpu-candidate-v1',
+                           'economy_5s': 'economy-5s-125ms-cpu-v1',
+                           'economy_2s': 'economy-2s-125ms-cpu-v1'}[profile]
         self.threads = threads
         self.timeout = timeout
         self._lock = threading.RLock()
@@ -259,6 +261,24 @@ class VideoWatermarker:
                 logits.append(h['logits'])
             h, _ = self._request({'op': 'aggregate', 'logits': logits}) if logits else ({'token': None}, b'')
             return (rows, {'token': h['token']} if h['token'] else None)
+
+    def decode_logits(self, image):
+        """Return one fresh decoder observation; no expected payload is accepted."""
+        with self._lock:
+            image = image.convert('RGBA')
+            h, _ = self._request({'op': 'decode', 'width': image.width, 'height': image.height}, image.tobytes())
+            return h['token'], h['logits']
+
+    def aggregate_logits(self, logits):
+        with self._lock:
+            return self._request({'op': 'aggregate', 'logits': logits})[0].get('token')
+
+    def scan_video(self, path, *, max_frames=2000, max_seconds=120, max_hypotheses=512):
+        from ariadne_mark.video.detection import scan_video
+        # One worker operation owns its decoder state through the complete scan.
+        with self._lock:
+            return scan_video(path, self, max_frames=max_frames, max_seconds=max_seconds,
+                              max_hypotheses=max_hypotheses)
 
     def close(self):
         if self._cleanup_registered:

@@ -4,9 +4,9 @@
 | --- | --- | --- |
 | Images | Single-frame 8-bit RGB/RGBA PNG; JPEG; normalized EXIF orientation | Each dimension 256–4096 pixels. No animated PNG, HDR, CMYK, WebP export or arbitrary color-profile conversion |
 | Video | SDR MP4 with H.264/HEVC input, H.264 output; one video stream; optional AAC audio | Even dimensions, each 256–1920 pixels; max 5 min / 18000 frames. Other audio codecs, subtitles, multiple tracks, interlacing, anamorphic pixels and HDR are rejected |
-| Timing | Frame presentation timestamps retained, including tested VFR; display rotation normalized | Verification starts with5 positions and expands to20 for absent new-profile IDs; does not check every frame |
+| Timing | Frame presentation timestamps retained, including tested VFR; display rotation normalized | Economy selects 125 ms windows every 5 s (default) or 2 s; the first observed frame in each occupied period is included even after a VFR gap. No whole-video coverage inference |
 | Audio | AAC packets retained; original/synthetic/unknown provenance recorded | No standalone audio processing or independent audio watermark. Extraction/transcoding of synthetic audio is not covered |
-| Watermark | Images: TrustMark Q/BCH-5. Video: TrustMark Q Fast/Resilient,5→20-frame aggregate; legacy VideoSeal BCH-20/CRC retained. Both carry 48 random ID bits | Recoverable ID, not authentication. Cropping/removal/copying may defeat it |
+| Watermark | Images: TrustMark Q/BCH-5. Video: Economy 5s/2s or per-frame Resilient, with blind search and cached-logit aggregation; legacy formats retained. Both carry 48 random ID bits | Search limited to 2000 frames / 120 s / 512 aggregate hypotheses by default. Budget exhaustion is not a negative. Exploratory aggregate FPR is not population-calibrated. Recoverable ID, not authentication |
 | Provenance | Signed C2PA record: publisher, generator/version, time, UUID, created/altered; parent ingredient when applicable | Caller supplies accurate facts. External certificate issuance and public trust enrollment are operator responsibilities |
 | Recovery | Local SQLite token-to-record lookup | No central resolver, cross-provider routing or guaranteed permanent hosting |
 | Disclosure | Optional baked-in AI-generated/AI-altered label | Caller determines applicability and provides accessible in-app disclosure |
