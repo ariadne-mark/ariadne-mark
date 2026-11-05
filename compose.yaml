@@ -1,7 +1,10 @@
 services:
   verifier:
     build: .
-    command: ["serve", "--host", "0.0.0.0", "--port", "8080"]
+    command: ["serve", "--host", "0.0.0.0", "--port", "8080", "--public-sources", "/config/public-sources.json", "--feedback-db", "/state/feedback.sqlite"]
+    volumes:
+      - ./examples/public-sources.json:/config/public-sources.json:ro
+      - verifier-feedback:/state
     ports:
       - "127.0.0.1:8080:8080"
     read_only: true
@@ -12,3 +15,10 @@ services:
     mem_limit: 6g
     cpus: 2
     pids_limit: 128
+
+volumes:
+  verifier-feedback:
+
+networks:
+  default:
+    internal: true

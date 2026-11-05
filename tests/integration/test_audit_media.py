@@ -24,7 +24,7 @@ class AuditMediaTests(unittest.TestCase):
   self.sdk.trust_anchors=self.root/'identity/trust.pem'
   report=self.sdk.verify(out)
   self.assertEqual(report['c2pa']['issuer_trust'],'untrusted')
-  self.assertEqual(report['label'],'Signature valid; issuer unverified')
+  self.assertEqual(report['label'],'Development signature; not a production identity')
   with redirect_stdout(io.StringIO()):self.assertEqual(main(['verify',str(out),'--strict','--trust-anchors',str(self.sdk.trust_anchors)]),2)
   attacker.close()
  def test_copied_id_is_not_authenticated_as_the_source_content(self):
@@ -47,8 +47,8 @@ class AuditMediaTests(unittest.TestCase):
     report=sdk.verify(spliced)
     self.assertEqual(report['watermark']['token'],receipt['token'])
     coverage=report['watermark']['sample_coverage']
-    self.assertEqual(coverage['interpretation'],'partial_sample_evidence')
-    self.assertLess(coverage['matched_frames'],coverage['sampled_frames'])
+    self.assertIn(coverage['interpretation'],{'partial_sample_evidence','early_stop_evidence'})
+    self.assertEqual(coverage['whole_video_coverage'],'not_established')
     self.assertIn('sampled video evidence only',report['label'])
  def test_icc_input_requires_explicit_color_conversion(self):
   from ariadne_mark.errors import UnsupportedMedia

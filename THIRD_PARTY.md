@@ -1,4 +1,4 @@
-# Third-party components — 0.5.2a0
+# Third-party components — 0.6.0a0
 
 The wheel contains Ariadne Mark's code and a model checksum manifest, not model
 weights or third-party source copies. Pip/Docker installation obtains upstream
@@ -30,7 +30,7 @@ wraps the upstream libraries directly and does not copy a competitor's server
 or reuse a cloud credential. Runtime dependency inventory is captured with the
 release validation artifacts.
 
-## Fast/Resilient video runtime (0.5)
+## Economy/Resilient and legacy Fast video runtime
 
 - `@variax-ai/video-watermark` 0.3.2: MIT, copyright 2026 Variax. Upstream commit 2fa85425546e. The original license is packaged in `ariadne_mark/videoq/VARIAX-LICENSE.txt`. A one-line aliasing fix copies the cached scene signature; upstream/patched SHA-256 are pinned.
 - `onnxruntime-node` 1.23.2: MIT; CPU installation, CUDA download disabled. npm integrity lockfile packaged in the wheel.
@@ -57,3 +57,14 @@ code and the official downloaded models; verify alternative weights separately.
 SHA and rejects an older vulnerable runtime cache. Model/runtime requests never
 perform automatic dependency installation. See the release security evidence
 for scanner coverage and remaining native advisories.
+
+## PyAV and redistributed environments
+
+PyAV wheels carry separate FFmpeg/codec binaries, including GPL-bearing x264
+and x265 builds; the SDK's encoder uses PyAV's libx264 in-process. Inventory
+those binaries independently of Debian's CLI FFmpeg. Applicable obligations
+apply to redistribution of a bundled venv as well as a container. Ariadne's
+wheel does not contain those binaries; it includes this third-party notice.
+The exact bootstrap/media package graph is hash-locked for Linux x86-64 and
+Python 3.12. Apt package repositories remain an external mutable build input;
+these locks are not a claim that the entire OS image is bit-reproducible.

@@ -16,6 +16,8 @@ def main(argv=None) -> int:
     profile_commands = profile.add_subparsers(dest="profile_command", required=True)
     profile_commands.add_parser("init", help="Print a configuration template; null means unknown")
     profile_commands.add_parser("sources", help="Show the versioned source catalog and review limits")
+    feedback = commands.add_parser("feedback-summary", help="Read aggregate efficacy feedback counters; no media or user data")
+    feedback.add_argument("database", type=Path)
     profile_check = profile_commands.add_parser("check", help="Print a requirement plan; does not certify compliance")
     profile_check.add_argument("config", type=Path)
     profile_check.add_argument("--as-of", help="Evaluate a YYYY-MM-DD scenario (does not update source knowledge)")
@@ -37,7 +39,8 @@ def main(argv=None) -> int:
     mark.add_argument("--allow-dev", action="store_true")
     mark.add_argument("--timestamp-url", help="Optional TSA URL; explicitly enables timestamp network request")
     mark.add_argument("--visible", action="store_true", help="Add an AI-generated/AI-altered visible label")
-    mark.add_argument("--video-profile", choices=["fast", "resilient"], default="fast", help="CPU video watermark profile")
+    mark.add_argument("--video-profile", choices=["economy_5s", "economy_2s", "resilient", "fast"],
+                      help="CPU video preset (default: economy_5s; fast is legacy)")
     mark.add_argument("--audio-kind", choices=["none", "original", "synthetic", "unknown"], default="unknown")
     verify = commands.add_parser("verify", help="Verify supported claims without uploading media")
     verify.add_argument("source", type=Path)
@@ -48,13 +51,22 @@ def main(argv=None) -> int:
     serve.add_argument("--max-upload-mb", type=int, default=512)
     serve.add_argument("--production", action="store_true", help="Require configured issuer roots before serving")
     serve.add_argument("--feedback-url", help="Optional public feedback page URL")
+    serve.add_argument("--feedback-db", type=Path, help="Persist anonymous category counts only, in a writable state directory")
+    serve.add_argument("--public-sources", type=Path, help="Operator-reviewed public provider/system names; other free-text metadata is withheld")
+    serve.add_argument("--verification-timeout", type=float, default=180,
+                       help="Whole-job model deadline in seconds; timed-out worker and children are terminated")
     for sub in (mark, verify, serve):
         sub.add_argument("--registry", type=Path, help="Optional local recovery SQLite database")
         sub.add_argument("--trust-anchors", type=Path, help="PEM trust roots supplied by the operator")
         sub.add_argument("--threads", type=int, default=2)
     args = parser.parse_args(argv)
     try:
-        if args.command == "profile":
+        if args.command == "feedback-summary":
+            from ariadne_mark.public_verifier import FeedbackStore
+            if not args.database.is_file():
+                raise ValueError("Feedback database does not exist")
+            result = FeedbackStore.read_summary(args.database)
+        elif args.command == "profile":
             from ariadne_mark.profiles import CATALOG, template, load, evaluate, parse_date
             if args.profile_command == "init":
                 result = template()
@@ -69,6 +81,11 @@ def main(argv=None) -> int:
             result = {}
             for name, engine in (("trustmark", watermark), ("videoseal", videoseal), ("video", videoq)):
                 if args.engine in {"all", name}:
+                    import importlib.util
+                    dependency = {"trustmark": "trustmark", "videoseal": "torch"}.get(name)
+                    if args.engine == "all" and dependency and importlib.util.find_spec(dependency) is None:
+                        result[name] = {"status": "skipped", "reason": "optional_dependency_not_installed", "dependency": dependency}
+                        continue
                     result[name] = engine.fetch_models() if args.action == "fetch" else engine.check_models()
         elif args.command == "init-dev":
             from ariadne_mark.signing import create_development_identity
@@ -96,18 +113,26 @@ def main(argv=None) -> int:
             marker = LazyWatermarker(threads=args.threads)
             registry = Registry(args.registry, read_only=args.command != "mark") if args.registry else None
             from ariadne_mark.videoq import VideoWatermarker
+            from ariadne_mark.video.policy import DEFAULT_PROFILE
             sdk = SDK(marker, registry=registry, trust_anchors=args.trust_anchors,
-                      video_marker=VideoWatermarker(threads=args.threads, profile=getattr(args, "video_profile", "fast")))
+                      video_marker=VideoWatermarker(threads=args.threads,
+                          profile=getattr(args, "video_profile", None) or DEFAULT_PROFILE))
             if args.command == "serve":
                 from ariadne_mark.server import serve
-                serve(sdk, host=args.host, port=args.port, max_upload_mb=args.max_upload_mb, feedback_url=args.feedback_url, production=args.production)
+                from ariadne_mark.isolated_verifier import IsolatedVerifier
+                sdk.close()
+                isolated = IsolatedVerifier(registry=args.registry, trust_anchors=args.trust_anchors,
+                                            threads=args.threads, timeout=args.verification_timeout)
+                serve(isolated, host=args.host, port=args.port, max_upload_mb=args.max_upload_mb,
+                      feedback_url=args.feedback_url, production=args.production,
+                      public_sources=args.public_sources, feedback_db=args.feedback_db)
                 return 0
             if args.command == "verify":
                 result = sdk.verify(args.source)
                 print(json.dumps(result, indent=2))
-                if args.strict and (result["c2pa"]["status"] != "verified_claim" or result["c2pa"]["issuer_trust"] != "trusted"):
+                if args.strict and (result["c2pa"]["status"] != "verified_claim" or result["c2pa"]["issuer_trust"] != "trusted" or result["c2pa"].get("development_identity")):
                     return 2
-                if result["c2pa"]["status"] in {"invalid", "not_checked", "expired_credential"} or result["watermark"]["status"] in {"invalid", "not_checked"} or result["token_mismatch"]:
+                if result["c2pa"]["status"] in {"invalid", "not_checked", "expired_credential"} or result["watermark"]["status"] in {"invalid", "not_checked", "single_observation"} or result["token_mismatch"]:
                     return 2
                 return 0
             from ariadne_mark.signing import SigningIdentity
@@ -118,7 +143,8 @@ def main(argv=None) -> int:
                 media_kind=MediaKind.VIDEO if args.source.suffix.lower() == ".mp4" else MediaKind.IMAGE,
                 action=Action(args.action), created_at=datetime.fromisoformat(args.created_at.replace("Z", "+00:00")),
             )
-            result = sdk.mark(args.source, args.destination, record, visible=args.visible, audio_kind=args.audio_kind, profile=selected_profile)
+            result = sdk.mark(args.source, args.destination, record, visible=args.visible, audio_kind=args.audio_kind,
+                              profile=selected_profile, video_profile=args.video_profile)
         print(json.dumps(result, indent=2))
         return 0
     except (AriadneError, OSError, ValueError, ImportError) as exc:

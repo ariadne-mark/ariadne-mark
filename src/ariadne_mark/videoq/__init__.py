@@ -4,6 +4,7 @@ import atexit, contextlib, hashlib, json, os, queue, shutil, struct, subprocess,
 from pathlib import Path
 from ariadne_mark.errors import AriadneError, MissingModel, UnsupportedMedia
 from ariadne_mark.watermark import valid_token
+from ariadne_mark.video.policy import DEFAULT_PROFILE, validate_profile
 ROOT = Path(__file__).parent
 ALGORITHM = 'adobe.trustmark.Q.variax-bch5'
 FORMAT = 'ariadne-vq1'
@@ -21,19 +22,33 @@ def digest(p):
             h.update(b)
     return h.hexdigest()
 
+def native_hashes(d):
+    root = d / 'runtime'
+    binary = root / 'node_modules/onnxruntime-node/bin'
+    return {str(p.relative_to(root)): digest(p) for p in sorted(binary.rglob('*'))
+            if p.is_file() and (p.suffix in {'.node', '.so', '.dylib', '.dll'} or '.so.' in p.name)}
+
+
 def installation_matches(d):
     receipt = d / 'runtime/ariadne-install.json'
     adm = d / 'runtime/node_modules/adm-zip/package.json'
     try:
         return (json.loads(receipt.read_text()).get('lock_sha256') == digest(ROOT / 'package-lock.json')
-                and json.loads(adm.read_text()).get('version') == '0.6.1')
+                and json.loads(adm.read_text()).get('version') == '0.6.1'
+                and bool(json.loads(receipt.read_text()).get('native_sha256'))
+                and json.loads(receipt.read_text())['native_sha256'] == native_hashes(d))
     except (OSError, ValueError):
         return False
 
 def check_models():
     d = data_dir()
+    if not (d / 'runtime/ariadne-install.json').exists():
+        raise MissingModel('Video runtime not provisioned; run ariadne models fetch --engine video')
     if not installation_matches(d):
         raise MissingModel('Video dependency policy changed; run ariadne models fetch --engine video')
+    receipt = json.loads((d / 'runtime/ariadne-install.json').read_text())
+    if native_hashes(d) != receipt['native_sha256']:
+        raise MissingModel('Native ONNX runtime checksum mismatch; run ariadne models fetch --engine video')
     p = d / 'runtime/node_modules/@variax-ai/video-watermark/dist/index.cjs'
     if not p.is_file() or digest(p) != PATCHED:
         raise MissingModel('Video runtime missing/checksum mismatch; run ariadne models fetch --engine video')
@@ -45,7 +60,7 @@ def check_models():
     if not ort.is_file() or json.loads(ort.read_text()).get('version') != '1.23.2':
         raise MissingModel('Pinned CPU ONNX runtime missing; run ariadne models fetch --engine video')
     if not shutil.which('node'):
-        raise MissingModel('Node.js20+ is required for video; use the Docker image or install Node.js')
+        raise MissingModel('Node.js is required for video; use the Docker image or install Node.js')
     return {'runtime_js_sha256': PATCHED, **MODELS}
 
 def fetch_models():
@@ -67,7 +82,7 @@ def fetch_models():
     if not installation_matches(d) or not p.exists() or digest(p) != PATCHED or (not ort.is_file()) or (json.loads(ort.read_text()).get('version') != '1.23.2'):
         env = {**os.environ, 'ONNXRUNTIME_NODE_INSTALL_CUDA': 'skip'}
         try:
-            subprocess.run(['npm', 'ci', '--omit=dev', '--no-audit', '--no-fund'], cwd=runtime, env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
+            subprocess.run(['npm', 'ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], cwd=runtime, env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
         except (subprocess.SubprocessError, OSError) as exc:
             raise MissingModel('Could not provision CPU video runtime; check Node/npm and network access') from exc
         if digest(p) != ORIGINAL:
@@ -77,7 +92,7 @@ def fetch_models():
         if s.count(old) != 1:
             raise MissingModel('Unsupported upstream signature cache layout')
         p.write_text(s.replace(old, '          signature: signature.slice(),\n          region'))
-        (runtime / 'ariadne-install.json').write_text(json.dumps({'lock_sha256': digest(ROOT / 'package-lock.json'), 'runtime_js_sha256': PATCHED}))
+        (runtime / 'ariadne-install.json').write_text(json.dumps({'lock_sha256': digest(ROOT / 'package-lock.json'), 'runtime_js_sha256': PATCHED, 'native_sha256': native_hashes(d)}))
     model = d / 'models'
     model.mkdir(exist_ok=True)
     for name, sha in MODELS.items():
@@ -106,13 +121,14 @@ class VideoWatermarker:
     payload_format = FORMAT
     batch_size = 1
 
-    def __init__(self, *, profile='fast', threads=2, timeout=120):
-        if profile not in {'fast', 'resilient'}:
-            raise ValueError('video profile must be fast or resilient')
+    def __init__(self, *, profile=DEFAULT_PROFILE, threads=2, timeout=120):
+        validate_profile(profile)
         if not 1 <= threads <= 64:
             raise ValueError('threads must be1–64')
         self.profile = profile
-        self.profile_id = 'fast-cpu-v1' if profile == 'fast' else 'resilient-cpu-candidate-v1'
+        self.profile_id = {'fast': 'fast-cpu-v2', 'resilient': 'resilient-cpu-candidate-v1',
+                           'economy_5s': 'economy-5s-125ms-cpu-v1',
+                           'economy_2s': 'economy-2s-125ms-cpu-v1'}[profile]
         self.threads = threads
         self.timeout = timeout
         self._lock = threading.RLock()
@@ -126,13 +142,13 @@ class VideoWatermarker:
     def _load(self):
         if self._process and self._owner == os.getpid() and (self._process.poll() is None):
             return
-        if self._process and self._owner != os.getpid():
-            self._process = None
+        if self._process:
+            self.close()
         check_models()
         d = data_dir().resolve()
         self._errors = tempfile.TemporaryFile()
         self._responses = queue.Queue()
-        self._process = subprocess.Popen(['node', str(ROOT / 'worker.mjs'), str(d / 'runtime'), str(d / 'models'), str(self.threads)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self._errors)
+        self._process = subprocess.Popen(['node', str(ROOT / 'worker.mjs'), str(d / 'runtime'), str(d / 'models'), str(self.threads)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
         self._owner = os.getpid()
         if not self._cleanup_registered:
             atexit.register(self.close)
@@ -245,6 +261,24 @@ class VideoWatermarker:
                 logits.append(h['logits'])
             h, _ = self._request({'op': 'aggregate', 'logits': logits}) if logits else ({'token': None}, b'')
             return (rows, {'token': h['token']} if h['token'] else None)
+
+    def decode_logits(self, image):
+        """Return one fresh decoder observation; no expected payload is accepted."""
+        with self._lock:
+            image = image.convert('RGBA')
+            h, _ = self._request({'op': 'decode', 'width': image.width, 'height': image.height}, image.tobytes())
+            return h['token'], h['logits']
+
+    def aggregate_logits(self, logits):
+        with self._lock:
+            return self._request({'op': 'aggregate', 'logits': logits})[0].get('token')
+
+    def scan_video(self, path, *, max_frames=2000, max_seconds=120, max_hypotheses=512):
+        from ariadne_mark.video.detection import scan_video
+        # One worker operation owns its decoder state through the complete scan.
+        with self._lock:
+            return scan_video(path, self, max_frames=max_frames, max_seconds=max_seconds,
+                              max_hypotheses=max_hypotheses)
 
     def close(self):
         if self._cleanup_registered:

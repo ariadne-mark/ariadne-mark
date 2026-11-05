@@ -64,7 +64,7 @@ class VideoProfileTests(unittest.TestCase):
   from concurrent.futures import ThreadPoolExecutor
   from ariadne_mark.pipeline import SDK
   from ariadne_mark.registry import Registry
-  sdk=SDK(self.marker,self.identity,Registry(self.path/'threads.sqlite'))
+  sdk=SDK(self.marker,self.identity,Registry(self.path/'threads.sqlite'),video_profile='resilient')
   try:
    source=self.video(audio=False)
    def export(i):return sdk.mark(source,self.path/f'thread-{i}.mp4',self.record('video'))
@@ -77,7 +77,7 @@ class VideoProfileTests(unittest.TestCase):
  def test_worker_exit_after_last_frame_still_publishes_nothing(self):
   from ariadne_mark.pipeline import SDK
   from ariadne_mark.errors import AriadneError
-  sdk=SDK(self.marker,self.identity)
+  sdk=SDK(self.marker,self.identity,video_profile='resilient')
   try:
    source=self.video(audio=False);original=sdk.video_marker.encode_frames;calls=0
    def last_frame_crash(*args):

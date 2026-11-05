@@ -15,3 +15,7 @@ class MissingModel(AriadneError):
 
 class VerificationFailed(AriadneError):
     pass
+
+
+class VerificationTimeout(AriadneError):
+    """A bounded verification job did not finish; never a negative verdict."""

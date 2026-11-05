@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Verify a file · Ariadne Mark</title>
+  <meta name="description" content="Inspect C2PA credentials and compatible image and video watermarks. Free, self-hosted verification with no account.">
+  <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+<header class="site-header"><a class="wordmark" href="/" aria-label="Ariadne Mark home"><span class="thread-symbol" aria-hidden="true">↳</span>Ariadne Mark</a><span class="eyebrow">SELF-HOSTED VERIFIER</span></header>
+<main>
+  <div class="intro"><p class="eyebrow">FOLLOW THE EVIDENCE</p><h1>What can this file<br>tell us about its origin?</h1><p class="lede">Check its C2PA credential and look for a compatible watermark. No account required.</p></div>
+  <form id="verify-form" class="upload-panel">
+    <label class="file-label" for="file">Choose an image or video</label>
+    <input id="file" name="file" type="file" accept=".jpg,.jpeg,.png,.mp4" required aria-describedby="file-help privacy-help">
+    <p id="file-help" class="muted">JPEG, PNG or supported SDR MP4. Checking the verifier…</p>
+    <div class="actions"><button type="submit" id="check">Check file <span aria-hidden="true">↗</span></button><button type="button" id="cancel" class="secondary" hidden>Cancel request</button><span id="progress" role="status" aria-live="polite"></span></div>
+    <p id="privacy-help" class="small">Your file is uploaded to this verifier, processed in temporary storage, then deleted. The application does not log its name, your IP address or its contents. <a href="/privacy">Data handling</a></p>
+  </form>
+  <section id="result" hidden aria-labelledby="result-label">
+    <p class="eyebrow">VERIFICATION RESULT</p><h2 id="result-label" tabindex="-1"></h2><p id="interpretation" class="lede"></p>
+    <div class="evidence-grid"><section><h3>C2PA credential</h3><p id="credential"></p><p id="trust" class="muted"></p></section><section><h3>Watermark</h3><p id="watermark"></p><p id="search" class="muted"></p></section></div>
+    <dl id="provenance" class="provenance"></dl><p id="redaction" class="small"></p>
+    <div class="actions"><button type="button" id="download" class="secondary">Download JSON report</button><details><summary>Technical report</summary><pre id="json"></pre></details></div>
+    <p id="external-feedback" class="small"></p>
+  </section>
+  <section id="feedback" hidden><h3>Help improve verification</h3><p class="small">Anonymous feedback records only a category and media type. Please do not send personal information.</p><div class="actions"><button type="button" class="secondary feedback" data-rating="correct_result">Result seems right</button><button type="button" class="secondary feedback" data-rating="incorrect_result">Something is wrong</button><button type="button" class="secondary feedback" data-rating="unable_to_check">Could not check</button></div><p id="feedback-status" role="status" aria-live="polite"></p></section>
+  <section class="scope"><h2>Evidence, with a defined scope.</h2><p>This tool checks C2PA credentials and the watermark formats supported by Ariadne Mark. It is not a universal detector for every AI model. A missing mark does not establish human origin, and a valid credential does not establish factual truth.</p><p>Video searches have explicit limits. If a search cannot finish, the report says so. Recovered watermark IDs alone do not authenticate an edited copy.</p></section>
+</main>
+<footer><span>Ariadne Mark · open-source labeling and provenance tools</span><nav aria-label="Resources"><a href="/openapi.json">API specification</a><a href="https://github.com/ariadne-mark/ariadne-mark">Source & documentation</a></nav></footer>
+</body></html>

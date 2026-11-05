@@ -99,9 +99,9 @@ def submit(body):
     fixture = body.get('fixture')
     visible = body.get('visible', False)
     key = body.get('request_key', str(uuid4()))
-    video_profile = body.get('video_profile', 'fast')
-    if not isinstance(video_profile, str) or video_profile not in {'fast', 'resilient'}:
-        raise ValueError('video_profile must be fast or resilient')
+    video_profile = body.get('video_profile', 'economy_5s')
+    if not isinstance(video_profile, str) or video_profile not in {'economy_5s', 'economy_2s', 'resilient', 'fast'}:
+        raise ValueError('video_profile must be economy_5s, economy_2s or resilient (fast is legacy)')
     if not isinstance(fixture, str) or fixture not in CATALOG or type(visible) is not bool:
         raise ValueError('Select a fixture and a boolean visible option')
     if not isinstance(key, str) or not re.fullmatch(r'[a-zA-Z0-9-]{1,80}', key):
@@ -154,7 +154,7 @@ def worker():
     registry = Registry(ROOT / 'registry/assets.sqlite3')
     marker = Watermarker(threads=2)
     identity = SigningIdentity.from_directory(ROOT / 'identity', allow_dev=True)
-    sdks = {p: SDK(marker, identity, registry, video_profile=p) for p in ('fast', 'resilient')}
+    sdks = {p: SDK(marker, identity, registry, video_profile=p) for p in ('economy_5s', 'economy_2s', 'resilient', 'fast')}
     recover_interrupted_jobs()
     print('Worker ready; model instances reused across jobs', flush=True)
     while True:

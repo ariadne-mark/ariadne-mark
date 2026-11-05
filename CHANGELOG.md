@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.6.0a0 — Economy and verifier launch candidate
+
+- Default Economy5s, configurable Economy2s and per-frame Resilient in one wheel; config, CLI and per-export API selection.
+- PTS windows, selected-frame bypass, per-window export gates, AAC/VFR/rotation and read-back failure isolation.
+- One-pass blind search with cached-logit recovery and explicit partial/incomplete/conflicting evidence.
+- Verification-only service subprocess, total model deadline, process-group cleanup and restart after timeout/crash.
+- Packaged verifier UI, OpenAPI, anonymous aggregate feedback and reviewed public-source output controls.
+- Operator registry resolver, deployable Compose/TLS-edge recipes and privacy/data-handling documentation.
+- Rechecked EU/California primary sources plus conditional Connecticut/New York navigator; known temporal-removal limitation is explicit.
+
+## 0.5.3a0 — external-review follow-up candidate
+
+- Fresh-export sample gate and anchor-aware Fast v2 refresh; motion can reduce the speed advantage.
+- Total HTTP header deadline, stricter production CA configuration and development-signature headlines.
+- Scoped image negatives without Node; actual PyAV decoder-context validation.
+- Hash-locked bootstrap/full CPU dependency graph; npm scripts disabled and native ONNX integrity receipts.
+- Bundled PyAV binary inventory, upstream notices and corrected statutory transition source type.
+
+
 ## 0.5.2a0 — release-readiness candidate
 
 - Explicit SHA-verified upstream C2PA 0.38.3/native 0.91.7 bootstrap; pip 26.3 and patched adm-zip dependency policy.

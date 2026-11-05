@@ -25,3 +25,18 @@ class BootstrapTests(unittest.TestCase):
    (p/'package.json').write_text(json.dumps({'version':'0.5.18'}))
    (d/'runtime/ariadne-install.json').write_text(json.dumps({'lock_sha256':digest(ROOT/'package-lock.json')}))
    self.assertFalse(installation_matches(d))
+
+ def test_bootstrap_lock_tampering_stops_before_any_install(self):
+  with tempfile.TemporaryDirectory() as folder:
+   root=Path(folder);(root/'bootstrap-linux-py312.lock').write_text('untrusted requirements')
+   with patch.object(bootstrap,'ROOT',root),patch.object(bootstrap.platform,'system',return_value='Linux'),patch.object(bootstrap.platform,'machine',return_value='x86_64'),patch.object(bootstrap.sys,'prefix','/venv'),patch.object(bootstrap.sys,'base_prefix','/system'),patch.object(bootstrap.sys,'version_info',(3,12)),patch.object(bootstrap,'run') as run:
+    with self.assertRaisesRegex(ValueError,'lock checksum'):bootstrap.install()
+    run.assert_not_called()
+ def test_modified_versioned_native_library_invalidates_cache(self):
+  from ariadne_mark.videoq import installation_matches,native_hashes,ROOT,digest
+  with tempfile.TemporaryDirectory() as folder:
+   d=Path(folder);runtime=d/'runtime';adm=runtime/'node_modules/adm-zip';adm.mkdir(parents=True)
+   (adm/'package.json').write_text(json.dumps({'version':'0.6.1'}))
+   binary=runtime/'node_modules/onnxruntime-node/bin/napi-v6/linux/x64/libonnxruntime.so.1.23.2';binary.parent.mkdir(parents=True);binary.write_bytes(b'original')
+   (runtime/'ariadne-install.json').write_text(json.dumps({'lock_sha256':digest(ROOT/'package-lock.json'),'native_sha256':native_hashes(d)}))
+   self.assertTrue(installation_matches(d));binary.write_bytes(b'modified');self.assertFalse(installation_matches(d))
