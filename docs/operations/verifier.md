@@ -44,3 +44,13 @@ Temporary files are deleted on success, failure and timeout. Access logging is
 disabled by default. Review edge-server logs, retention, data isolation and the
 privacy notice for your actual deployment. Verification reports do not establish
 human origin, factual truth, or authenticated source attribution from an ID alone.
+
+## Header deadline and development roots (0.5.3)
+
+A total 10-second deadline covers request line and headers, independent of the
+body upload deadline. Byte-by-byte sends cannot reset it indefinitely. This
+only bounds resource occupation; public deployments still require the supplied
+edge-proxy controls. Development roots and invalid/non-CA roots are rejected
+in production. Development assertions always receive a development headline.
+CORS is not enabled by default; cross-origin browser clients need a controlled
+proxy or their own explicitly reviewed CORS layer.

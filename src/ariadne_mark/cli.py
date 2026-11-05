@@ -69,6 +69,11 @@ def main(argv=None) -> int:
             result = {}
             for name, engine in (("trustmark", watermark), ("videoseal", videoseal), ("video", videoq)):
                 if args.engine in {"all", name}:
+                    import importlib.util
+                    dependency = {"trustmark": "trustmark", "videoseal": "torch"}.get(name)
+                    if args.engine == "all" and dependency and importlib.util.find_spec(dependency) is None:
+                        result[name] = {"status": "skipped", "reason": "optional_dependency_not_installed", "dependency": dependency}
+                        continue
                     result[name] = engine.fetch_models() if args.action == "fetch" else engine.check_models()
         elif args.command == "init-dev":
             from ariadne_mark.signing import create_development_identity
@@ -105,7 +110,7 @@ def main(argv=None) -> int:
             if args.command == "verify":
                 result = sdk.verify(args.source)
                 print(json.dumps(result, indent=2))
-                if args.strict and (result["c2pa"]["status"] != "verified_claim" or result["c2pa"]["issuer_trust"] != "trusted"):
+                if args.strict and (result["c2pa"]["status"] != "verified_claim" or result["c2pa"]["issuer_trust"] != "trusted" or result["c2pa"].get("development_identity")):
                     return 2
                 if result["c2pa"]["status"] in {"invalid", "not_checked", "expired_credential"} or result["watermark"]["status"] in {"invalid", "not_checked"} or result["token_mismatch"]:
                     return 2

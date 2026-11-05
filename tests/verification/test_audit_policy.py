@@ -37,7 +37,7 @@ class ResourceOwnershipTests(unittest.TestCase):
             def decode(self,image):return None
         with tempfile.TemporaryDirectory() as folder:
             file=Path(folder)/'fixture.png';file.touch()
-            with patch('ariadne_mark.videoq.VideoWatermarker',Temporary),patch('ariadne_mark.verification.media.open_image',return_value=object()),patch('ariadne_mark.verification.media.inspect_c2pa',return_value={'status':'not_found'}):
+            with patch('ariadne_mark.videoq.VideoWatermarker',Temporary),patch('ariadne_mark.verification.media.open_image',return_value=object()),patch('ariadne_mark.verification.media.inspect_c2pa',return_value={'status':'verified_claim','watermark_algorithm':Temporary.algorithm}):
                 verify_file(file,marker=Legacy())
         self.assertEqual(closed,[True])
     def test_caller_owned_decoder_is_retained(self):

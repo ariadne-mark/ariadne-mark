@@ -45,6 +45,22 @@ def probe(path: Path) -> dict:
             "audio": bool(audios), "source": data}
 
 
+def validate_decoder_streams(container):
+    """Check the actual PyAV decoder contexts before the first frame decode.
+
+    The ffprobe preflight is separate; format/codec options alone are not
+    relied on to constrain PyAV's bundled FFmpeg.
+    """
+    videos = list(container.streams.video)
+    audios = list(container.streams.audio)
+    if len(videos) != 1 or len(audios) > 1 or len(container.streams) != len(videos) + len(audios):
+        raise UnsupportedMedia('Unexpected streams in PyAV decoder')
+    if videos[0].codec_context.name not in {'h264', 'hevc'}:
+        raise UnsupportedMedia('PyAV video decoder must be H.264 or HEVC')
+    if audios and audios[0].codec_context.name != 'aac':
+        raise UnsupportedMedia('PyAV audio decoder must be AAC')
+
+
 def _orient(image, rotation: int):
     # ffprobe reports display-matrix counter-clockwise rotation.
     return image.rotate(rotation, expand=True) if rotation % 360 else image
@@ -60,6 +76,7 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
     last_pts = None
     decoded_end = Fraction(0)
     with (marker.encoding_session(token) if hasattr(marker, "encoding_session") else nullcontext()) as watermark_session, av.open(str(source), format="mp4", options={"protocol_whitelist": "file", "codec_whitelist": "h264,hevc,aac", "enable_drefs": "0"}) as incoming, av.open(str(silent), "w") as outgoing:
+        validate_decoder_streams(incoming)
         stream = incoming.streams.video[0]
         rate = stream.average_rate or Fraction(24, 1)
         encoded = outgoing.add_stream("libx264", rate=rate)
@@ -147,6 +164,7 @@ def sample_frames(path: Path, *, samples: int = 5):
     import av
     info = probe(path)
     with av.open(str(path), format="mp4", options={"protocol_whitelist": "file", "codec_whitelist": "h264,hevc,aac", "enable_drefs": "0"}) as container:
+        validate_decoder_streams(container)
         stream = container.streams.video[0]
         seen = set()
         start = float((stream.start_time or 0) * stream.time_base)

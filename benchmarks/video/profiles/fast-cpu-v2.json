@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "engine": {
+    "algorithm": "adobe.trustmark.Q",
+    "implementation": "@variax-ai/video-watermark",
+    "version": "0.3.2",
+    "runtime": "onnxruntime-node",
+    "runtime_version": "1.23.2",
+    "execution_provider": "cpu",
+    "threads": {
+      "intra_op": 2,
+      "inter_op": 1
+    },
+    "signature_alias_fix": {
+      "required": true,
+      "patched_js_sha256": "b9a1c7035bed4c35a5a0e61ff423b4fae34781634a565b56d14dfc92e2927b31"
+    }
+  },
+  "models": {
+    "encoder_Q.onnx": "19b3d1b25836130ffd78775a8f61539f993375d1823ef0e59ba5b8dffb4f892d",
+    "decoder_Q.onnx": "ee3268f057c9dabef680e169302f5973d0589feea86189ed229a896cc3aa88df"
+  },
+  "embedding": {
+    "variant": "Q",
+    "strategy": "sharedResidual",
+    "scene_change_threshold": 0.1,
+    "max_cache_frames": 24,
+    "strength": 1,
+    "schema": "BCH_5",
+    "content_id_bits": 64,
+    "prefix_hex": "014d",
+    "apply_to": "every_frame",
+    "anchor_refresh": {
+      "sample_grid": [
+        64,
+        36
+      ],
+      "channels": "RGB point samples before embedding",
+      "rmse_threshold_lsb": 0.5,
+      "compare_against": "frame_that_generated_cached_residual",
+      "legal_threshold": false
+    }
+  },
+  "detection": {
+    "initial_samples": 5,
+    "fallback_samples": 20,
+    "sampling": "uniform_ceil_duration_minus_0.1s",
+    "aggregation": "upstream_soft_logits_sum",
+    "accept": "one_unique_valid_id_from_individual_or_aggregate",
+    "reject_conflicting_ids": true,
+    "fallback_trigger": "no_id_and_no_conflict",
+    "expected_id_available_to_detector": false
+  },
+  "media_reference": {
+    "input": "SDR 8-bit CFR, square pixels, silent",
+    "output_codec": "libx264",
+    "container": "mp4",
+    "preset": "fast",
+    "crf": 18,
+    "b_frames": 0,
+    "pix_fmt": "yuv420p",
+    "codec_threads": 2,
+    "faststart": true
+  },
+  "id": "fast-cpu-v2",
+  "status": "motion_aware_candidate",
+  "created_at": "2026-11-05",
+  "fresh_export_gate": {
+    "expected_id_in_every_checked_sample": true,
+    "whole_video_coverage": "not_established"
+  },
+  "validation": "docs/validation/0.5.3a0.md; small synthetic pan regression, not historical v1 throughput evidence"
+}

@@ -116,7 +116,7 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
             owned_engines = []
             # Signed engine identifiers route directly; stripped metadata needs
             # explicit new + legacy decoding. Never relabel an old bit layout.
-            if algorithm in {None, "adobe.trustmark.Q.variax-bch5"}:
+            if algorithm == "adobe.trustmark.Q.variax-bch5" or (algorithm is None and video):
                 from ariadne_mark.videoq import VideoWatermarker
                 engine = video_marker if getattr(video_marker, "algorithm", None) == VideoWatermarker.algorithm else VideoWatermarker()
                 candidates.append(engine)
@@ -157,7 +157,8 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                         if close:
                             close()
             watermark = summarize_watermarks(observations, aggregates, video=video)
-            watermark.update(engines_checked=engines, unavailable_engines=unavailable,
+            watermark.update(algorithm_scope="configured_video_schemes" if video else "signed_scheme" if algorithm else "trustmark_image_scheme",
+                             engines_checked=engines, unavailable_engines=unavailable,
                              checked_frames=len({row.get("time") for attempt in attempts for row in attempt["samples"]}),
                              attempts=attempts)
             if unavailable and watermark["status"] == "not_found":
@@ -166,6 +167,10 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                 watermark["coverage"] = "partial"
         except (AriadneError, OSError, ValueError, ImportError) as exc:
             watermark = {"status": "not_checked", "reason": type(exc).__name__}
+    if c2pa.get("record"):
+        c2pa["record_scope"] = ("development_signer_claim" if c2pa.get("development_identity") else
+                                "trusted_signer_claim" if c2pa.get("issuer_trust") == "trusted" else
+                                "claimed_by_untrusted_signer")
     recovery = {"status": "not_attempted"}
     token = watermark.get("token")
     if token and registry is not None:
@@ -183,6 +188,8 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
         label = "Invalid or conflicting provenance"
     elif c2pa["status"] == "expired_credential":
         label = "Signing credential expired; signing time not verified"
+    elif c2pa["status"] == "verified_claim" and c2pa.get("development_identity"):
+        label = "Development signature; not a production identity"
     elif c2pa["status"] == "verified_claim" and c2pa.get("record") and c2pa["issuer_trust"] != "trusted":
         label = "Signature valid; issuer unverified"
     elif c2pa["status"] == "verified_claim" and c2pa.get("record"):

@@ -3,7 +3,7 @@
 Ariadne Mark 0.4 adds an **offline requirements planner**, with an optional
 connection to media export. It distinguishes product declarations, implemented
 technical measures, missing deployment steps and matters requiring review.
-The profile snapshot is `2026-11-04.1`. It covers EU visual-content marking /
+The profile snapshot is `2026-11-05.1`. It covers EU visual-content marking /
 deepfake disclosure and California covered-provider duties, not every AI law.
 
 ## Start without models or a GPU

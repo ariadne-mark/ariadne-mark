@@ -186,6 +186,7 @@ def evaluate(config, *, as_of=None):
                     declaration('eu_robustness', dep['durability_evidence'], 'Evaluate reliability and robustness on the actual product pipeline; a report reference is not a passing assessment.', 'EU-50', '50(2)')
                     declaration('eu_interoperability', dep['interoperability_evidence'], 'Test interoperability with intended consumers and document feasibility/state-of-art considerations.', 'EU-50', '50(2)')
                     requirement('eu_code_route', 'review_required', 'Choose and assess the voluntary Code of Practice route or substantiate alternative measures. Full code adherence is not evaluated here.', 'EU-CODE', 'provider measures')
+                    requirement('eu_code_interoperability', 'review_required', 'If relying on the voluntary Code, assess Measure 3.4(c): signatories implement an interoperable detection access/signpost solution by 2027-02-02. This SDK does not implement universal resolver discovery.', 'EU-CODE', '3.4(c)')
             if deployer:
                 if today < start:
                     applicability['EU']['deployer_disclosure'] = {'state': 'not_yet_applicable', 'effective_on': start.isoformat()}
@@ -226,7 +227,7 @@ def evaluate(config, *, as_of=None):
             declaration('ca_upload', dep['verifier_upload'] is True or dep['verifier_url_submission'] is True, 'Offer upload or URL submission. This SDK supplies upload; remote URL fetching is not required when upload is available.', 'CA-22757', '22757.2(a)(5)')
             declaration('ca_api', dep['verifier_api'] is True, 'Provide programmatic access; deploy and test the bundled verification API.', 'CA-22757', '22757.2(a)(6)')
             declaration('ca_feedback', _public_https(dep['feedback_url']), 'Provide a working feedback route and use relevant feedback to improve verification.', 'CA-22757', '22757.2(b)')
-            declaration('ca_privacy', dep['privacy_review'], 'Review necessary data processing, output PII controls, retention, proxy logs and access requirements. SDK defaults alone do not verify the deployment.', 'CA-22757', '22757.2(a)(2)-(3), (c)-(d)')
+            declaration('ca_privacy', dep['privacy_review'], 'Review necessary data processing, output PII controls, retention, proxy logs and access requirements. SDK defaults alone do not verify the deployment.', 'CA-22757', '22757.2(a), (c)-(d)')
             declaration('ca_robustness', dep['durability_evidence'], 'Evaluate removal/tampering resistance and content-to-record recovery; a short benchmark does not qualify statutory permanence.', 'CA-22757', '22757.3(a)(2)-(4)')
             declaration('ca_interoperability', dep['interoperability_evidence'], 'Validate interoperability and verifier compatibility, including metadata-loss cases.', 'CA-22757', '22757.3(a)(3)-(4)')
             if dep['verifier_provider'] != 'own':
@@ -234,7 +235,7 @@ def evaluate(config, *, as_of=None):
             if today >= date(2029, 1, 1):
                 finding('ca_2029_metadata', 'error', '2029 assistive-technology metadata is not represented by this SDK schema; update the profile and schema.', 'CA-22757')
         if ctx['licenses_system_to_third_parties'] is not False:
-            requirement('ca_licensing', 'review_required', 'Assess third-party licensing duties and notice/remediation workflows. These are not implemented by a marking library.', 'CA-22757', '22757.3(b)')
+            requirement('ca_licensing', 'review_required', 'Assess third-party licensing duties, the 72-hour remediation/revocation and 96-hour notice workflows, and Attorney General reporting under 22757.3(b). These are not implemented by a marking library.', 'CA-22757', '22757.3(b)')
         requirement('ca_other_roles', 'review_required', 'Hosting-platform, large-platform and capture-device obligations are outside this covered-provider profile.', 'CA-22757', 'chapter 25 scope')
 
     errors = [x for x in findings if x['level'] == 'error']

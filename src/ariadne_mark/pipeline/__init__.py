@@ -139,7 +139,7 @@ class SDK:
                     or checked["watermark"].get("status") != "recovered_claim"
                     or checked["watermark"].get("token") != token
                     or not samples
-                    or (not video and any(row["token"] != token for row in samples))):
+                    or any(row["token"] != token for row in samples)):
                 matches = sum(row["token"] == token for row in samples)
                 raise VerificationFailed(f"Final read-back failed: C2PA={checked['c2pa']['status']}, watermark={checked['watermark']['status']}, matching frames={matches}/{len(samples)}; no output published")
             if signed.stat().st_size > MAX_OUTPUT_BYTES:

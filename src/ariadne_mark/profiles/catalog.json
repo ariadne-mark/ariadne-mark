@@ -1,6 +1,6 @@
 {
-  "version": "2026-11-04.1",
-  "reviewed_on": "2026-11-04",
+  "version": "2026-11-05.1",
+  "reviewed_on": "2026-11-05",
   "review_interval_days": 30,
   "scope": "Image/video provider marking and EU deployer deepfake disclosure; requirements planning, not a legal determination",
   "sources": {
@@ -10,14 +10,15 @@
       "basis": "Consolidated AI Act 2026-07-27 as reproduced by European Commission"
     },
     "EU-TIMING": {
-      "url": "https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act",
-      "kind": "official_guidance",
-      "basis": "Article 50 starts 2026-08-02; provider marking transition for systems first placed before that date until 2026-12-02"
+      "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-111",
+      "kind": "statute_official_reproduction",
+      "basis": "Article 111(4), introduced by Regulation (EU) 2026/1744; pre-2026-08-02 provider systems comply with 50(2) by 2026-12-02. Official Commission reproduction read 2026-11-05; direct OJ access unavailable."
     },
     "EU-CODE": {
       "url": "https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content",
       "kind": "voluntary_code",
-      "basis": "Separate voluntary route; full code adherence is not evaluated by this profile"
+      "basis": "Final voluntary Code, 2026-06-10; Measures 1.1 and 3.4 reviewed from official PDF on 2026-11-05. Signatory interoperability solution under 3.4(c) by 2027-02-02; full Code adherence not evaluated.",
+      "document_url": "https://ec.europa.eu/newsroom/dae/redirection/document/129555"
     },
     "CA-22757": {
       "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=8.&chapter=25.&part=&lawCode=BPC",

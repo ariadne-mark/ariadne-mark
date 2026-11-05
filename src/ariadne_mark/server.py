@@ -2,6 +2,7 @@
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import io
 from pathlib import Path
 import tempfile
 import threading
@@ -23,13 +24,32 @@ try{let ext=f.name.split('.').pop().toLowerCase();let r=await fetch('/verify?for
 </script></html>'''
 
 
+class _DeadlineReader(io.RawIOBase):
+    """Apply one total deadline across every socket read of request headers."""
+    def __init__(self, connection):
+        super().__init__()
+        self.connection = connection
+        self.deadline = None
+
+    def readable(self):
+        return True
+
+    def readinto(self, buffer):
+        if self.deadline is not None:
+            remaining = self.deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError('header_deadline')
+            self.connection.settimeout(remaining)
+        return self.connection.recv_into(buffer)
+
+
 def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback_url=None,
-                upload_timeout=120, upload_slots=4, production=False):
+                upload_timeout=120, upload_slots=4, production=False, header_timeout=10):
     if not 1 <= max_upload_mb <= 512:
         raise ValueError("max_upload_mb must be between 1 and 512")
     if feedback_url and urlsplit(feedback_url).scheme not in {"https", "http"}:
         raise ValueError("feedback URL must use HTTPS or HTTP")
-    if not 0 < upload_timeout <= 3600 or not 1 <= upload_slots <= 16:
+    if not 0 < upload_timeout <= 3600 or not 1 <= upload_slots <= 16 or not 0 < header_timeout <= 30:
         raise ValueError("Invalid upload deadline or slots")
     if production:
         if not getattr(sdk, "trust_anchors", None):
@@ -43,7 +63,20 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
     class Handler(BaseHTTPRequestHandler):
         def setup(self):
             super().setup()
+            self.rfile.close()
+            self._request_reader = _DeadlineReader(self.connection)
+            self.rfile = io.BufferedReader(self._request_reader)
             self.connection.settimeout(30)
+
+        def handle_one_request(self):
+            self._request_reader.deadline = time.monotonic() + header_timeout
+            return super().handle_one_request()
+
+        def parse_request(self):
+            result = super().parse_request()
+            self._request_reader.deadline = None
+            self.connection.settimeout(30)
+            return result
 
         def log_message(self, format, *args):
             pass  # No IPs, filenames or upload content in default logs.

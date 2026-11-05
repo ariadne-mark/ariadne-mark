@@ -1,4 +1,4 @@
-# Supported scope — 0.5.2a0
+# Supported scope — 0.5.3a0
 
 | Area | Supported | Boundary |
 | --- | --- | --- |
@@ -50,10 +50,23 @@ power-loss guarantee is claimed.
 
 ## 0.5.2 runtime boundaries
 
-MP4 decoders are restricted to H.264/HEVC and AAC, with file-only protocol
-access. This narrows the accepted format surface; it does not establish safety
+MP4 preflight uses ffprobe; the actual PyAV video/audio codec contexts are
+checked for H.264/HEVC and AAC before decoding, with file-only protocol access.
+PyAV bundles its own FFmpeg libraries, separately inventoried from system FFmpeg. This narrows the accepted format surface; it does not establish safety
 of all malformed media. Run untrusted uploads in the bounded isolated worker
 described in the deployment guide. Standalone verification closes temporary
 video workers; callers retain ownership of reusable workers they provide.
-Production verifier startup validates that a configured trust file contains
-certificates and no private key.
+Production verifier startup rejects empty/key-bearing files, known development
+roots, expired/not-yet-valid roots and non-CA certificates. Operator-selected
+roots define a trust policy; parsing a CA does not authenticate an organization.
+
+Unsigned image checks use the Python TrustMark image scheme and need no Node.
+`algorithm_scope` records that scope: a negative does not rule out a different
+payload in an extracted video frame. A verified signed algorithm still routes
+to its required decoder; failure remains not_checked. A video-only installation
+without legacy decoders cannot establish a negative across legacy formats.
+
+Staging currently uses a mode-0700 temporary directory adjacent to the output.
+Do not expose that parent recursively through a static web server: dot-path
+filtering and explicit download routes are deployment requirements. Process-kill
+orphans and receipt reconciliation still require application-level cleanup.
