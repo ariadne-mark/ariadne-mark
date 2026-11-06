@@ -203,6 +203,7 @@ def verify_video_export(path, engine, expected_windows, *, trust_anchors=None, t
     to the decoder; SDK.mark compares the returned evidence after this call.
     """
     from ariadne_mark.video import selected_window_frames, sample_frames, _orient
+    from ariadne_mark.video.color import frame_image
     if engine.profile not in {"economy_5s", "economy_2s"}:
         rows, aggregate = engine.decode_frames(list(sample_frames(path)))
         rows = [{**r, "algorithm": engine.algorithm} for r in rows]
@@ -214,7 +215,7 @@ def verify_video_export(path, engine, expected_windows, *, trust_anchors=None, t
         seen.add(window)
         if window in found:
             continue
-        observations, _ = engine.decode_frames([(_orient(frame.to_image(), rotation), timestamp)])
+        observations, _ = engine.decode_frames([(_orient(frame_image(frame), rotation), timestamp)])
         if len(observations) != 1:
             raise AriadneError("Incomplete Economy read-back")
         row = {**observations[0], "window": window, "algorithm": engine.algorithm}

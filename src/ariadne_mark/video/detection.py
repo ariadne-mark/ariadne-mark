@@ -11,31 +11,49 @@ from ariadne_mark.errors import UnsupportedMedia
 
 
 def phase_groups(times, *, max_hypotheses=512):
-    """Yield the benchmark's unknown-phase hypotheses, capped explicitly.
+    """Bounded unknown-phase bank, independent of timestamp denominators.
 
-    Period1 remains a recovery hypothesis for experimental/older exports; new
-    SDK encoders expose only2s/5s. At most20 logits fit the upstream aggregate.
+    Up to 64 observed phase representatives per second (15.625 ms bins) for
+    periods 1/2/5s: at most 512 candidates. Fractional FPS no longer creates
+    thousands of almost identical hypotheses. This is a discrete search bank,
+    not exhaustive coverage of continuous phase or a population FPR guarantee.
+    Recovery windows are 93.75ms inside the encoder's 125ms windows, leaving
+    room for the phase quantization instead of averaging adjacent clean frames.
     """
+    if not times:
+        return
+    relative = [t - times[0] for t in times]
     seen = set()
     yielded = 0
     for period in (1, 2, 5):
-        for phase in sorted({round(t % period, 6) for t in times}):
-            indices = tuple(i for i, t in enumerate(times) if (t - phase + 1e-6) % period < .125)
-            if len(indices) < 2 or indices in seen:
+        bins = {}
+        for timestamp in relative:
+            phase = timestamp % period
+            bucket = min(int(phase * 64), period * 64 - 1)
+            # Choose an observed phase nearest the bin center, deterministically.
+            rank = (abs(phase - (bucket + .5) / 64), phase)
+            if bucket not in bins or rank < bins[bucket][0]:
+                bins[bucket] = (rank, phase)
+        for _, phase in sorted(bins.values(), key=lambda item: item[1]):
+            indices = tuple(i for i, t in enumerate(relative) if (t - phase + 1e-6) % period < .09375)
+            if len(indices) < 2:
+                continue
+            if len(indices) > 20:
+                indices = tuple(indices[round((len(indices) - 1) * i / 19)] for i in range(20))
+            if indices in seen:
                 continue
             seen.add(indices)
             if yielded >= max_hypotheses:
                 yield None
                 return
             yielded += 1
-            if len(indices) > 20:
-                indices = tuple(indices[round((len(indices) - 1) * i / 19)] for i in range(20))
             yield period, phase, indices
 
 
 def scan_video(path, marker, *, max_frames=2000, max_seconds=120, max_hypotheses=512):
     import av
     from ariadne_mark.video import probe, validate_decoder_streams, _orient
+    from ariadne_mark.video.color import frame_image
     if type(max_frames) is not int or not 1 <= max_frames <= 18000:
         raise ValueError("max_frames must be1–18000")
     if not isinstance(max_seconds, (int, float)) or not math.isfinite(max_seconds) or not 0 < max_seconds <= 3600:
@@ -62,7 +80,7 @@ def scan_video(path, marker, *, max_frames=2000, max_seconds=120, max_hypotheses
             if not math.isfinite(timestamp) or last is not None and timestamp <= last:
                 raise UnsupportedMedia("Non-monotonic blind-search timestamps")
             last = timestamp
-            token, values = marker.decode_logits(_orient(frame.to_image(), info["rotation"]))
+            token, values = marker.decode_logits(_orient(frame_image(frame), info["rotation"]))
             if len(values) != 100 or not all(math.isfinite(x) for x in values):
                 raise ValueError("Invalid decoder logits")
             observations.append({"time": timestamp, "token": token})
@@ -117,6 +135,7 @@ def scan_video(path, marker, *, max_frames=2000, max_seconds=120, max_hypotheses
                        "file_exhausted": complete, "hypotheses_complete": hypotheses_complete,
                        "max_frames": max_frames, "max_seconds": max_seconds,
                        "max_hypotheses": max_hypotheses, "aggregate_attempts": attempts,
+                       "phase_bank": "observed_bins_v2", "phase_resolution_s": 1 / 64, "aggregate_window_s": .09375,
                        "observed_ids": sorted(candidates), "expected_id_supplied": False,
                        "signed_profile_or_registry_used": False, "cnn_passes": 1,
                        "whole_video_coverage": "not_established",

@@ -94,7 +94,8 @@ def public_report(report, sources=()):
         searches = [a['search'] for a in watermark.get('attempts', []) if 'search' in a]
         if searches:
             allowed = ['reason', 'frames_decoded', 'file_exhausted', 'hypotheses_complete',
-                       'max_frames', 'max_seconds', 'cnn_passes', 'whole_video_coverage']
+                       'max_frames', 'max_seconds', 'cnn_passes', 'whole_video_coverage',
+                       'phase_bank', 'phase_resolution_s', 'aggregate_window_s']
             result['watermark']['search'] = {k: searches[-1][k] for k in allowed if k in searches[-1]}
     recovery = report.get('recovery', {})
     if recovery:

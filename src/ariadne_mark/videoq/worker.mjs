@@ -1,5 +1,6 @@
 // Binary framed IPC; upstream Variax0.3.2 algorithm with pinned alias fix.
 import {createRequire} from 'node:module';
+import {canonicalPacket} from './canonical.mjs';
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 const [runtimeDir,modelDir,threads]=process.argv.slice(2);
@@ -11,8 +12,8 @@ const inner=createRuntime(ort,{intraOpNumThreads:Number(threads),interOpNumThrea
 const runtime={async createSession(bytes){const s=await inner.createSession(bytes);return {async run(feeds){const t=performance.now();const r=await s.run(feeds);calls++;inferenceMs+=performance.now()-t;return r;}}}};
 const wm=await Watermarker.create({variant:'Q',models:{encoder:readFileSync(join(modelDir,'encoder_Q.onnx')),decoder:readFileSync(join(modelDir,'decoder_Q.onnx'))},runtime});
 const dl=new DataLayer();
-function unpack(d){if(!d.valid||d.schema!=='BCH_5')return null;let id=0n;for(const bit of d.data)id=(id<<1n)|BigInt(bit);return (id>>48n)===0x14dn?id.toString(16).padStart(16,'0'):null;}
-function packet(logits){return unpack(dl.decode(Uint8Array.from(logits,x=>x>0?1:0)));}
+function unpack(d){if(!d||!d.valid||d.schema!=='BCH_5')return null;let id=0n;for(const bit of d.data)id=(id<<1n)|BigInt(bit);return (id>>48n)===0x14dn?id.toString(16).padStart(16,'0'):null;}
+function packet(logits){return unpack(canonicalPacket(dl,Uint8Array.from(logits,x=>x>0?1:0)));}
 let carry=Buffer.alloc(0),eof=false,waiting;
 process.stdin.on('data',b=>{carry=Buffer.concat([carry,b]);waiting?.();waiting=null;});
 process.stdin.on('end',()=>{eof=true;waiting?.();waiting=null;});
@@ -49,7 +50,7 @@ while(true){const size=await read(4);if(!size)break;const len=size.readUInt32BE(
   }else if(c.op==='aggregate'){
    if(!Array.isArray(c.logits)||c.logits.length>20)throw Error('invalid samples');const totals=new Float32Array(100);
    for(const row of c.logits){if(row.length!==100||!row.every(Number.isFinite))throw Error('invalid logits');for(let i=0;i<100;i++)totals[i]+=row[i];}
-   const d=dl.decode(Uint8Array.from(totals,x=>x>0?1:0));await send({token:unpack(d)});
+   const d=canonicalPacket(dl,Uint8Array.from(totals,x=>x>0?1:0));await send({token:unpack(d)});
   }else if(c.op==='end'){
    await reset();const stats=state?{frames:state.frames,inference_calls:calls-state.startCalls,inference_s:(inferenceMs-state.startMs)/1000,profile:state.profile,motion_refreshes:state.motionRefreshes,anchor_rmse_lsb:.5,max_cache_frames:24}:{};state=null;await send(stats);
   }else throw Error('unknown operation');

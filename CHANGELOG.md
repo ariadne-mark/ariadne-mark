@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.1a0 — color, fractional FPS and decoder hardening candidate
+
+- Explicit SDR matrix/range on export and read-back; accurate rounding removes conversion-only luma bias; YUV bypass retained for Economy.
+- Bounded, timestamp-based unknown-phase bank completes on NTSC rates; narrower recovery windows handle phase quantization.
+- Canonical BCH5 re-encode/distance checks around pinned Python and Node decoders, without changing payloads, models, cadence or strength.
+- Server-only Linux qualification, before/after identity exports and real fractional-rate transforms logged; ready crop/letterbox approaches documented separately.
+
+## 0.7.0a0 — signed reports and C2PA recovery
+
+- Signed verifier JWS reports, immutable exact C2PA manifests and explicit read-only recovery API; native C2PA 0.91.11.
+- Qualified installed wheel on Linux x86-64, 156 tests, zero skips. See the versioned validation record.
+
 ## 0.6.0a0 — Economy and verifier launch candidate
 
 - Default Economy5s, configurable Economy2s and per-frame Resilient in one wheel; config, CLI and per-export API selection.

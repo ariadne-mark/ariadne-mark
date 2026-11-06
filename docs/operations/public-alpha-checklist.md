@@ -1,4 +1,4 @@
-# Public alpha checklist — 0.6 candidate
+# Public alpha checklist — 0.7.1 candidate
 
 Release target: local CPU SDK for JPEG/PNG and supported SDR MP4, with
 Economy5s/2s and Resilient video, signed provenance, self-hosted verification and partial
@@ -24,5 +24,11 @@ endpoint, configure trust/privacy/feedback, and assess its own duties. Public
 hosting of an Ariadne-operated verifier is not a prerequisite for this local
 alpha.
 
-See [release evidence](../validation/0.6.0a0.md) for current results and
+See [release evidence](../validation/0.7.1a0.md) for current results and
 [qualification rules](releases.md) for publication gates.
+
+0.7.1 follow-up adds explicit color handling, bounded fractional-FPS recovery
+and canonical BCH5 guards. Severe portrait crops and letterbox recovery are
+separate qualification items; a cropdetect feasibility result is not a public
+verifier capability. A clean CI run for the final commit, published source
+licenses/notices, operator credentials and accurate public claims remain gates.

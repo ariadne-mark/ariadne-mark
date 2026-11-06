@@ -85,3 +85,15 @@ The enum is used by signing and passive C2PA declaration inspection. No Trufo
 API client, service credentials, proprietary provenance/PawPrint engine,
 model weights or container are included. This reuse introduces no dependency
 on Trufo's API or commercial Library License and grants no Trufo trademark.
+
+## Decoder acceptance hardening (0.7.1 candidate)
+
+The SDK wraps the pinned Python and Node BCH5 decoders with its own canonical
+re-encode/distance guard, motivated by upstream TrustMark canonical-validation
+fixes merged in November 2026. Upstream files/models and their hashes are not
+changed. The guard reuses each runtime's existing encoder and checks a received
+96-bit word is within its five-bit correction radius. It is not a claim to
+include every upstream fix or to calibrate detector false-positive rates.
+Color conversion uses existing libswscale flags and an explicitly documented
+PyAV 16 colorspace configuration workaround; no native dependency upgrade is
+introduced. Existing combined-binary redistribution qualifications still apply.

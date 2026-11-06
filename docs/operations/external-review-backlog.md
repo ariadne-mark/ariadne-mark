@@ -33,3 +33,26 @@ service path of P2-3. Direct synchronous `SDK.verify` and custom in-process
 The final Article50 Guidelines sections4.2.1–4.2.3 were reviewed for the launch
 map. Sparse-window adversarial removal is a documented limitation, not a closed
 robustness/legal finding. Other open items above are not silently closed.
+
+## 0.7 review follow-up — 6 November 2026
+
+Work is isolated from the running preview services. All new execution/tests and
+media generation are on the Oregon EC2 host; original review files on the Mac
+are read-only inputs. See `docs/validation/0.7.1a0.md` for exact qualification.
+
+| Priority | Finding | Disposition / release implication |
+| --- | --- | --- |
+| P1 | RGB conversion changes marked-frame color/luma | Explicit source matrix/range, accurate rounding/full chroma, consistent read-back and preserved encoder tags; identity-marker and FFmpeg-reference tests isolate the conversion from model residuals |
+| P1 | Fractional FPS exhausts phase hypotheses | Deterministic bounded observed-phase bank, documented resolution/window and unknown-phase tests; budgets and honest incomplete verdicts retained |
+| P1 | Pre-fix upstream BCH can accept noncanonical words | Instance-local Python guard and Node guard re-encode decoded BCH5 data and enforce correction radius; exact codecs tested with correctable errors and deterministic false-valid controls |
+| P1, scope | Extreme portrait crop and letterbox lose recovery | Ready approaches researched; FFmpeg cropdetect feasibility probe kept separate from qualified SDK. No claim these transforms are now supported |
+| P1, claims | Resilient is not attack-proof; Economy windows can be removed | Preserve engineering preset names/cadence. Publish measured transformation scope and limitations; no bulletproof/compliance certification claim |
+| P2 | Early stop finds an ID before later mixed-ID segments | Explicit observed-evidence/whole-video-coverage limits retained. Whole-asset mixed-source audit is a separate endpoint/mode, not established by current verifier |
+| P2 | Long negative videos hit frame/time ceiling | Expected bounded `not_checked`; operators can raise scan budgets in their trusted queue. Do not remove public-service resource limits |
+| P2 | Detector FPR and geometry search calibration | Canonical validation is not population calibration. Large held-out clean-content assessment remains open |
+| P2 | Dependency/packaging simplification | No unmeasured engine replacement. Future official ONNX-only path and one media stack require their own interoperability/performance/license qualification |
+| Operator | Production issuer credentials, trust enrollment, TSA, hosting/privacy | Deployment checklist remains necessary; a development build does not supply a public trusted identity or certify legal compliance |
+
+Do not count a review disk-full export failure as a watermark failure. Deduplicate
+matrix snapshots before deriving benchmark denominators. Native portrait exports
+and post-export portrait crops must remain distinct.

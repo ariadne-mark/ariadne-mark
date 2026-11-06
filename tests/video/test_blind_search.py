@@ -34,7 +34,8 @@ class BlindSearchTests(unittest.TestCase):
         self_test = self
         with patch.dict('sys.modules', av=types.SimpleNamespace(open=lambda *a, **k: Container())), \
              patch('ariadne_mark.video.probe', return_value={'rotation': 0}), \
-             patch('ariadne_mark.video.validate_decoder_streams'):
+             patch('ariadne_mark.video.validate_decoder_streams'), \
+             patch('ariadne_mark.video.color.frame_image', side_effect=lambda f: f.to_image()):
             result = scan_video(Path('fixture.mp4'), Marker(), **limits)
         return result, calls
 

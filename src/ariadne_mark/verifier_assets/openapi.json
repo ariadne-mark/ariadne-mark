@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Ariadne Mark public verifier",
-    "version": "0.7.0a0",
+    "version": "0.7.1a0",
     "description": "Self-hosted, no-account, supported-scheme provenance verification. Operator must configure reviewed public sources, trust roots, feedback and durable registry as applicable."
   },
   "paths": {

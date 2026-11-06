@@ -4,7 +4,7 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer preview · 0.6.0a0.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer preview · 0.7.1a0 candidate.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 ## Quick start with Docker
 
@@ -66,7 +66,7 @@ ariadne models fetch
 ```
 
 The explicit C2PA bootstrap builds the official tagged Python wrapper with the
-SHA-256-pinned upstream native library 0.91.7. It is qualified on Linux x86-64;
+SHA-256-pinned upstream native library 0.91.11. It is qualified on Linux x86-64;
 use the Docker recipe for the supported media environment.
 
 `models fetch` provisions image, new video and legacy VideoSeal engines. Use `--engine trustmark` for images, `--engine video` for Economy/Resilient, or `--engine videoseal` for legacy compatibility. `ARIADNE_VIDEOSEAL_MODEL` can point to a shared, checksum-verified model file.
@@ -150,7 +150,7 @@ docker run --rm --network none --cpus 2 --memory 6g \
   ariadne-mark:local -m unittest discover -s tests -t . -v
 ```
 
-The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.6.0a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [Release evidence](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
 
 [Public alpha checklist](docs/operations/public-alpha-checklist.md).
 
@@ -171,6 +171,10 @@ serve explicitly published entries through read-only soft-binding endpoints.
 [Signed reports](docs/operations/signed-reports.md) ·
 [Recovery, publication and registration limits](docs/operations/c2pa-recovery.md).
 Economy 5s (default), Economy 2s and Resilient marking policies are unchanged.
+Color conversions use explicit SDR matrix/range and accurate rounding; fractional
+FPS recovery has a bounded phase bank. Canonical BCH5 guards validate decoded
+codewords in both runtimes. See the [video guide](docs/implementation/video-profiles.md)
+and [spatial recovery limits](docs/research/spatial-recovery-2026-11-06.md).
 Native C2PA 0.91.11 is pinned for correct CBOR byte-string assertions; rerun
 bootstrap when upgrading an existing 0.6 environment. Algorithm-list enrollment,
 production trust and mode-specific durability assessment remain separate work.

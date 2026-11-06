@@ -69,6 +69,7 @@ def _orient(image, rotation: int):
 def encode_video(source: Path, destination: Path, marker, token: str, *, visible=False, altered=False) -> dict:
     import av
     from ariadne_mark.disclosure import apply_label
+    from ariadne_mark.video.color import ColorPolicy, ColorConverter
 
     info = probe(source)
     silent = destination.with_name("frames.mp4")
@@ -91,6 +92,7 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
         encoded.codec_context.time_base = stream.time_base
         encoded.codec_context.thread_count = 2
         encoded.options = {"crf": "18", "preset": "fast", "bf": "0"}
+        converter = None
         pending = []
         durations = {}
         def mux(packet):
@@ -108,7 +110,7 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
             if len(marked) != len(pending):
                 raise AriadneError("Watermarker returned an incomplete frame batch")
             for image, (_, pts, time_base) in zip(marked, pending):
-                output = av.VideoFrame.from_image(image)
+                output = converter.frame(image)
                 output.pts, output.time_base = pts, time_base
                 for packet in encoded.encode(output):
                     mux(packet)
@@ -121,12 +123,20 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
             last_pts = frame.pts
             if frames >= 18000:
                 raise UnsupportedMedia("Video exceeds 18000-frame limit")
+            if converter is None:
+                policy = ColorPolicy.from_frame(frame)
+                converter = ColorConverter(policy)
+                encoded.codec_context.colorspace = policy.matrix
+                encoded.codec_context.color_range = policy.range
+                encoded.codec_context.color_primaries = stream.codec_context.color_primaries
+                encoded.codec_context.color_trc = stream.codec_context.color_trc
+            converter.policy.check(frame)
             selected, window = selector.select(frame.pts * frame.time_base)
             duration = frame.duration * frame.time_base
             decoded_end = max(decoded_end, frame.pts * frame.time_base + duration)
             durations[frame.pts * frame.time_base] = duration
             if selected:
-                image = _orient(frame.to_image(), info["rotation"])
+                image = _orient(converter.image(frame), info["rotation"])
                 if visible:
                     image = apply_label(image, altered=altered)
                 pending.append((image, frame.pts, frame.time_base))
@@ -138,12 +148,12 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
                     flush()
                 # Bypass PIL/RGBA/Node for unmarked frames; visible disclosure
                 # and display rotation still apply to the complete export.
-                output = frame
+                output = converter.policy.tag(frame)
                 if visible or info["rotation"] % 360:
-                    image = _orient(frame.to_image(), info["rotation"])
+                    image = _orient(converter.image(frame), info["rotation"])
                     if visible:
                         image = apply_label(image, altered=altered)
-                    output = av.VideoFrame.from_image(image)
+                    output = converter.frame(image)
                     output.pts, output.time_base = frame.pts, frame.time_base
                 for packet in encoded.encode(output):
                     mux(packet)
@@ -179,6 +189,8 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
             "rotation_normalized": info["rotation"], "width": final["width"], "height": final["height"],
             "watermark_algorithm": getattr(marker, "algorithm", "custom"),
             "batch_size": getattr(marker, "batch_size", 1), "h264_crf": 18,
+            "color_pipeline": {"matrix": converter.policy.matrix, "range": converter.policy.range,
+                               "rounding": "accurate_full_chroma", "version": 1},
             "profile": getattr(marker, "profile", "legacy"),
             "marked_frames": marked_frames,
             "watermark_period_s": period_for(profile),
@@ -216,6 +228,7 @@ def selected_window_frames(path: Path, profile):
 def sample_frames(path: Path, *, samples: int = 5):
     """Decode a bounded sample; never claim the sample verifies every frame."""
     import av
+    from ariadne_mark.video.color import frame_image
     info = probe(path)
     with av.open(str(path), format="mp4", options={"protocol_whitelist": "file", "codec_whitelist": "h264,hevc,aac", "enable_drefs": "0"}) as container:
         validate_decoder_streams(container)
@@ -232,4 +245,4 @@ def sample_frames(path: Path, *, samples: int = 5):
                     break
             if chosen is not None and chosen.pts not in seen:
                 seen.add(chosen.pts)
-                yield _orient(chosen.to_image(), info["rotation"]), chosen.time
+                yield _orient(frame_image(chosen), info["rotation"]), chosen.time

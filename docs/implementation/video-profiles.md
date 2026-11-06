@@ -172,3 +172,40 @@ Explicit `fast` / `fast-cpu-v2` retains anchor-aware shared-residual encoding:
 refresh on a 64x36 RGB sample change (RMSE > 0.5 intensity units), scene change,
 or 24-frame cap. Motion can approach Resilient cost. This compatibility path is
 not renamed Economy; new Economy windows always use fresh perFrame inference.
+
+## Color and fractional FPS (0.7.1 candidate)
+
+The video path now explicitly reads and writes the SDR matrix/range. Supported
+matrices are BT.709, BT.601 (BT.470BG/SMPTE170M), FCC and SMPTE240M. The focused
+color reference/export tests cover BT.601/BT.709, full and limited range.
+Unspecified matrix/range uses an explicit BT.601/limited fallback (full for
+`yuvj*`); this is an assumption, not a way to infer a missing source tag.
+Unsupported matrices and mid-stream matrix/range changes require explicit
+normalization and fail closed. Primaries/transfer tags are preserved, not
+converted. HDR remains unsupported.
+
+Marked RGB frames are explicitly converted back to the source YUV policy
+before H.264 encoding; unselected YUV frames keep their bypass. Swscale uses
+accurate rounding and full chroma interpolation. The receipt records the policy.
+A conversion reference is compared against FFmpeg, and an identity-marker export
+isolates conversion error from the watermark model's own residual and H.264 loss.
+
+Blind recovery uses an observed-phase bank with 64 bins/second, periods 1/2/5s,
+93.75ms aggregation windows and at most 512 candidates. The narrower recovery
+window leaves room inside a 125ms encoding window for phase discretization.
+This avoids exhausting the hypothesis budget merely because FPS is 24000/1001
+or 30000/1001; no rounding of the actual media timeline is introduced. Search
+receipts expose bank version, bin spacing and window size. A completed bank
+means only this discrete bank was completed. Frame/time limits, conflicting
+IDs, missing engines and incomplete searches retain their distinct verdicts.
+
+The pinned Python and Node BCH5 decoders are additionally checked by re-encoding
+the recovered payload and checking distance from the received 96 data/parity
+bits (maximum five errors). This addresses false-valid codewords in the pinned
+pre-fix decoders; it is not a calibration of the complete watermark detector or
+an authentication mechanism. The 4 schema bits are outside that BCH code.
+Payloads, models, strength and all marking presets are unchanged.
+
+Crop/letterbox recovery is tracked separately in
+[spatial research](../research/spatial-recovery-2026-11-06.md). The experimental
+cropdetect probe is not silently part of the public verifier's qualified path.
