@@ -106,7 +106,7 @@ def install(*, allow_system=False, cache=None, wheel_dir=None):
         built = list(out.glob('c2pa_python-0.38.3-*.whl'))
         if len(built) != 1:
             raise ValueError('Unexpected C2PA wheel output')
-        run('-m', 'pip', 'install', '--no-deps', '--upgrade', built[0])
+        run('-m', 'pip', 'install', '--no-deps', '--upgrade', '--force-reinstall', built[0])
         if wheel_dir:
             target = Path(wheel_dir); target.mkdir(parents=True, exist_ok=True)
             shutil.copy2(built[0], target / built[0].name)

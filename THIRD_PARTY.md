@@ -1,4 +1,4 @@
-# Third-party components — 0.6.0a0
+# Third-party components — 0.7.0a0
 
 The wheel contains Ariadne Mark's code and a model checksum manifest, not model
 weights. It also contains the attributed Apache-2.0 vocabulary described below.
@@ -10,7 +10,7 @@ their SHA-256 hashes; runtime processing can be offline.
 | --- | --- | --- | --- |
 | TrustMark | 0.9.2, Q/BCH-5 | https://github.com/adobe/trustmark | MIT; upstream README states it covers code and downloaded models |
 | VideoSeal | official 1.0 TorchScript y_256b_img.jit | https://github.com/facebookresearch/videoseal | MIT; model hash and official Meta download URL in src/ariadne_mark/videoseal/__init__.py |
-| C2PA Python | 0.38.3 / native 0.91.7 | https://github.com/contentauth/c2pa-python | MIT OR Apache-2.0; bundles native C2PA |
+| C2PA Python | 0.38.3 / native 0.91.11 | https://github.com/contentauth/c2pa-python | MIT OR Apache-2.0; bundles native C2PA |
 | PyTorch CPU | 2.14.1+cpu | https://pytorch.org/ | BSD-style; use the official CPU wheel index |
 | torchvision CPU | 0.29.1+cpu | https://github.com/pytorch/vision | BSD-3-Clause |
 | Pillow | 13.0.0 | https://python-pillow.org/ | MIT-CMU |

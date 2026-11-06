@@ -102,23 +102,31 @@ def validate_trust_roots(path: Path):
     return len(roots)
 
 
-def context(trust_anchors: Path | None = None):
+def context(trust_anchors: Path | None = None, *, tsa_trust_anchors: Path | None = None):
     import c2pa
     settings = {
         "verify": {"verify_after_reading": True, "verify_after_sign": True, "verify_trust": True,
                    "remote_manifest_fetch": False, "ocsp_fetch": False, "verify_timestamp_trust": True},
         "builder": {"thumbnail": {"enabled": False}},
     }
+    anchors = []
     if trust_anchors:
-        # Add operator roots without removing the built-in TSA trust store.
-        settings["trust"] = {"user_anchors": Path(trust_anchors).read_text()}
+        anchors.append({"trust_anchors": Path(trust_anchors).read_text(),
+                        "trust_kind": "manifest", "trust_uri": "ariadne:operator:manifest"})
+    if tsa_trust_anchors:
+        anchors.append({"trust_anchors": Path(tsa_trust_anchors).read_text(),
+                        "trust_kind": "tsa", "trust_uri": "ariadne:operator:tsa"})
+    if anchors:
+        # Native overlays merge these lists with built-in roots. A signer root
+        # is never silently promoted to timestamp-authority trust.
+        settings["trust"] = {"anchors": anchors}
     return c2pa.Context.from_dict(settings)
 
 
 def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: str,
               identity: SigningIdentity, *, parent: Path | None = None, disclosure: bool = False,
               audio: str = "none", algorithm: str = "adobe.trustmark.Q.bch5",
-              payload_format: str = "ariadne-v1", watermark_profile: str | None = None) -> None:
+              payload_format: str = "ariadne-v1", watermark_profile: str | None = None, tsa_trust_anchors: Path | None = None) -> bytes:
     import c2pa
     if not identity.development and not identity.timestamp_url:
         raise AriadneError("Production signing requires an explicit TSA URL; development fixtures use allow_dev")
@@ -141,18 +149,36 @@ def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: 
                 "audio": audio}},
         ],
     }
+    from ariadne_mark.softbinding import assertion
+    manifest['assertions'].append(assertion(algorithm, token))
+    manifest['assertions'][0]['data']['actions'].append({'action': 'c2pa.watermarked.bound'})
     info = c2pa.C2paSignerInfo("es256", identity.certificate.read_bytes(), identity.private_key.read_bytes(), identity.timestamp_url)
-    with context() as ctx, c2pa.Signer.from_info(info) as signer, c2pa.Builder(manifest, ctx) as builder:
+    with context(tsa_trust_anchors=tsa_trust_anchors) as ctx, c2pa.Signer.from_info(info) as signer, c2pa.Builder(manifest, ctx) as builder:
         if parent is not None:
             builder.set_intent(c2pa.C2paBuilderIntent.EDIT)
             with parent.open("rb") as stream:
                 builder.add_ingredient({"title": "Source material", "relationship": "parentOf"}, MIME[parent.suffix.lower()], stream)
-        builder.sign_file(source, destination, signer)
+        return builder.sign_file(source, destination, signer)
 
 
-def read_manifest(path: Path, *, trust_anchors: Path | None = None) -> dict:
+def read_manifest(path: Path, *, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None) -> dict:
     import c2pa
     # Remote manifests and OCSP fetching are disabled: reading an upload cannot
     # trigger arbitrary network requests through its embedded URLs.
-    with context(trust_anchors) as ctx, c2pa.Reader(path, context=ctx) as reader:
+    with context(trust_anchors, tsa_trust_anchors=tsa_trust_anchors) as ctx, c2pa.Reader(path, context=ctx) as reader:
         return json.loads(reader.json())
+
+
+def read_recovered_manifest(store: bytes, asset: Path, *, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None) -> dict:
+    """Validate a retrieved manifest store against a supplied asset, offline.
+
+    Modified assets may have a data-hash mismatch even when a recoverable
+    watermark and a valid signature remain. Never suppress that mismatch.
+    """
+    import c2pa
+    from ariadne_mark.softbinding import MAX_MANIFEST_BYTES
+    if not isinstance(store, bytes) or not 0 < len(store) <= MAX_MANIFEST_BYTES:
+        raise ValueError('Invalid manifest store size')
+    with context(trust_anchors, tsa_trust_anchors=tsa_trust_anchors) as ctx, Path(asset).open('rb') as stream:
+        with c2pa.Reader(MIME[Path(asset).suffix.lower()], stream, manifest_data=store, context=ctx) as reader:
+            return json.loads(reader.json())

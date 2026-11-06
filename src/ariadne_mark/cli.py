@@ -54,7 +54,12 @@ def main(argv=None) -> int:
     verify = commands.add_parser("verify", help="Verify supported claims without uploading media")
     verify.add_argument("source", type=Path)
     verify.add_argument("--strict", action="store_true", help="Require a valid credential from a trusted issuer")
+    recover = commands.add_parser("recover", help="Recover a signed C2PA manifest using a local registry; media stays unchanged")
+    recover.add_argument("source", type=Path)
+    recover.add_argument("destination", type=Path, help="New .c2pa manifest-store file")
+    mark.add_argument("--publish-manifest", action="store_true", help="Explicitly approve publishing the full signed manifest/history through a repository")
     serve = commands.add_parser("serve", help="Run the self-hosted public verifier UI/API")
+    serve.add_argument("--public-manifests", action="store_true", help="Enable read-only C2PA resolution for explicitly published manifests")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8080)
     serve.add_argument("--max-upload-mb", type=int, default=512)
@@ -68,9 +73,10 @@ def main(argv=None) -> int:
         sub.add_argument("--report-key", type=Path, help="Separate Ed25519 verifier-report private key")
         sub.add_argument("--verifier-id", help="Stable public URL or URN identifying this verifier")
     verify.add_argument("--report-output", type=Path, help="Write a portable signed receipt; requires --report-key and --verifier-id")
-    for sub in (mark, verify, serve):
+    for sub in (mark, verify, serve, recover):
         sub.add_argument("--registry", type=Path, help="Optional local recovery SQLite database")
         sub.add_argument("--trust-anchors", type=Path, help="PEM trust roots supplied by the operator")
+        sub.add_argument("--tsa-trust-anchors", type=Path, help="Optional separate PEM roots for private timestamp authorities")
         sub.add_argument("--threads", type=int, default=2)
     args = parser.parse_args(argv)
     try:
@@ -148,7 +154,7 @@ def main(argv=None) -> int:
             registry = Registry(args.registry, read_only=args.command != "mark") if args.registry else None
             from ariadne_mark.videoq import VideoWatermarker
             from ariadne_mark.video.policy import DEFAULT_PROFILE
-            sdk = SDK(marker, registry=registry, trust_anchors=args.trust_anchors,
+            sdk = SDK(marker, registry=registry, trust_anchors=args.trust_anchors, tsa_trust_anchors=args.tsa_trust_anchors,
                       video_marker=VideoWatermarker(threads=args.threads,
                           profile=getattr(args, "video_profile", None) or DEFAULT_PROFILE))
             if args.command == "serve":
@@ -156,10 +162,15 @@ def main(argv=None) -> int:
                 from ariadne_mark.isolated_verifier import IsolatedVerifier
                 sdk.close()
                 isolated = IsolatedVerifier(registry=args.registry, trust_anchors=args.trust_anchors,
-                                            threads=args.threads, timeout=args.verification_timeout)
+                                            threads=args.threads, timeout=args.verification_timeout, tsa_trust_anchors=args.tsa_trust_anchors)
                 serve(isolated, host=args.host, port=args.port, max_upload_mb=args.max_upload_mb,
                       feedback_url=args.feedback_url, production=args.production,
-                      public_sources=args.public_sources, feedback_db=args.feedback_db, report_signer=report_signer)
+                      public_sources=args.public_sources, feedback_db=args.feedback_db, report_signer=report_signer,
+                      public_manifests=args.public_manifests)
+                return 0
+            if args.command == "recover":
+                result = sdk.recover_manifest(args.source, args.destination)
+                print(json.dumps(result, indent=2))
                 return 0
             if args.command == "verify":
                 if report_signer is not None:
@@ -193,7 +204,7 @@ def main(argv=None) -> int:
                 action=Action(args.action), created_at=datetime.fromisoformat(args.created_at.replace("Z", "+00:00")),
             )
             result = sdk.mark(args.source, args.destination, record, visible=args.visible, audio_kind=args.audio_kind,
-                              profile=selected_profile, video_profile=args.video_profile)
+                              profile=selected_profile, video_profile=args.video_profile, publish_manifest=args.publish_manifest)
         print(json.dumps(result, indent=2))
         return 0
     except (AriadneError, OSError, ValueError, ImportError) as exc:

@@ -44,7 +44,10 @@ def _strict_json(raw):
         return result
     def constant(value):
         raise ValueError('Non-finite JSON number')
-    return json.loads(raw, object_pairs_hook=pairs, parse_constant=constant)
+    try:
+        return json.loads(raw, object_pairs_hook=pairs, parse_constant=constant)
+    except RecursionError:
+        raise ValueError('JSON nesting limit exceeded') from None
 
 
 def _public_bytes(key):

@@ -1,17 +1,17 @@
 {
   "python_version": "0.38.3",
   "python_commit": "5897963a044a57268e43ece7090bcdf155546b5a",
-  "native_version": "0.91.7",
+  "native_version": "0.91.11",
   "source": {
     "filename": "c2pa-python-0.38.3.zip",
     "url": "https://api.github.com/repos/contentauth/c2pa-python/zipball/5897963a044a57268e43ece7090bcdf155546b5a",
     "sha256": "7f6771e6d3ba6fadeefd7909552fe9fbeaa3f3c4bd833f403954ad42817d7f12"
   },
   "native": {
-    "filename": "c2pa-native-0.91.7-linux-x86_64.zip",
-    "url": "https://github.com/contentauth/c2pa-rs/releases/download/c2pa-v0.91.7/c2pa-v0.91.7-x86_64-unknown-linux-gnu.zip",
-    "sha256": "d1eb1498eeb2dd277bc7f39097d72fc884914d6595d0027030e64c0061423490",
-    "library_sha256": "d03559b95a2cbbc4aeec3f8a10dda13042f1d3b8a32d4bbfb987602e481930c8"
+    "filename": "c2pa-native-0.91.11-linux-x86_64.zip",
+    "url": "https://github.com/contentauth/c2pa-rs/releases/download/c2pa-v0.91.11/c2pa-v0.91.11-x86_64-unknown-linux-gnu.zip",
+    "sha256": "de2d5ddbaeacb20002be3ed8ba5ca3232b4010709f0eff46b52f686a5173f4c9",
+    "library_sha256": "d046de02d826e90bc3c6d8896faa2b04ca280638960b69283bb5ce404280f0a8"
   },
   "pip": {
     "version": "26.3",

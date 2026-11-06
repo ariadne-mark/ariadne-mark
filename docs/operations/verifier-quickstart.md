@@ -22,6 +22,8 @@ ariadne serve --host 127.0.0.1 --port 8080 \
 ```
 
 The UI uploads JPEG, PNG and supported MP4 to this server; it removes temporary uploads before responding. It offers a compact human-readable result and a downloadable public JSON report.
+Configure a separate report key to make that download an independently verifiable
+Ed25519/JWS receipt: [signed reports](signed-reports.md).
 
 ## Verification API
 
@@ -73,3 +75,7 @@ Only `rating` (`correct_result`, `incorrect_result`, `unable_to_check`) and `med
 Use the [TLS-edge configuration](../../apps/verifier/nginx.conf), scoped public trust roots and `--production` when applicable; that flag rejects development roots. Provide truthful operator/privacy information for your deployment, persistent registry/backups where required and reviewed-source configuration. Configure a reachable feedback route and a product UI link. Validate the exact UI/API using your final exported media and its delivery transforms. Review proxy/host logging separately from application defaults. [Legal map](../compliance/launch-mapping.md).
 
 Public hosting, operator identity, production certificate enrollment, trust/TSA arrangements and evidence of durability are deployment responsibilities. An offline passing test suite or private preview is not a completed public service.
+
+For optional C2PA manifest storage, explicit publication and standard read-only
+lookup endpoints, see [C2PA recovery](c2pa-recovery.md). Provisional algorithm IDs
+are not yet enrolled for cross-provider discovery.

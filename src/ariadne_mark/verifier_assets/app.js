@@ -35,11 +35,13 @@ function render(report) {
   addField('Watermark ID', w.token); addField('Provider', record.publisher);
   addField('System', record.system ? `${record.system.name} · ${record.system.version}` : null);
   addField('Operation', record.action); addField('Created / altered', record.created_at); addField('Public asset UUID', record.asset_id);
+  if (r.manifest && r.manifest.soft_binding === 'matched') addField('Recovered C2PA', `Original manifest recovered · signature ${r.manifest.signature} · file binding ${r.manifest.asset_binding}`);
   if (r.status === 'found') addField('Registry binding', r.content_binding === 'exact_registered_file' ? 'Exact registered file' : 'ID entry found; this copy’s source is not authenticated');
   const redacted = report.public_output && report.public_output.redacted_fields || [];
   $('redaction').textContent = redacted.length ? 'Some system details are withheld by this verifier’s public-output policy. Unreviewed personal or free-text metadata is not displayed.' : '';
   $('json').textContent = JSON.stringify(report, null, 2);
   $('download').textContent = report.signed_report ? 'Download signed report' : 'Download unsigned report';
+  $('report-signature').textContent = report.signed_report ? 'The download includes a signed receipt bound to this file. Verify it independently with the operator’s pinned public key.' : 'This verifier has not signed the downloadable report.';
   $('feedback').hidden = !(limits && limits.feedback_enabled);
   $('feedback-status').textContent = '';
   document.querySelectorAll('.feedback').forEach(b => b.disabled = false);

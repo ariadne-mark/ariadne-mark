@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Ariadne Mark public verifier",
-    "version": "0.6.0a0",
+    "version": "0.7.0a0",
     "description": "Self-hosted, no-account, supported-scheme provenance verification. Operator must configure reviewed public sources, trust roots, feedback and durable registry as applicable."
   },
   "paths": {
@@ -19,7 +19,7 @@
     "/verify": {
       "post": {
         "summary": "Inspect a local upload without an account",
-        "description": "C2PA and supported Ariadne watermark schemes only. Returns a compact public report, not a universal AI-origin verdict. Files are deleted before response. Search exhaustion due to a budget is not an absence result.",
+        "description": "C2PA and supported Ariadne watermark schemes only. Returns a compact public report, not a universal AI-origin verdict. Files are deleted before response. Search exhaustion due to a budget is not an absence result. When configured, signed_report is an Ed25519 compact JWS over the public result, exact asset SHA256/size/type, verifier ID and verification time.",
         "parameters": [
           {
             "name": "format",
@@ -151,6 +151,121 @@
           },
           "503": {
             "description": "Feedback unavailable or not configured"
+          }
+        }
+      }
+    },
+    "/report-key": {
+      "get": {
+        "summary": "Public report-signing JWK set; trust requires independent key pinning",
+        "responses": {
+          "200": {
+            "description": "Public report-signing JWK set; trust requires independent key pinning"
+          },
+          "404": {
+            "description": "Report signing not configured"
+          }
+        }
+      }
+    },
+    "/report-key.pem": {
+      "get": {
+        "summary": "Report public key in PEM format",
+        "responses": {
+          "200": {
+            "description": "Report public key in PEM format"
+          },
+          "404": {
+            "description": "Report signing not configured"
+          }
+        }
+      }
+    },
+    "/services/supportedAlgorithms": {
+      "get": {
+        "summary": "Read-only C2PA recovery algorithms; identifiers provisional, unregistered",
+        "responses": {
+          "200": {
+            "description": "watermarks with alg; registration_status is provisional_not_registered"
+          }
+        }
+      }
+    },
+    "/matches/byBinding": {
+      "get": {
+        "summary": "Find public manifests by base64 binding value and alg",
+        "parameters": [
+          {
+            "name": "alg",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "matches array with manifestId"
+          },
+          "400": {
+            "description": "Invalid/unsupported algorithm or binding"
+          }
+        }
+      },
+      "post": {
+        "summary": "Same lookup with JSON alg/value body",
+        "responses": {
+          "200": {
+            "description": "matches array with manifestId"
+          }
+        }
+      }
+    },
+    "/matches/byContent": {
+      "post": {
+        "summary": "Blindly recover an ID from uploaded JPEG/PNG/MP4 and return public manifest matches",
+        "description": "Content-Type identifies media; query alg is optional. Incomplete searches return an error, never an empty successful absence.",
+        "responses": {
+          "200": {
+            "description": "matches array with manifestId"
+          },
+          "503": {
+            "description": "Search incomplete"
+          }
+        }
+      }
+    },
+    "/manifests/{manifestId}": {
+      "get": {
+        "summary": "Fetch an explicitly published full C2PA manifest store",
+        "parameters": [
+          {
+            "name": "manifestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exact application/c2pa bytes"
+          },
+          "400": {
+            "description": "Invalid ID or unsupported active-only option"
+          },
+          "404": {
+            "description": "Not found or not published"
           }
         }
       }

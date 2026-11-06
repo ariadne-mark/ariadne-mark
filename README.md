@@ -161,3 +161,16 @@ Use [Discussions](https://github.com/ariadne-mark/ariadne-mark/discussions) for 
 ## License
 
 Original code is [Apache-2.0](LICENSE). TrustMark and VideoSeal code/models are MIT; C2PA is MIT/Apache-2.0. Other dependencies, including FFmpeg and codec libraries, retain their own licenses. [Third-party inventory](THIRD_PARTY.md).
+
+
+### Signed reports and C2PA recovery (0.7 alpha)
+
+The self-hosted verifier can issue portable Ed25519/JWS reports bound to the
+submitted file. The registry can retain exact signed C2PA manifest stores and
+serve explicitly published entries through read-only soft-binding endpoints.
+[Signed reports](docs/operations/signed-reports.md) ·
+[Recovery, publication and registration limits](docs/operations/c2pa-recovery.md).
+Economy 5s (default), Economy 2s and Resilient marking policies are unchanged.
+Native C2PA 0.91.11 is pinned for correct CBOR byte-string assertions; rerun
+bootstrap when upgrading an existing 0.6 environment. Algorithm-list enrollment,
+production trust and mode-specific durability assessment remain separate work.

@@ -20,7 +20,7 @@ from ariadne_mark.verifier_worker import MAX_MESSAGE, read_message, send_message
 class IsolatedVerifier:
     identity = None
 
-    def __init__(self, *, registry=None, trust_anchors=None, threads=2, timeout=180, _command=None):
+    def __init__(self, *, registry=None, trust_anchors=None, threads=2, timeout=180, tsa_trust_anchors=None, _command=None):
         if type(threads) is not int or not 1 <= threads <= 64:
             raise ValueError('threads must be1–64')
         if type(timeout) not in (float, int) or not math.isfinite(timeout) or not 0 < timeout <= 3600:
@@ -28,9 +28,11 @@ class IsolatedVerifier:
         from ariadne_mark.registry import Registry
         self.registry = Registry(Path(registry), read_only=True) if registry else None
         self.trust_anchors = Path(trust_anchors) if trust_anchors else None
+        self.tsa_trust_anchors = Path(tsa_trust_anchors) if tsa_trust_anchors else None
         self.timeout = timeout
         self._config = {'threads': threads, 'registry': str(Path(registry).resolve()) if registry else None,
-                        'trust_anchors': str(self.trust_anchors.resolve()) if self.trust_anchors else None}
+                        'trust_anchors': str(self.trust_anchors.resolve()) if self.trust_anchors else None,
+                        'tsa_trust_anchors': str(self.tsa_trust_anchors.resolve()) if self.tsa_trust_anchors else None}
         self._command = _command or [sys.executable, '-m', 'ariadne_mark.verifier_worker']
         self._lock = threading.RLock()
         self._process = None

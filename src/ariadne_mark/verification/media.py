@@ -10,9 +10,9 @@ from ariadne_mark.signing import ASSERTION, MIME, read_manifest
 from ariadne_mark.watermark import valid_token
 
 
-def inspect_c2pa(path: Path, *, trust_anchors: Path | None = None) -> dict:
+def inspect_c2pa(path: Path, *, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None) -> dict:
     try:
-        raw = read_manifest(path, trust_anchors=trust_anchors)
+        raw = read_manifest(path, trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
     except Exception as exc:
         try:
             from c2pa import C2paError
@@ -55,6 +55,7 @@ def inspect_c2pa(path: Path, *, trust_anchors: Path | None = None) -> dict:
     if expired_only:
         result["reason"] = "signing_credential_expired_without_trusted_time"
     manifest = raw.get("manifests", {}).get(raw.get("active_manifest"), {})
+    result["manifest_id"] = raw.get("active_manifest")
     result["declared_source_types"] = declared_source_types(manifest)
     assertions = [a.get("data") for a in manifest.get("assertions", [])
                   if isinstance(a, dict) and a.get("label") == ASSERTION]
@@ -99,11 +100,11 @@ def open_image(path: Path):
         raise UnsupportedMedia("Cannot decode image") from exc
 
 
-def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_marker=None, registry=None, trust_anchors: Path | None = None) -> dict:
+def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_marker=None, registry=None, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None) -> dict:
     path = Path(path).resolve()
     if not path.is_file() or path.suffix.lower() not in MIME:
         raise UnsupportedMedia("Provide a local JPEG, PNG or MP4 file")
-    c2pa = inspect_c2pa(path, trust_anchors=trust_anchors)
+    c2pa = inspect_c2pa(path, trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
     video = path.suffix.lower() == ".mp4"
     watermark = {"status": "not_checked", "reason": "watermark_engine_not_loaded"}
     if marker is not None or video_marker is not None:
@@ -191,10 +192,10 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                 watermark["coverage"] = "partial"
         except (AriadneError, OSError, ValueError, ImportError) as exc:
             watermark = {"status": "not_checked", "reason": type(exc).__name__}
-    return _verification_result(path, c2pa, watermark, registry=registry, video=video)
+    return _verification_result(path, c2pa, watermark, registry=registry, video=video, trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
 
 
-def verify_video_export(path, engine, expected_windows, *, trust_anchors=None):
+def verify_video_export(path, engine, expected_windows, *, trust_anchors=None, tsa_trust_anchors=None):
     """Known-schedule export read-back, separate from blind public verification.
 
     At least one independently decoded ID per occupied window. Failed decoder
@@ -206,7 +207,7 @@ def verify_video_export(path, engine, expected_windows, *, trust_anchors=None):
         rows, aggregate = engine.decode_frames(list(sample_frames(path)))
         rows = [{**r, "algorithm": engine.algorithm} for r in rows]
         watermark = summarize_watermarks(rows, [aggregate] if aggregate else [], video=True)
-        return _verification_result(path, inspect_c2pa(path, trust_anchors=trust_anchors),
+        return _verification_result(path, inspect_c2pa(path, trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors),
                                     watermark, registry=None, video=True)
     rows, found, seen = [], set(), set()
     for frame, timestamp, window, rotation in selected_window_frames(path, engine.profile):
@@ -226,11 +227,11 @@ def verify_video_export(path, engine, expected_windows, *, trust_anchors=None):
         "observed_windows": sorted(seen), "windows_with_id": sorted(found),
         "all_windows_have_id": seen == set(expected_windows) == found,
         "interpretation": "known_schedule_export_check_not_blind_search"}
-    c2pa = inspect_c2pa(path, trust_anchors=trust_anchors)
+    c2pa = inspect_c2pa(path, trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
     return _verification_result(path, c2pa, watermark, registry=None, video=True)
 
 
-def _verification_result(path, c2pa, watermark, *, registry, video):
+def _verification_result(path, c2pa, watermark, *, registry, video, trust_anchors=None, tsa_trust_anchors=None):
     if c2pa.get("record"):
         c2pa["record_scope"] = ("development_signer_claim" if c2pa.get("development_identity") else
                                 "trusted_signer_claim" if c2pa.get("issuer_trust") == "trusted" else
@@ -247,6 +248,18 @@ def _verification_result(path, c2pa, watermark, *, registry, video):
             recovery.update(record=stored["record"],
                             content_binding="exact_registered_file" if digest == stored["sha256"] else "not_verified",
                             record_scope="registry_entry_for_id_not_authenticated_source_of_this_copy")
+            if hasattr(registry, 'get_manifest'):
+                bundle = registry.get_manifest(token=token)
+                if bundle is not None:
+                    from ariadne_mark.softbinding import observed_algorithms, inspect_recovered
+                    if bundle['algorithm'] in observed_algorithms(watermark):
+                        try:
+                            recovered = inspect_recovered(bundle['bytes'], path, bundle['algorithm'], token,
+                                                          trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
+                            recovery['manifest'] = {**recovered, 'sha256': bundle['sha256'],
+                                'public': bool(bundle['public']), 'algorithm_registration': 'provisional_not_registered'}
+                        except (ValueError, OSError, ImportError, AriadneError):
+                            recovery['manifest'] = {'status': 'not_checked', 'reason': 'manifest_validation_failed'}
     mismatch = bool(token and c2pa.get("token") and token != c2pa["token"])
     if c2pa["status"] == "invalid" or watermark["status"] == "invalid" or mismatch:
         label = "Invalid or conflicting provenance"

@@ -45,6 +45,7 @@ class SDK:
 
     video_marker: object | None = None
     video_profile: str = DEFAULT_PROFILE
+    tsa_trust_anchors: Path | None = None
 
     def __post_init__(self):
         validate_profile(self.video_profile)
@@ -88,9 +89,32 @@ class SDK:
         if isinstance(engine, VideoWatermarker) and engine._process is None:
             with self._video_markers_lock:
                 engine = next((m for m in self._video_markers.values() if m._process is not None), engine)
-        return verify_file(path, marker=self.marker, video_marker=engine, legacy_video_marker=self._legacy_video_marker, registry=self.registry, trust_anchors=self.trust_anchors)
+        return verify_file(path, marker=self.marker, video_marker=engine, legacy_video_marker=self._legacy_video_marker, registry=self.registry, trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors)
 
-    def mark(self, source: Path, destination: Path, record: ProvenanceRecord, *, visible=False, audio_kind="unknown", profile=None, video_profile=None) -> dict:
+    def recover_manifest(self, path: Path, destination: Path) -> dict:
+        """Blindly recover an ID, match its signed manifest and save exact bytes."""
+        if self.registry is None or not hasattr(self.registry, 'get_manifest'):
+            raise AriadneError('A manifest-enabled registry is required')
+        report = self.verify(path)
+        token = report['watermark'].get('token')
+        recovered = report.get('recovery', {}).get('manifest', {})
+        if (not token or recovered.get('soft_binding') != 'matched'
+                or recovered.get('signature') != 'valid'):
+            raise VerificationFailed('No matching manifest with a validated signature was recovered')
+        bundle = self.registry.get_manifest(token=token)
+        if bundle is None or bundle['sha256'] != recovered['sha256']:
+            raise VerificationFailed('Recovered manifest changed during lookup')
+        with Path(destination).open('xb') as stream:
+            stream.write(bundle['bytes'])
+            stream.flush()
+            os.fsync(stream.fileno())
+        return {'manifest': recovered, 'saved_to': str(destination), 'verification': report}
+
+    def mark(self, source: Path, destination: Path, record: ProvenanceRecord, *, visible=False, audio_kind="unknown", profile=None, video_profile=None, publish_manifest=False) -> dict:
+        if type(publish_manifest) is not bool:
+            raise ValueError('publish_manifest must be a boolean')
+        if publish_manifest and self.registry is None:
+            raise ValueError('Publishing a manifest requires a durable registry')
         if video_profile is not None:
             validate_profile(video_profile)
         profile_report = None
@@ -160,15 +184,15 @@ class SDK:
                 else:
                     image.save(marked, "PNG")
             engine = video_engine if video else self.marker
-            sign_file(marked, signed, record, token, self.identity, parent=parent, disclosure=visible, audio=audio,
+            manifest_bytes = sign_file(marked, signed, record, token, self.identity, parent=parent, disclosure=visible, audio=audio,
                       algorithm=getattr(engine, "algorithm", "adobe.trustmark.Q.bch5"),
                       payload_format=getattr(engine, "payload_format", "ariadne-v1"),
-                      watermark_profile=getattr(engine, "profile_id", None))
+                      watermark_profile=getattr(engine, "profile_id", None), tsa_trust_anchors=self.tsa_trust_anchors)
             economy = video and getattr(engine, "profile", None) in {"economy_5s", "economy_2s"}
             if video and isinstance(engine, VideoWatermarker):
                 from ariadne_mark.verification.media import verify_video_export
                 checked = verify_video_export(signed, engine,
-                    [w["index"] for w in details["watermark_windows"]], trust_anchors=self.trust_anchors)
+                    [w["index"] for w in details["watermark_windows"]], trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors)
             else:
                 checked = self.verify(signed)
             samples = checked["watermark"].get("samples", [])
@@ -189,6 +213,19 @@ class SDK:
             with signed.open("rb") as media_file:
                 os.fsync(media_file.fileno())
             digest = file_hash(signed)
+            manifest_bundle = None
+            if isinstance(manifest_bytes, bytes) and self.registry is not None:
+                from ariadne_mark.softbinding import algorithm_for, validate_match
+                from ariadne_mark.signing import read_recovered_manifest
+                binding_algorithm = algorithm_for(getattr(engine, "algorithm", "adobe.trustmark.Q.bch5"))
+                detached = read_recovered_manifest(manifest_bytes, signed, trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors)
+                manifest_id = validate_match(detached, binding_algorithm, token)
+                if manifest_id != checked['c2pa'].get('manifest_id'):
+                    raise VerificationFailed('Stored manifest does not match final export')
+                manifest_bundle = {'id': manifest_id, 'bytes': manifest_bytes,
+                                   'algorithm': binding_algorithm, 'public': publish_manifest}
+            elif publish_manifest:
+                raise VerificationFailed('No final manifest bytes available for publication')
             receipt = {"schema_version": 1, "sdk_version": sdk_version(), "asset_id": str(record.asset_id),
                        "token": token, "sha256": digest, "seconds": round(time.monotonic() - start, 3),
                        "development_identity": self.identity.development, "audio_kind": audio,
@@ -199,6 +236,10 @@ class SDK:
                 # Store before publication/registry commit; never patch receipts later.
                 receipt["profile_assessment"] = profile_report
             receipt["registry_recorded"] = self.registry is not None
+            receipt['manifest_recovery'] = {'stored': manifest_bundle is not None,
+                'public': bool(manifest_bundle and publish_manifest),
+                'manifest_id': manifest_bundle['id'] if manifest_bundle else None,
+                'algorithm_registration': 'provisional_not_registered'}
             checked["recovery"] = {"status": "not_attempted", "reason": "export_readback_before_registry_commit"}
             # Store recovery data durably before exposing the media commit marker.
             # A crash can leave an orphan registry row/receipt, never published
@@ -206,7 +247,10 @@ class SDK:
             registry_added = receipt_created = media_created = False
             try:
                 if self.registry is not None:
-                    self.registry.add(token, record, digest, receipt)
+                    if manifest_bundle is None:
+                        self.registry.add(token, record, digest, receipt)
+                    else:
+                        self.registry.add(token, record, digest, receipt, manifest_bundle)
                     registry_added = True
                 pending_receipt = work / "receipt.json"
                 with pending_receipt.open("x") as file:

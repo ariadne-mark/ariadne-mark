@@ -69,7 +69,7 @@ def public_report(report, sources=()):
     c2pa = report.get('c2pa', {})
     if c2pa:
         allowed = ['status', 'signature', 'issuer_trust', 'timestamp_trust', 'credential_time',
-                   'revocation', 'reason', 'claim_scope', 'record_scope', 'ingredient_count',
+                   'revocation', 'reason', 'manifest_id', 'claim_scope', 'record_scope', 'ingredient_count',
                    'watermark_algorithm', 'token']
         result['c2pa'] = {k: deepcopy(c2pa[k]) for k in allowed if k in c2pa}
         for flag in ['development_identity', 'visible_disclosure']:
@@ -100,6 +100,12 @@ def public_report(report, sources=()):
     if recovery:
         allowed = ['status', 'binding', 'content_binding', 'record_scope']
         result['recovery'] = {k: recovery[k] for k in allowed if k in recovery}
+        recovered_manifest = recovery.get('manifest', {})
+        if recovered_manifest:
+            result['recovery']['manifest'] = {k: recovered_manifest[k] for k in
+                ['manifest_id', 'soft_binding', 'signature', 'issuer_trust', 'asset_binding',
+                 'interpretation', 'sha256', 'public', 'algorithm_registration', 'status', 'reason']
+                if k in recovered_manifest}
         if recovery.get('record'):
             result['recovery']['record'], fields = public_record(recovery['record'], sources)
             redacted.extend('recovery.record.' + x for x in fields)
