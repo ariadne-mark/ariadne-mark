@@ -1,0 +1,66 @@
+Аудит повторного использования публичного Trufo SDK — 2026-11-06
+
+Источник: https://github.com/trufo-ai/trufo-py
+Ревизия: 24dd6478e2b5ce753e34abb2c557707c12dd8d40
+Основа нашей ветки: 66bf84211501c77461bb192d5b6a9955417fcdb7
+
+ЧТО ПЕРЕНЕСЕНО
+Apache-2.0 enum DigitalSourceType из src/trufo/c2pa/source_types.py.
+Оригинальные copyright и SPDX сохранены, изменение документации отмечено.
+Применяется при формировании C2PA и пассивном чтении source types из активного
+манифеста. Логика чтения написана для Ariadne; зависимости на пакет trufo нет.
+Подпись сохраняет прежние wire values. Добавлено поле declared_source_types;
+оно не меняет оценку подписи, доверия, watermark или юридического соответствия.
+История capture + AI edit сохраняется без вывода о происхождении всего файла.
+Не читаем декларации из ingredients как декларации текущего файла.
+
+ЧТО НЕ ПЕРЕНОСИТЬ И ПОЧЕМУ
+1. API-обёртки sign/bind/register/recover: вызывают Trufo и не предоставляют
+   реализацию сервера. У нас уже есть локальные подпись, ID, registry и verifier.
+2. TrufoAction: операции сервиса, не замена стандартных C2PA actions.
+3. Устаревший watermark mode=compliance: в исходнике зарезервирован, не
+   реализован. Это не готовый открытый compliance-профиль.
+4. WatermarkEffort best_effort: позволяет обходить отсутствие маркировки;
+   перенос такой политики ослабил бы наш обязательный export read-back.
+5. trufo-provenance / trufo-pawprint / веса: не входят в Apache SDK. Требуют
+   отдельного доступа и лицензии. Не скачивались и не исполнялись.
+6. trufo-local контейнер: отдельно скачивает закрытый engine; его копирование
+   не даёт автономный open-source движок и добавляет ненужные зависимости.
+
+СРАВНЕНИЕ ПОДХОДОВ
+Общее: C2PA + невидимая метка + разрешение ID + проверка; C2PA фиксирует
+подписанные заявления, метка помогает восстановить связь после потери metadata.
+Trufo: собственный neural PawPrint, управляемые подпись/сертификат/хранилище.
+В local mode медиа остаётся локально, но инструкции подписи идут Trufo.
+Ariadne: TrustMark Q / ONNX, операторские ключи и optional TSA, собственный
+registry/verifier; после provisioning возможна обработка offline (TSA отдельно).
+PawPrint video по публичному описанию маркирует каждый кадр. Resilient у нас
+тоже пересчитывает метку для каждого кадра, но это другой движок/модель.
+Economy 5s/2s у нас — временные окна с редкой маркировкой. Это не эквивалент
+Trufo per_ai_system: у них это повторное использование одного ID для системы,
+а не обещание разреженной маркировки видео и не снижение NN inference само по себе.
+Сопоставимых замеров на одинаковом железе/видео нет. Чужие vendor benchmarks
+не доказывают преимущество по времени, качеству или юридическому соответствию.
+
+ЧЕГО ЭТО НЕ ЗАКРЫВАЕТ
+Открытая enum не переносит PawPrint, C2PA soft-binding recovery protocol,
+промышленный trust/certificate service или signed verifier receipts.
+Это небольшое улучшение совместимости, а не замена нашего движка.
+Экономичные режимы сохраняют известную уязвимость к удалению редких окон;
+это изменение не создаёт нового доказательства соответствия EU/CA.
+
+ПРОВЕРКА
+24 целевых unit tests прошли, включая 6 новых. Полный локальный прогон:
+139 обнаружено, 97 passed, 42 skipped (нет локального media runtime), 0 failures.
+macOS, Python 3.15.2; не заменяет прежнюю Linux media-квалификацию сборки 0.6.
+Лог: docs/trufo-reuse-tests.log. Новая функциональность не вызывает сеть.
+Реальный Trufo engine не запускался, коммерческая лицензия не принималась.
+Проверенная сборка SDK 0.6.0a0 и развёрнутые сервисы не изменялись.
+
+ПЕРВОИСТОЧНИКИ
+https://github.com/trufo-ai/trufo-py/blob/24dd6478e2b5ce753e34abb2c557707c12dd8d40/LICENSE
+https://github.com/trufo-ai/trufo-py/blob/24dd6478e2b5ce753e34abb2c557707c12dd8d40/src/trufo/c2pa/source_types.py
+https://github.com/trufo-ai/trufo-py/blob/24dd6478e2b5ce753e34abb2c557707c12dd8d40/src/trufo/c2pa/watermark.py
+https://github.com/trufo-ai/trufo-py/blob/main/docs/local/python.md
+https://trufo.ai/models/pawprint/video
+https://trufo.ai/legal/trufo_library_license/v_1_0_0.html

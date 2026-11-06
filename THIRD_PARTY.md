@@ -1,7 +1,8 @@
 # Third-party components — 0.6.0a0
 
 The wheel contains Ariadne Mark's code and a model checksum manifest, not model
-weights or third-party source copies. Pip/Docker installation obtains upstream
+weights. It also contains the attributed Apache-2.0 vocabulary described below.
+Pip/Docker installation obtains upstream
 packages. The Docker build downloads TrustMark and VideoSeal weights explicitly and verifies
 their SHA-256 hashes; runtime processing can be offline.
 
@@ -68,3 +69,19 @@ wheel does not contain those binaries; it includes this third-party notice.
 The exact bootstrap/media package graph is hash-locked for Linux x86-64 and
 Python 3.12. Apt package repositories remain an external mutable build input;
 these locks are not a claim that the entire OS image is bit-reproducible.
+
+## Trufo public C2PA vocabulary (Apache-2.0)
+
+`src/ariadne_mark/c2pa_types/source_types.py` derives from
+`trufo-ai/trufo-py/src/trufo/c2pa/source_types.py`, commit
+`24dd6478e2b5ce753e34abb2c557707c12dd8d40`.
+Copyright 2025-2026 Trufo, Inc. All rights reserved. SPDX: Apache-2.0.
+Its copyright/SPDX headers and a modification notice remain in the file;
+`LICENSE` contains the applicable Apache-2.0 text. The upstream repository has
+no root NOTICE at this revision; `trufo-local/NOTICE` describes a separate
+container that we do not copy or distribute.
+
+The enum is used by signing and passive C2PA declaration inspection. No Trufo
+API client, service credentials, proprietary provenance/PawPrint engine,
+model weights or container are included. This reuse introduces no dependency
+on Trufo's API or commercial Library License and grants no Trufo trademark.

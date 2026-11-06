@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+from ariadne_mark.c2pa_types import declared_source_types
 from ariadne_mark.errors import AriadneError, UnsupportedMedia
 from ariadne_mark.provenance import ProvenanceRecord
 from ariadne_mark.signing import ASSERTION, MIME, read_manifest
@@ -54,7 +55,9 @@ def inspect_c2pa(path: Path, *, trust_anchors: Path | None = None) -> dict:
     if expired_only:
         result["reason"] = "signing_credential_expired_without_trusted_time"
     manifest = raw.get("manifests", {}).get(raw.get("active_manifest"), {})
-    assertions = [a.get("data") for a in manifest.get("assertions", []) if a.get("label") == ASSERTION]
+    result["declared_source_types"] = declared_source_types(manifest)
+    assertions = [a.get("data") for a in manifest.get("assertions", [])
+                  if isinstance(a, dict) and a.get("label") == ASSERTION]
     result["ingredient_count"] = len(manifest.get("ingredients", []))
     if len(assertions) == 1:
         try:

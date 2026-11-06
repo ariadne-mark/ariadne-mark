@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 
+from ariadne_mark.c2pa_types import DigitalSourceType
 from ariadne_mark.errors import AriadneError
 from ariadne_mark.provenance import ProvenanceRecord
 from ariadne_mark.version import sdk_version
@@ -122,14 +123,15 @@ def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: 
     if not identity.development and not identity.timestamp_url:
         raise AriadneError("Production signing requires an explicit TSA URL; development fixtures use allow_dev")
     action = "c2pa.created" if record.action.value == "created" else "c2pa.edited"
-    source_type = "trainedAlgorithmicMedia" if record.action.value == "created" else "compositeWithTrainedAlgorithmicMedia"
+    source_type = (DigitalSourceType.TRAINED_ALGORITHMIC_MEDIA if record.action.value == "created"
+                   else DigitalSourceType.COMPOSITE_WITH_TRAINED_ALGORITHMIC_MEDIA)
     manifest = {
         "claim_generator_info": [{"name": "Ariadne Mark", "version": sdk_version()}],
         "title": "AI-generated media" if record.action.value == "created" else "AI-altered media",
         "format": MIME[source.suffix.lower()],
         "assertions": [
             {"label": "c2pa.actions", "data": {"actions": [{"action": action,
-                "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/" + source_type,
+                "digitalSourceType": source_type.value,
                 "when": record.to_dict()["created_at"],
                 "softwareAgent": {"name": record.system.name, "version": record.system.version}}]}},
             {"label": ASSERTION, "data": {"record": record.to_dict(), "watermark": {
