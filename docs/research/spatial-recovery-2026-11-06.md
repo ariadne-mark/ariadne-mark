@@ -48,3 +48,24 @@ raising strength or using Resilient is therefore not a supported spatial fix.
 - [CAI TrustMark FAQ](https://opensource.contentauthenticity.org/docs/durable-cr/tm-faq/): robustness limits and centralized watermark visibility trade-off.
 - [Watermark Anything](https://github.com/facebookresearch/watermark-anything): localized messages, CPU fallback, distinct model licenses.
 - [VideoSeal / PixelSeal](https://github.com/facebookresearch/videoseal): model cards, streaming inference, evaluation suite and MIT statement.
+
+## Server feasibility result
+
+The final 0.7.1 decoder was tested on six landscape exports (two stock sources,
+three presets), converted to a 720×1280 black-letterbox frame containing a
+720×406 active picture. Full-frame scanning recovered IDs in 0/6 cases; after
+FFmpeg detected and removed the bars, all 6/6 recovered the expected ID. These
+are six correlated cases from two originals, not a population success rate.
+An earlier exploratory 540×304 active-image run recovered 4/6 after ROI
+extraction. That run used the color/FPS build before the BCH addition, so it is
+not a controlled resolution ablation against the final 720×406 run. The exact
+counts, build scope, timing and parameters are retained in the release evidence.
+
+The probe re-encodes the cropped ROI; it is not part of the public verifier and
+does not authenticate the full composite. A production fallback still needs a
+shared deadline/frame/hypothesis budget, stable-region policy, negative controls
+and an explicit ROI evidence scope. No new localization model or encoder has
+been shipped based on this experiment.
+
+For a product controlling its own export, first use the simpler existing path:
+[prepare each final rendition, then mark/sign it](../implementation/final-renditions.md).
