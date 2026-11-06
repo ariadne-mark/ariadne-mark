@@ -12,6 +12,15 @@ from ariadne_mark.errors import AriadneError
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="ariadne", description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    reports = commands.add_parser("report", help="Generate verifier keys or independently verify a signed receipt")
+    report_commands = reports.add_subparsers(dest="report_command", required=True)
+    report_keygen = report_commands.add_parser("keygen")
+    report_keygen.add_argument("directory", type=Path)
+    report_verify = report_commands.add_parser("verify")
+    report_verify.add_argument("receipt", type=Path)
+    report_verify.add_argument("--public-key", required=True, type=Path, help="Independently pinned Ed25519 PEM public key")
+    report_verify.add_argument("--asset", type=Path, help="Also match the exact submitted file")
+    report_verify.add_argument("--verifier-id", help="Require the expected public verifier identifier")
     profile = commands.add_parser("profile", help="Plan requirements and check a product configuration offline")
     profile_commands = profile.add_subparsers(dest="profile_command", required=True)
     profile_commands.add_parser("init", help="Print a configuration template; null means unknown")
@@ -55,13 +64,38 @@ def main(argv=None) -> int:
     serve.add_argument("--public-sources", type=Path, help="Operator-reviewed public provider/system names; other free-text metadata is withheld")
     serve.add_argument("--verification-timeout", type=float, default=180,
                        help="Whole-job model deadline in seconds; timed-out worker and children are terminated")
+    for sub in (verify, serve):
+        sub.add_argument("--report-key", type=Path, help="Separate Ed25519 verifier-report private key")
+        sub.add_argument("--verifier-id", help="Stable public URL or URN identifying this verifier")
+    verify.add_argument("--report-output", type=Path, help="Write a portable signed receipt; requires --report-key and --verifier-id")
     for sub in (mark, verify, serve):
         sub.add_argument("--registry", type=Path, help="Optional local recovery SQLite database")
         sub.add_argument("--trust-anchors", type=Path, help="PEM trust roots supplied by the operator")
         sub.add_argument("--threads", type=int, default=2)
     args = parser.parse_args(argv)
     try:
-        if args.command == "feedback-summary":
+        report_signer = None
+        if args.command in {"verify", "serve"}:
+            if bool(args.report_key) != bool(args.verifier_id):
+                raise ValueError("Supply --report-key and --verifier-id together")
+            if args.report_key:
+                from ariadne_mark.reports import ReportSigner
+                report_signer = ReportSigner.from_file(args.report_key, args.verifier_id)
+            if args.command == "verify" and args.report_output and report_signer is None:
+                raise ValueError("--report-output requires a report signing key and verifier ID")
+        if args.command == "report":
+            from ariadne_mark.reports import generate_report_key, verify_report, MAX_REPORT_BYTES
+            if args.report_command == "keygen":
+                result = generate_report_key(args.directory)
+            else:
+                if args.receipt.stat().st_size > MAX_REPORT_BYTES + 65536:
+                    raise ValueError("Receipt exceeds maximum size")
+                from ariadne_mark.reports import _strict_json
+                payload = verify_report(_strict_json(args.receipt.read_bytes()), args.public_key.read_bytes(),
+                                        asset=args.asset, verifier_id=args.verifier_id)
+                result = {"signature": "valid", "asset_checked": args.asset is not None,
+                          "trust_basis": "caller_pinned_public_key", "payload": payload}
+        elif args.command == "feedback-summary":
             from ariadne_mark.public_verifier import FeedbackStore
             if not args.database.is_file():
                 raise ValueError("Feedback database does not exist")
@@ -125,10 +159,25 @@ def main(argv=None) -> int:
                                             threads=args.threads, timeout=args.verification_timeout)
                 serve(isolated, host=args.host, port=args.port, max_upload_mb=args.max_upload_mb,
                       feedback_url=args.feedback_url, production=args.production,
-                      public_sources=args.public_sources, feedback_db=args.feedback_db)
+                      public_sources=args.public_sources, feedback_db=args.feedback_db, report_signer=report_signer)
                 return 0
             if args.command == "verify":
+                if report_signer is not None:
+                    from ariadne_mark.reports import file_digest
+                    before = file_digest(args.source)
                 result = sdk.verify(args.source)
+                if report_signer is not None:
+                    from ariadne_mark.public_verifier import public_report
+                    from ariadne_mark.reports import file_digest
+                    from ariadne_mark.signing import MIME
+                    digest, size = file_digest(args.source)
+                    if (digest, size) != before:
+                        raise ValueError("Asset changed during verification; no signed report issued")
+                    result['signed_report'] = report_signer.sign(public_report(result), sha256=digest,
+                        size_bytes=size, media_type=MIME[args.source.suffix.lower()])
+                    if args.report_output:
+                        with args.report_output.open('x') as stream:
+                            json.dump(result['signed_report'], stream, indent=2)
                 print(json.dumps(result, indent=2))
                 if args.strict and (result["c2pa"]["status"] != "verified_claim" or result["c2pa"]["issuer_trust"] != "trusted" or result["c2pa"].get("development_identity")):
                     return 2

@@ -39,6 +39,7 @@ function render(report) {
   const redacted = report.public_output && report.public_output.redacted_fields || [];
   $('redaction').textContent = redacted.length ? 'Some system details are withheld by this verifier’s public-output policy. Unreviewed personal or free-text metadata is not displayed.' : '';
   $('json').textContent = JSON.stringify(report, null, 2);
+  $('download').textContent = report.signed_report ? 'Download signed report' : 'Download unsigned report';
   $('feedback').hidden = !(limits && limits.feedback_enabled);
   $('feedback-status').textContent = '';
   document.querySelectorAll('.feedback').forEach(b => b.disabled = false);
@@ -78,7 +79,7 @@ $('verify-form').addEventListener('submit', async event => {
 $('cancel').addEventListener('click', () => controller && controller.abort());
 $('download').addEventListener('click', () => {
   if (!lastReport) return;
-  const url = URL.createObjectURL(new Blob([JSON.stringify(lastReport, null, 2)], {type: 'application/json'}));
+  const url = URL.createObjectURL(new Blob([JSON.stringify(lastReport.signed_report || lastReport, null, 2)], {type: 'application/json'}));
   const link = document.createElement('a'); link.href = url; link.download = 'ariadne-verification.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 document.querySelectorAll('.feedback').forEach(button => button.addEventListener('click', async () => {

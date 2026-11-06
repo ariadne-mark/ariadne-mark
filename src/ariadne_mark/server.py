@@ -2,6 +2,7 @@
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import hashlib
 import io
 from pathlib import Path
 import tempfile
@@ -47,7 +48,7 @@ class _DeadlineReader(io.RawIOBase):
 
 def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback_url=None,
                 upload_timeout=120, upload_slots=4, production=False, header_timeout=10,
-                public_sources=None, feedback_db=None):
+                public_sources=None, feedback_db=None, report_signer=None):
     if not 1 <= max_upload_mb <= 512:
         raise ValueError("max_upload_mb must be between 1 and 512")
     if feedback_url and urlsplit(feedback_url).scheme not in {"https", "http"}:
@@ -59,6 +60,8 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
             raise ValueError("Production verification requires configured trust anchors")
         from ariadne_mark.signing import validate_trust_roots
         validate_trust_roots(sdk.trust_anchors)
+    if production and report_signer is None:
+        raise ValueError("Production verifier requires a separate report signing key")
     sources = load_public_sources(public_sources)
     feedback = FeedbackStore(feedback_db) if feedback_db is not None else None
     gate = threading.BoundedSemaphore(1)
@@ -105,9 +108,22 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
                 name, content_type = ASSETS[url.path]
                 payload = files('ariadne_mark').joinpath('verifier_assets', name).read_bytes()
                 self.respond(200, json.loads(payload) if content_type == "application/json" else payload, content_type)
+            elif url.path == "/report-key":
+                if report_signer is None:
+                    self.respond(404, {"error": "report_signing_not_configured"})
+                else:
+                    self.respond(200, {"verifier_id": report_signer.verifier_id,
+                        "keys": [report_signer.public_jwk()]})
+            elif url.path == "/report-key.pem":
+                if report_signer is None:
+                    self.respond(404, {"error": "report_signing_not_configured"})
+                else:
+                    self.respond(200, report_signer.public_pem(), "application/x-pem-file")
             elif url.path == "/health":
                 self.respond(200, {"status": "ready", "version": sdk_version(),
                     "max_upload_bytes": limit, "formats": ["jpg", "jpeg", "png", "mp4"],
+                    "signed_reports": report_signer is not None,
+                    "report_verifier_id": report_signer.verifier_id if report_signer else None,
                     "feedback_enabled": feedback is not None, "feedback_url": feedback_url,
                     "public_source_profiles": len(sources), "public_output": "reviewed_system_fields_only",
                     "video_search": {"max_frames": 2000, "max_seconds": 120},
@@ -196,6 +212,7 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
             try:
                 with tempfile.TemporaryDirectory(prefix="ariadne-upload-") as directory:
                     path = Path(directory) / ("upload." + ext)
+                    digest = hashlib.sha256()
                     with path.open("wb") as file:
                         remaining = length
                         deadline = time.monotonic() + upload_timeout
@@ -208,6 +225,7 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
                             if not chunk:
                                 raise ValueError("incomplete_upload")
                             file.write(chunk)
+                            digest.update(chunk)
                             remaining -= len(chunk)
                     # Slow senders consume a bounded upload slot, never the
                     # model's only inference slot.
@@ -217,7 +235,12 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
                         return
                     report = sdk.verify(path)
                 # Temporary files are deleted before the response is returned.
-                self.respond(200, public_report(report, sources))
+                result = public_report(report, sources)
+                if report_signer is not None:
+                    media_type = "video/mp4" if ext == "mp4" else "image/png" if ext == "png" else "image/jpeg"
+                    result['signed_report'] = report_signer.sign(result, sha256=digest.hexdigest(),
+                        size_bytes=length, media_type=media_type)
+                self.respond(200, result)
             except (TimeoutError, socket.timeout):
                 self.close_connection = True
                 self.respond(408, {"error": "upload_timeout", "status": "not_checked"})
