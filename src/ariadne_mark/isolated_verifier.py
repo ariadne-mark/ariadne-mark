@@ -13,7 +13,7 @@ import sys
 import threading
 import time
 
-from ariadne_mark.errors import AriadneError, VerificationTimeout
+from ariadne_mark.errors import AriadneError, VerificationTimeout, C2paRuntimeMismatch
 from ariadne_mark.verifier_worker import MAX_MESSAGE, read_message, send_message
 
 
@@ -33,6 +33,7 @@ class IsolatedVerifier:
         self._config = {'threads': threads, 'registry': str(Path(registry).resolve()) if registry else None,
                         'trust_anchors': str(self.trust_anchors.resolve()) if self.trust_anchors else None,
                         'tsa_trust_anchors': str(self.tsa_trust_anchors.resolve()) if self.tsa_trust_anchors else None}
+        self._builtin_worker = _command is None
         self._command = _command or [sys.executable, '-m', 'ariadne_mark.verifier_worker']
         self._lock = threading.RLock()
         self._process = None
@@ -41,6 +42,24 @@ class IsolatedVerifier:
         self._request_id = 0
         self._closed = False
         self._owner = os.getpid()
+
+    def check_runtime(self):
+        if os.getpid() != self._owner:
+            raise AriadneError('Create a verification service in each process after forking')
+        with self._lock:
+            if self._closed:
+                raise AriadneError('Verification service is closed')
+            if self._builtin_worker:
+                from ariadne_mark.c2pa_runtime import require_runtime
+                require_runtime()
+            was_running = self._process is not None
+            try:
+                self._start(time.monotonic() + self.timeout)
+            finally:
+                # A preflight probe must not leak a child if later HTTP config
+                # or binding fails. Normal requests retain their resident child.
+                if not was_running:
+                    self._stop()
 
     def _receive(self, deadline):
         remaining = deadline - time.monotonic()
@@ -70,7 +89,10 @@ class IsolatedVerifier:
         self._reader = threading.Thread(target=reader, daemon=True)
         self._reader.start()
         send_message(process.stdin, self._config)
-        if self._receive(deadline) != {'ready': True}:
+        ready = self._receive(deadline)
+        if ready.get('error') == 'c2pa_runtime_unqualified':
+            raise C2paRuntimeMismatch(ready['runtime'])
+        if ready != {'ready': True}:
             raise AriadneError('Verification worker did not initialize')
 
     def verify(self, path):

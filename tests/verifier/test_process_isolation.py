@@ -107,3 +107,14 @@ class IsolationTests(unittest.TestCase):
             self.verifier.close()
         self.assertIs(self.verifier._process, process)
         self.assertEqual(self.verifier.verify(self.path / 'good')['label'], 'Fixture checked')
+
+    def test_runtime_preflight_reaps_its_probe_and_preserves_a_resident_worker(self):
+        self.verifier.check_runtime()
+        self.assertIsNone(self.verifier._process)
+        self.verifier.verify(self.path / 'good')
+        process = self.verifier._process
+        self.verifier.check_runtime()
+        self.assertIs(self.verifier._process, process)
+        self.assertEqual(self.verifier.verify(self.path / 'good')['label'], 'Fixture checked')
+        self.verifier.close()
+        with self.assertRaises(AriadneError): self.verifier.check_runtime()

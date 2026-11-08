@@ -4,7 +4,7 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer preview · 0.7.1a0 candidate.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer preview · 0.7.1a1 candidate.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 ## Quick start with Docker
 
@@ -58,8 +58,9 @@ The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free
 python3.12 -m venv .venv
 . .venv/bin/activate
 python -m pip install .
-# Official patched C2PA 0.38.3 is not yet on PyPI; explicit verified setup:
+# Explicit verified setup for the pinned wrapper/native pair:
 python -m ariadne_mark.bootstrap_c2pa
+ariadne runtime check
 python -m pip install --require-hashes --no-build-isolation -r requirements/media-linux-py312.lock
 python -m pip install --no-deps '.[media]'
 ariadne models fetch
@@ -178,3 +179,13 @@ and [spatial recovery limits](docs/research/spatial-recovery-2026-11-06.md).
 Native C2PA 0.91.11 is pinned for correct CBOR byte-string assertions; rerun
 bootstrap when upgrading an existing 0.6 environment. Algorithm-list enrollment,
 production trust and mode-specific durability assessment remain separate work.
+
+### C2PA startup check (0.7.1a1)
+
+`ariadne runtime check` reports the loaded native version and SHA-256 alongside
+Python-package pins. The qualified media pair is c2pa-python0.38.3/native0.91.11
+on Linux x86-64/Python3.12. Installed mismatches stop SDK media startup; the
+supplied verifier preflights before binding HTTP. Low-level inspection reports
+`not_checked`/`c2pa_runtime_unqualified`, never absence or a forged signature.
+Record/profile-only core operations remain dependency-free. See the
+[runtime guide](docs/operations/c2pa-runtime.md) for diagnosis and recovery.

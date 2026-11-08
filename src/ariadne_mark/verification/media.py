@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from ariadne_mark.c2pa_types import declared_source_types
-from ariadne_mark.errors import AriadneError, UnsupportedMedia
+from ariadne_mark.errors import AriadneError, UnsupportedMedia, C2paRuntimeMismatch
 from ariadne_mark.provenance import ProvenanceRecord
 from ariadne_mark.signing import ASSERTION, MIME, read_manifest
 from ariadne_mark.watermark import valid_token
@@ -13,6 +13,9 @@ from ariadne_mark.watermark import valid_token
 def inspect_c2pa(path: Path, *, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None) -> dict:
     try:
         raw = read_manifest(path, trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
+    except C2paRuntimeMismatch as exc:
+        return {"status": "not_checked", "reason": "c2pa_runtime_unqualified",
+                "signature": "not_checked", "issuer_trust": "not_checked", "runtime": exc.report}
     except Exception as exc:
         try:
             from c2pa import C2paError
@@ -281,6 +284,8 @@ def _verification_result(path, c2pa, watermark, *, registry, video, trust_anchor
         label = "Watermark ID recovered; source unverified"
     else:
         label = "Provenance unavailable"
+    if c2pa.get("reason") == "c2pa_runtime_unqualified":
+        label = (label + "; signature check unavailable") if token else "Signature check unavailable; C2PA runtime not qualified"
     if video and token and c2pa["status"] != "verified_claim":
         label += "; sampled video evidence only"
     return {"schema_version": 1, "label": label, "c2pa": c2pa, "watermark": watermark,

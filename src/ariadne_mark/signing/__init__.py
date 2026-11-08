@@ -103,6 +103,8 @@ def validate_trust_roots(path: Path):
 
 
 def context(trust_anchors: Path | None = None, *, tsa_trust_anchors: Path | None = None):
+    from ariadne_mark.c2pa_runtime import require_runtime
+    require_runtime()
     import c2pa
     settings = {
         "verify": {"verify_after_reading": True, "verify_after_sign": True, "verify_trust": True,
@@ -127,6 +129,8 @@ def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: 
               identity: SigningIdentity, *, parent: Path | None = None, disclosure: bool = False,
               audio: str = "none", algorithm: str = "adobe.trustmark.Q.bch5",
               payload_format: str = "ariadne-v1", watermark_profile: str | None = None, tsa_trust_anchors: Path | None = None) -> bytes:
+    from ariadne_mark.c2pa_runtime import require_runtime
+    require_runtime()
     import c2pa
     if not identity.development and not identity.timestamp_url:
         raise AriadneError("Production signing requires an explicit TSA URL; development fixtures use allow_dev")

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.1a1 — C2PA runtime and release-documentation candidate
+
+- Check the actual loaded native C2PA version/path/hash and wrapper pin at media startup; mismatch fails closed with actionable diagnostics.
+- Add `ariadne runtime check`; supplied verifier probes its child before HTTP binding, and low-level inspection distinguishes an unsupported runtime from absent/forged evidence.
+- Synchronize current guides and document short-clip, excerpt and remover limitations. Historical records remain unchanged.
+- Preserve all marking modes, model/payload/strength/cadence and native pins; server-only targeted media rechecks recorded separately.
+
 ## 0.7.1a0 — color, fractional FPS and decoder hardening candidate
 
 - Explicit SDR matrix/range on export and read-back; accurate rounding removes conversion-only luma bias; YUV bypass retained for Economy.

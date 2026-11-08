@@ -49,12 +49,18 @@ class SDK:
 
     def __post_init__(self):
         validate_profile(self.video_profile)
+        from ariadne_mark.c2pa_runtime import check_if_installed
+        self.c2pa_runtime = check_if_installed()
         if self.video_marker is None:
             self.video_marker = VideoWatermarker(profile=self.video_profile)
         from ariadne_mark.videoseal import VideoSealWatermarker
         self._legacy_video_marker = VideoSealWatermarker()
         self._video_markers = {}
         self._video_markers_lock = threading.Lock()
+
+    def check_runtime(self):
+        from ariadne_mark.c2pa_runtime import require_runtime
+        return require_runtime()
 
     def close(self):
         for marker in [self.video_marker, *self._video_markers.values()]:
@@ -111,6 +117,7 @@ class SDK:
         return {'manifest': recovered, 'saved_to': str(destination), 'verification': report}
 
     def mark(self, source: Path, destination: Path, record: ProvenanceRecord, *, visible=False, audio_kind="unknown", profile=None, video_profile=None, publish_manifest=False) -> dict:
+        self.check_runtime()
         if type(publish_manifest) is not bool:
             raise ValueError('publish_manifest must be a boolean')
         if publish_manifest and self.registry is None:

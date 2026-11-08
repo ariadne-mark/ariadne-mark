@@ -12,6 +12,8 @@ from ariadne_mark.errors import AriadneError
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="ariadne", description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    runtime = commands.add_parser("runtime", help="Inspect the qualified C2PA wrapper/native pair; never installs packages")
+    runtime.add_argument("action", choices=["check"])
     reports = commands.add_parser("report", help="Generate verifier keys or independently verify a signed receipt")
     report_commands = reports.add_subparsers(dest="report_command", required=True)
     report_keygen = report_commands.add_parser("keygen")
@@ -80,6 +82,11 @@ def main(argv=None) -> int:
         sub.add_argument("--threads", type=int, default=2)
     args = parser.parse_args(argv)
     try:
+        if args.command == "runtime":
+            from ariadne_mark.c2pa_runtime import runtime_info
+            result = runtime_info()
+            print(json.dumps(result, indent=2))
+            return 0 if result["status"] == "qualified" else 2
         report_signer = None
         if args.command in {"verify", "serve"}:
             if bool(args.report_key) != bool(args.verifier_id):
@@ -157,6 +164,7 @@ def main(argv=None) -> int:
             sdk = SDK(marker, registry=registry, trust_anchors=args.trust_anchors, tsa_trust_anchors=args.tsa_trust_anchors,
                       video_marker=VideoWatermarker(threads=args.threads,
                           profile=getattr(args, "video_profile", None) or DEFAULT_PROFILE))
+            sdk.check_runtime()
             if args.command == "serve":
                 from ariadne_mark.server import serve
                 from ariadne_mark.isolated_verifier import IsolatedVerifier

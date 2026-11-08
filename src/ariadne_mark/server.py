@@ -396,6 +396,9 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
             # Do not retain them for failed/disconnected uploads either.
             pass
 
+    check_runtime = getattr(sdk, "check_runtime", None)
+    if check_runtime is not None:
+        check_runtime()
     return Server((host, port), Handler)
 
 

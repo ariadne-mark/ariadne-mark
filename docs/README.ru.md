@@ -2,7 +2,7 @@
 
 **Open-source labeling/provenance toolkit for AI-generated images and video.**
 
-Статус: developer-preview кандидат SDK 0.6.0a0. CPU-маркировка изображений через TrustMark и MP4 через TrustMark Q: Economy 5s по умолчанию, Economy 2s и Resilient в одной сборке. Выбор: `SDK(video_profile="economy_2s")`, параметр `sdk.mark(..., video_profile="resilient")`, CLI `--video-profile` или поле `sdk.video_profile` в конфиге продукта. Сохраняются чтение прежних форматов, C2PA-подписание, локальный реестр и self-hosted verifier. Границы поддержки и оставшиеся юридические/эксплуатационные задачи указаны в документации. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#quick-start-with-docker) и [режимы видео](implementation/video-profiles.md).
+Статус: developer-preview кандидат SDK 0.7.1a1. CPU-маркировка изображений через TrustMark и MP4 через TrustMark Q: Economy 5s по умолчанию, Economy 2s и Resilient в одной сборке. Выбор: `SDK(video_profile="economy_2s")`, параметр `sdk.mark(..., video_profile="resilient")`, CLI `--video-profile` или поле `sdk.video_profile` в конфиге продукта. Сохраняются чтение прежних форматов, C2PA-подписание, локальный реестр и self-hosted verifier. Границы поддержки и оставшиеся юридические/эксплуатационные задачи указаны в документации. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#quick-start-with-docker) и [режимы видео](implementation/video-profiles.md).
 
 ## Требования → код → тесты
 
@@ -39,3 +39,13 @@ python3 scripts/check_requirements.py
 Организация: https://github.com/ariadne-mark. Основной репозиторий: https://github.com/ariadne-mark/ariadne-mark. Каркас опубликован; лицензия исходного кода и нашей документации — Apache-2.0. Сторонние материалы сохраняют собственные условия использования.
 
 В 0.4 добавлен [планировщик требований ЕС/Калифорнии](compliance/applicability.md): `ariadne profile check` показывает настройки, недостающие действия и вопросы для проверки. `mark --profile` применяет конфигурацию и сохраняет оценку в receipt. Это не автоматическое юридическое заключение.
+
+## Проверка C2PA перед запуском
+
+`ariadne runtime check` проверяет Python-пакет, фактически загруженную native
+библиотеку, её версию и SHA-256. Поддержанная media-среда: Linux x86-64,
+Python3.12, c2pa-python0.38.3/native0.91.11. Несовпадение останавливает запуск
+штатного media/verifier пути; проверки records/profiles не требуют native.
+См. [диагностику runtime](operations/c2pa-runtime.md). Режимы5s/2s/Resilient
+сохранены. Короткий ролик может потерять единственное окно после обрезки;
+его длительность сама по себе не означает провал свежей маркировки.

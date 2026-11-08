@@ -62,6 +62,12 @@ def main():
                 send_message(channel, {'id': command['id'], 'error': 'verification_failed'})
     except EOFError:
         pass
+    except Exception as exc:
+        from ariadne_mark.errors import C2paRuntimeMismatch
+        if sdk is None and isinstance(exc, C2paRuntimeMismatch):
+            send_message(channel, {'ready': False, 'error': 'c2pa_runtime_unqualified', 'runtime': exc.report})
+        else:
+            raise
     finally:
         if sdk is not None:
             sdk.close()
