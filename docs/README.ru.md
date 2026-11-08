@@ -44,8 +44,8 @@ python3 scripts/check_requirements.py
 
 `ariadne runtime check` проверяет Python-пакет, фактически загруженную native
 библиотеку, её версию и SHA-256. Поддержанная media-среда: Linux x86-64,
-Python3.12, c2pa-python0.38.3/native0.91.11. Несовпадение останавливает запуск
+Python 3.12, c2pa-python 0.38.3 / native 0.91.11. Несовпадение останавливает запуск
 штатного media/verifier пути; проверки records/profiles не требуют native.
-См. [диагностику runtime](operations/c2pa-runtime.md). Режимы5s/2s/Resilient
+См. [диагностику runtime](operations/c2pa-runtime.md). Режимы 5s/2s/Resilient
 сохранены. Короткий ролик может потерять единственное окно после обрезки;
 его длительность сама по себе не означает провал свежей маркировки.

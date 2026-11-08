@@ -56,3 +56,16 @@ are read-only inputs. See `docs/validation/0.7.1a0.md` for exact qualification.
 Do not count a review disk-full export failure as a watermark failure. Deduplicate
 matrix snapshots before deriving benchmark denominators. Native portrait exports
 and post-export portrait crops must remain distinct.
+
+## 0.7.1a1 runtime/documentation follow-up
+
+- Native drift: actual loaded file, mapped identity, wrapper/native version and
+  pinned SHA-256 are checked before media/service startup. Wrong builds fail
+  closed; low-level inspection reports `not_checked`. No implicit repair.
+- Current entry guides and version references are synchronized; historical
+  validation records retain their original environments and versions.
+- Short/excerpt and public-remover results are rechecked on qualified Linux
+  using paired identity-transcode controls. All presets/defaults are retained.
+  Measured temporal/removal limits are documented, not marked technically solved.
+
+See [0.7.1a1 validation](../validation/0.7.1a1.md) for the recorded scope.

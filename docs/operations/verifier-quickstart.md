@@ -2,6 +2,12 @@
 
 The same wheel supports image/video export, local verification and a self-hosted UI/API. There is no account, API key, payment gate or remote URL fetch requirement. Use an already provisioned media environment or build the Docker recipe. [Runtime setup](../implementation/video-profiles.md) · [Deployment limits](verifier.md).
 
+Before starting a manually provisioned verifier, run `ariadne runtime check`.
+The supplied service also checks the pinned wrapper, actual loaded native C2PA
+version and SHA-256 before binding its HTTP socket. A runtime mismatch prevents
+startup; it is not a verdict about an uploaded file. See
+[C2PA runtime diagnostics](c2pa-runtime.md).
+
 ## Local integration preview
 
 ```sh

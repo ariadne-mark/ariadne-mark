@@ -4,8 +4,8 @@
 ariadne runtime check
 ```
 
-Exit0 and `status: qualified` require Linux x86-64/Python3.12, c2pa-python0.38.3,
-native0.91.11 and the SHA-256 in the packaged `c2pa-bootstrap.json`. Exit2 returns
+Exit code 0 and `status: qualified` require Linux x86-64 / Python 3.12, c2pa-python 0.38.3,
+native 0.91.11 and the SHA-256 in the packaged `c2pa-bootstrap.json`. Exit code 2 returns
 a machine-readable reason: missing dependency, unsupported platform, wrong Python
 wrapper/native version, changed/uninspectable binary or a hash mismatch.
 The diagnostic contains versions/hashes, not loader paths or uploaded media.
@@ -38,7 +38,7 @@ processes are rechecked. It is not an extra binary hash per video frame.
 
 ## Recovery
 
-Use the qualified Linux Docker recipe or, in the supported Python3.12 virtualenv:
+Use the qualified Linux Docker recipe or, in the supported Python 3.12 virtualenv:
 
 ```sh
 python -m ariadne_mark.bootstrap_c2pa

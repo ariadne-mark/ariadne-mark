@@ -112,7 +112,7 @@ and source checks. Runtime requests never download code/models. The dependency
 cache is `~/.cache/ariadne-mark/video-v1`, configurable by `ARIADNE_VIDEO_DATA`.
 Docker preprovisions it under `/opt/ariadne-video`, readable by the runtime user.
 The qualified 0.7.1 baseline uses Node24.22.2, Linux x86-64/Python3.12,
-PyAV16.0.1 and c2pa-python0.38.3/native0.91.11. The 0.7.1a1 candidate
+PyAV 16.0.1 and c2pa-python 0.38.3 / native 0.91.11. The 0.7.1a1 candidate
 checks that actual C2PA pair at startup; other media platforms are not qualified.
 
 ## Python
@@ -215,8 +215,8 @@ cropdetect probe is not silently part of the public verifier's qualified path.
 ## Short clips, excerpts and deliberate removal
 
 An untrimmed short file can be successfully marked with Economy5s. A 3-second
-file normally contains only its initial 125ms window; trimming the first200ms
-can remove that only window. Economy2s adds an occupied window near2s in this
+file normally contains only its initial 125ms window; trimming the first 200 ms
+can remove that only window. Economy2s adds an occupied window near 2 s in this
 example, but an excerpt wholly between its windows can also have no selected
 frames. There is no universal ten-second threshold or arbitrary-excerpt guarantee.
 The default remains Economy5s; choose per-frame Resilient when temporal coverage
@@ -228,7 +228,11 @@ The public upstream TrustMark remover removed the image mark on both tested
 source scenes and a Resilient video mark on one of two scenes in the external
 0.7.0/macOS review. Economy windows were removable by replacing selected frames
 with nearby frames. These are small-corpus adversarial results, not population
-statistics. Current-version Linux rechecks are logged separately. C2PA can
+statistics. The 0.7.1a1/Linux paired recheck also removed the image mark in 4/4
+trials (two scenes, two IDs each). Both video identity controls retained ID;
+after the public remover, crowd recovered only by aggregation after 240 frames,
+while face returned not_found after 240 frames. See
+[current validation](../validation/0.7.1a1.md). C2PA can
 validate surviving credentials; stripped metadata plus a lost watermark can
 leave no recoverable link. Do not describe Resilient as irreversible, a copyright
 security boundary, or a certified compliance setting.

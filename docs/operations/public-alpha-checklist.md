@@ -24,7 +24,8 @@ endpoint, configure trust/privacy/feedback, and assess its own duties. Public
 hosting of an Ariadne-operated verifier is not a prerequisite for this local
 alpha.
 
-See [release evidence](../validation/0.7.1a0.md) for current results and
+See [current runtime/media evidence](../validation/0.7.1a1.md),
+[prior video qualification](../validation/0.7.1a0.md) and
 [qualification rules](releases.md) for publication gates.
 
 0.7.1 follow-up adds explicit color handling, bounded fractional-FPS recovery
@@ -32,3 +33,8 @@ and canonical BCH5 guards. Severe portrait crops and letterbox recovery are
 separate qualification items; a cropdetect feasibility result is not a public
 verifier capability. A clean CI run for the final commit, published source
 licenses/notices, operator credentials and accurate public claims remain gates.
+
+0.7.1a1 checks the actual loaded native C2PA pair at media/verifier startup and
+adds current-version short/excerpt and public-remover evidence. These checks do
+not close spatial recovery, anti-removal, population calibration, production
+trust enrollment or the public release/publishing gates above.
