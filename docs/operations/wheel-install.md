@@ -18,6 +18,11 @@ and checks native qualification in a fresh process. Optional model provisioning
 then verifies the pinned engines. Only this explicit setup may download files;
 requests never invoke it. Start/restart media processes after installation.
 
+The full-media setup builds the source-only TrustMark 0.9.2 package from its
+locked archive hash, with pinned setuptools/wheel and no build isolation.
+All other dependency installs require binary wheels; no unpinned build
+dependencies are fetched for TrustMark.
+
 `ariadne setup video --fetch-models` omits Torch, NumPy, Python TrustMark and
 legacy decoders. It supports all three current video modes; unknown legacy
 content cannot receive a complete across-scheme negative in that installation.

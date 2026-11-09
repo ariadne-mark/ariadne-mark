@@ -34,6 +34,7 @@ class SetupTests(unittest.TestCase):
         self.assertEqual(len(calls),4)
         self.assertEqual(calls[0][1:3],['-m','ariadne_mark.bootstrap_c2pa'])
         self.assertIn('--require-hashes',calls[1]);self.assertIn('--only-binary=:all:',calls[1])
+        self.assertIn('--no-binary=trustmark',calls[1])
         self.assertEqual(calls[-1][-2:],['runtime','check'])
         self.assertFalse(report['models_provisioned'])
 
@@ -42,6 +43,7 @@ class SetupTests(unittest.TestCase):
             report=setup.install('video',wheelhouse=folder,fetch_models=True)
             calls=run.call_args_list
             self.assertEqual(calls[-1].args[0][-2:],['--engine','video'])
+            self.assertNotIn('--no-binary=trustmark',calls[1].args[0])
             self.assertTrue(all(c.kwargs['env']['PIP_NO_INDEX']=='1' for c in calls))
             self.assertFalse(report['legacy_decoders_included'])
 

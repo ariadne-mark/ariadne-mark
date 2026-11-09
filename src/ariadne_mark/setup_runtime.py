@@ -36,9 +36,13 @@ def install(engine='media', *, allow_system=False, cache=None, wheelhouse=None, 
         bootstrap.append('--allow-system')
     if cache is not None:
         bootstrap += ['--cache-dir', str(Path(cache).resolve())]
+    # TrustMark 0.9.2 is published only as a source archive. Its exact archive
+    # hash is locked; build it without isolation using the pinned bootstrap
+    # setuptools/wheel. All other dependencies must use locked binary wheels.
+    source_exceptions = ['--no-binary=trustmark'] if engine == 'media' else []
     commands = [bootstrap,
         [sys.executable, '-m', 'pip', 'install', '--require-hashes', '--only-binary=:all:',
-         '--no-deps', '--no-build-isolation', '-r', str(lock)],
+         *source_exceptions, '--no-deps', '--no-build-isolation', '-r', str(lock)],
         [sys.executable, '-m', 'pip', 'check'],
         [sys.executable, '-m', 'ariadne_mark.cli', 'runtime', 'check']]
     if fetch_models:
