@@ -226,10 +226,20 @@ def verify_video_export(path, engine, expected_windows, *, trust_anchors=None, t
         if row.get("token"):
             found.add(window)
     watermark = summarize_watermarks(rows, [], video=True)
+    all_windows_have_id = seen == set(expected_windows) == found
+    # Export diagnostics have a known schedule plus a separately signed exact
+    # file/token/record gate in SDK.mark. Do not apply the public blind-search
+    # corroboration rule to a one-window file: preserve its per-window read-back
+    # contract without giving that exception to verify_file/legacy detection.
+    if watermark['status'] == 'single_observation' and all_windows_have_id:
+        token = next(row['token'] for row in rows if row.get('token'))
+        watermark.update(status='recovered_claim', token=token)
+        watermark['sample_coverage'].update(confirmation_status='recovered_claim',
+            confirmation_basis='known_schedule_export_readback')
     watermark["export_window_readback"] = {
         "profile": engine.profile, "expected_windows": sorted(expected_windows),
         "observed_windows": sorted(seen), "windows_with_id": sorted(found),
-        "all_windows_have_id": seen == set(expected_windows) == found,
+        "all_windows_have_id": all_windows_have_id,
         "interpretation": "known_schedule_export_check_not_blind_search"}
     c2pa = inspect_c2pa(path, trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
     return _verification_result(path, c2pa, watermark, registry=None, video=True)

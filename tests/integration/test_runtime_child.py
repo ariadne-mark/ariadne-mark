@@ -20,7 +20,10 @@ class RuntimeChildTests(unittest.TestCase):
             code="import os;os.environ['C2PA_LIBRARY_NAME']="+repr(str(library))+";from ariadne_mark.verifier_worker import main;main()"
             with IsolatedVerifier(timeout=20,_command=[sys.executable,'-c',code]) as verifier:
                 with self.assertRaises(C2paRuntimeMismatch) as error:make_server(verifier,port=0)
-                self.assertEqual(error.exception.report['reason'],'native_hash_mismatch')
+                # Hardened CI has noexec /tmp: dlopen is denied before hashing.
+                # Both are typed unqualified-runtime failures before HTTP bind;
+                # an executable-temp probe separately exercises hash rejection.
+                self.assertIn(error.exception.report['reason'],{'native_hash_mismatch','native_inspection_failed'})
                 self.assertIsNone(verifier._process)
 
     def test_real_default_child_preflight_does_not_leave_a_probe_process(self):
