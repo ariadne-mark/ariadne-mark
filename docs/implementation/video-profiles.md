@@ -93,27 +93,27 @@ docker build --platform linux/amd64 -t ariadne-mark:local .
 docker run --rm --network none ariadne-mark:local models check
 ```
 
-For a new-video-only Python installation, install Node.js (tested 24) and npm plus
-FFmpeg/ffprobe, then install `.[video]` (or the wheel with the video extra):
+For a video-only installation, activate a Linux x86-64 / Python 3.12 virtualenv
+with FFmpeg/ffprobe and Node/npm available, then use the installed wheel:
 
 ```sh
-python -m pip install .
-python -m ariadne_mark.bootstrap_c2pa
-python -m pip install --require-hashes -r requirements/video-linux-py312.lock
-python -m pip install --no-deps '.[video]'
-ariadne models fetch --engine video
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.1a2-py3-none-any.whl
+ariadne setup video --fetch-models
+ariadne runtime check
 ```
 
-This avoids PyTorch for new-video encoding. The full `[media]` extra and all
-model sets are needed for images and complete legacy compatibility. Use the qualified CPU lock shown in README; it includes CPU PyTorch.
+This uses hash locks inside the wheel and avoids Torch, NumPy and Python
+TrustMark. `ariadne setup media --fetch-models` installs images and full legacy
+compatibility. Extras alone do not provision/qualify native C2PA or models.
+See [wheel installation](../operations/wheel-install.md).
 
 Provisioning is explicit and uses the packaged npm lockfile plus SHA-256 model
 and source checks. Runtime requests never download code/models. The dependency
 cache is `~/.cache/ariadne-mark/video-v1`, configurable by `ARIADNE_VIDEO_DATA`.
 Docker preprovisions it under `/opt/ariadne-video`, readable by the runtime user.
 The qualified 0.7.1 baseline uses Node24.22.2, Linux x86-64/Python3.12,
-PyAV 16.0.1 and c2pa-python 0.38.3 / native 0.91.11. The 0.7.1a1 candidate
-checks that actual C2PA pair at startup; other media platforms are not qualified.
+PyAV 16.0.1 and c2pa-python 0.38.3 / native 0.91.11. The 0.7.1a2 candidate
+checks that actual C2PA pair before media operations and HTTP startup; other media platforms are not qualified.
 
 ## Python
 
@@ -236,3 +236,13 @@ while face returned not_found after 240 frames. See
 validate surviving credentials; stripped metadata plus a lost watermark can
 leave no recoverable link. Do not describe Resilient as irreversible, a copyright
 security boundary, or a certified compliance setting.
+
+## Full-range Economy bypass (0.7.1a2)
+
+Full-range 4:2:0 frames are normalized to the encoder's actual yuv420p layout
+without rescaling sample values or invoking the watermark model. Deprecated
+yuvj420p is layout-compatible; copying planes with their real strides avoids
+PyAV's implicit full-to-limited conversion. Non-420 layouts use explicit color
+conversion. Receipts identify color pipeline v2. Pixel/contrast checks span all
+frames; mean-only gradient tests are insufficient. HDR and non-8-bit formats
+are rejected using descriptors and decoded-frame properties.

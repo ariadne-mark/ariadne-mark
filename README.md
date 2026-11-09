@@ -4,12 +4,12 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer preview · 0.7.1a1 candidate.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer preview · 0.7.1a2 candidate.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 ## Quick start with Docker
 
 ```sh
-git clone https://github.com/ariadne-mark/ariadne-mark.git
+git clone --branch fix/0.7.1-alpha-readiness https://github.com/ariadne-mark/ariadne-mark.git
 cd ariadne-mark
 docker build --platform linux/amd64 -t ariadne-mark:local .
 ```
@@ -57,14 +57,19 @@ The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
-python -m pip install .
-# Explicit verified setup for the pinned wrapper/native pair:
-python -m ariadne_mark.bootstrap_c2pa
+# Use the downloaded wheel, or use: python -m pip install --no-deps .
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.1a2-py3-none-any.whl
+# Explicit setup installs the pinned C2PA pair and CPU dependencies, then models.
+# FFmpeg/ffprobe and Node.js/npm must already be installed.
+ariadne setup media --fetch-models
 ariadne runtime check
-python -m pip install --require-hashes --no-build-isolation -r requirements/media-linux-py312.lock
-python -m pip install --no-deps '.[media]'
-ariadne models fetch
 ```
+
+The wheel contains media/video hash locks and an explicit installer; a source checkout is not needed.
+`ariadne setup video --fetch-models` installs the lighter video-only runtime without
+Torch, NumPy or Python TrustMark; image/legacy decoders are omitted. Extras alone
+do not provision or qualify C2PA/models. The qualified wrapper is built explicitly
+from pinned source rather than resolved from an unavailable PyPI version.
 
 The explicit C2PA bootstrap builds the official tagged Python wrapper with the
 SHA-256-pinned upstream native library 0.91.11. It is qualified on Linux x86-64;
@@ -151,7 +156,7 @@ docker run --rm --network none --cpus 2 --memory 6g \
   ariadne-mark:local -m unittest discover -s tests -t . -v
 ```
 
-The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [0.7.1a1 validation](docs/validation/0.7.1a1.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [0.7.1a2 qualification](docs/validation/0.7.1a2.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
 
 [Public alpha checklist](docs/operations/public-alpha-checklist.md).
 
@@ -180,12 +185,28 @@ Native C2PA 0.91.11 is pinned for correct CBOR byte-string assertions; rerun
 bootstrap when upgrading an existing 0.6 environment. Algorithm-list enrollment,
 production trust and mode-specific durability assessment remain separate work.
 
-### C2PA startup check (0.7.1a1)
+### C2PA media preflight (0.7.1a2)
 
 `ariadne runtime check` reports the loaded native version and SHA-256 alongside
 Python-package pins. The qualified media pair is c2pa-python0.38.3/native0.91.11
-on Linux x86-64/Python3.12. Installed mismatches stop SDK media startup; the
+on Linux x86-64/Python3.12. Core construction without a signing identity is lazy. Installed mismatches stop media operations; the
 supplied verifier preflights before binding HTTP. Low-level inspection reports
 `not_checked`/`c2pa_runtime_unqualified`, never absence or a forged signature.
 Record/profile-only core operations remain dependency-free. See the
 [runtime guide](docs/operations/c2pa-runtime.md) for diagnosis and recovery.
+
+## Boundaries to assess before integrating
+
+- Media is qualified on Linux x86-64 / Python 3.12; core planning supports Python 3.11–3.14. Use Linux amd64 Docker on other hosts; emulation performance is unqualified.
+- Post-export portrait crops/aspect changes, letterboxes, severe compression and arbitrary excerpts are not guaranteed to retain ID. Mark final renditions and test the actual delivery path.
+- Economy is a cost/coverage setting. Its temporal windows can be removed; public TrustMark removal can also defeat images and Resilient video. No preset is certified as a statutory minimum or attack-proof.
+- Detector FPR is not population-calibrated. Two repeated reads are concordant observations, not independent statistical trials. See the [reliability protocol](benchmarks/reliability/README.md).
+- Standalone/synthetic audio marking is outside scope; retaining an AAC track does not mark it.
+- `verified_at` in signed verifier reports is the verifier's clock, not a TSA timestamp.
+- Inputs already carrying valid C2PA require `action=altered` today and are declared AI-altered/composite. A pure marking relay for already-generated upstream media is not implemented; this can be semantically unsuitable for that workflow.
+- Public provider/system fields are withheld by default. Configure reviewed `--public-sources` and issuer trust, then test the public output. The CA planner keeps this operator action open until declared reviewed.
+
+The [requirements map](docs/compliance/launch-mapping.md) distinguishes binding law,
+voluntary guidance, technical measures and operator duties. Economy's adequacy for
+an actual EU/California product remains an assessment question, particularly the
+California removal-resistance criterion. This SDK does not supply a compliance certificate.

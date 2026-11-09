@@ -9,7 +9,7 @@ from ariadne_mark.errors import UnsupportedMedia
 class ColorPolicyTests(unittest.TestCase):
     def test_untagged_fallback_and_unsupported_matrix(self):
         def frame(matrix, rng, fmt='yuv420p'):
-            return SimpleNamespace(colorspace=matrix,color_range=rng,format=SimpleNamespace(name=fmt))
+            return SimpleNamespace(colorspace=matrix,color_range=rng,format=SimpleNamespace(name=fmt,components=[SimpleNamespace(bits=8)]))
         self.assertEqual(ColorPolicy.from_frame(frame(2,0)),ColorPolicy(6,1))
         self.assertEqual(ColorPolicy.from_frame(frame(2,0,'yuvj420p')),ColorPolicy(6,2))
         with self.assertRaises(UnsupportedMedia):ColorPolicy.from_frame(frame(9,1))
@@ -18,6 +18,82 @@ class ColorPolicyTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get('ARIADNE_MEDIA_TESTS')=='1','requires PyAV and numpy')
 class ColorRoundtripTests(unittest.TestCase):
+    def test_full_range_420_bypass_copies_code_values_without_rgb_or_models(self):
+        import av
+        from fractions import Fraction
+        from unittest.mock import patch
+        from ariadne_mark.video.color import ColorConverter,ColorPolicy
+        frame=av.VideoFrame(510,318,'yuvj420p')
+        frame.colorspace,frame.color_range=1,2
+        frame.pts,frame.time_base=42,Fraction(1,24)
+        for plane in frame.planes:
+            data=bytearray(plane.buffer_size)
+            for y in range(plane.height):
+                data[y*plane.line_size:y*plane.line_size+plane.width]=bytes((x+y)%256 for x in range(plane.width))
+            plane.update(data)
+        convert=ColorConverter(ColorPolicy(1,2))
+        with patch.object(convert,'image',side_effect=AssertionError('RGB bypass')),patch.object(convert,'frame',side_effect=AssertionError('RGB bypass')):
+            output=convert.encoder_frame(frame)
+        self.assertEqual(output.format.name,'yuv420p')
+        self.assertEqual((output.pts,output.time_base,output.color_range,output.colorspace),(42,Fraction(1,24),2,1))
+        for before,after in zip(frame.planes,output.planes):
+            for row in range(before.height):
+                self.assertEqual(bytes(before)[row*before.line_size:row*before.line_size+before.width],
+                                 bytes(after)[row*after.line_size:row*after.line_size+after.width])
+
+    def test_economy_full_range_preserves_contrast_on_all_bypass_frames(self):
+        import av,numpy as np,subprocess,tempfile
+        from pathlib import Path
+        from ariadne_mark.video import encode_video
+        class Identity:
+            batch_size=1
+            def encode_frames(self,images,token):return images
+        width,height=512,320
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder)
+            for matrix,name in [(1,'bt709'),(6,'smpte170m')]:
+                for rng,range_name,levels in [(1,'tv',[16,64,192,235]),(2,'pc',[0,64,192,255])]:
+                    y=np.tile(np.repeat(np.asarray(levels,dtype='uint8'),width//4),(height,1))
+                    raw=y.tobytes()+bytes([128])*(width*height//2)
+                    source=root/'source.mp4'
+                    subprocess.run(['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','yuv420p','-s',f'{width}x{height}',
+                        '-r','24','-i','pipe:0','-c:v','libx264','-threads','2','-crf','0','-colorspace',name,'-color_range',range_name,str(source)],
+                        input=raw*72,capture_output=True,check=True)
+                    with av.open(str(source)) as c:reference=next(c.decode(video=0)).to_ndarray()[:height,:width].astype(float)
+                    for profile in ['economy_5s','economy_2s']:
+                        with self.subTest(matrix=matrix,range=rng,profile=profile):
+                            marker=Identity();marker.profile=profile
+                            output=root/'export.mp4';receipt=encode_video(source,output,marker,'014d123456789abc')
+                            self.assertEqual(receipt['color_pipeline']['version'],2)
+                            count=0
+                            with av.open(str(output)) as c:
+                                self.assertEqual((c.streams.video[0].codec_context.colorspace,c.streams.video[0].codec_context.color_range),(matrix,rng))
+                                for frame in c.decode(video=0):
+                                    actual=frame.to_ndarray()[:height,:width].astype(float)
+                                    # Mean-only checks miss full->limited around Y=113.
+                                    self.assertLess(float(abs(actual-reference).mean()),1.5)
+                                    slope=float(((actual-actual.mean())*(reference-reference.mean())).sum()/((reference-reference.mean())**2).sum())
+                                    self.assertTrue(.98<slope<1.02,slope)
+                                    count+=1
+                            self.assertEqual(count,72)
+
+    def test_probe_rejects_twelve_and_sixteen_bit_sdr(self):
+        import json
+        from types import SimpleNamespace
+        from pathlib import Path
+        from unittest.mock import patch
+        from ariadne_mark.video import probe
+        from ariadne_mark.errors import UnsupportedMedia
+        import av
+        from ariadne_mark.video.color import ColorPolicy
+        decoded=av.VideoFrame(512,320,'yuv420p12le');decoded.colorspace,decoded.color_range=1,1
+        with self.assertRaisesRegex(UnsupportedMedia,'8-bit'):ColorPolicy.from_frame(decoded)
+        for fmt in ['yuv420p10le','yuv420p12le','yuv444p16le']:
+            data={'streams':[{'codec_type':'video','codec_name':'hevc','width':512,'height':320,'pix_fmt':fmt}],
+                  'format':{'duration':'1'}}
+            with self.subTest(fmt=fmt),patch('ariadne_mark.video.subprocess.run',return_value=SimpleNamespace(stdout=json.dumps(data))):
+                with self.assertRaisesRegex(UnsupportedMedia,'high-bit-depth'):probe(Path('test.mp4'))
+
     def test_limited_full_601_709_match_ffmpeg_and_do_not_darken(self):
         import av,numpy as np,subprocess
         from PIL import Image

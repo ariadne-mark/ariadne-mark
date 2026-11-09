@@ -1,5 +1,5 @@
 FROM node:24-bookworm-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dcaf34dc9749addbf383b1920c AS node
-FROM python:3.12-slim-trixie@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30 AS build
+FROM python:3.12-slim-trixie@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30 AS dependencies
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=node /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
 RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
@@ -11,6 +11,7 @@ COPY requirements/media-linux-py312.lock /requirements/media-linux-py312.lock
 RUN python -m pip install --no-cache-dir --require-hashes --no-build-isolation -r /requirements/media-linux-py312.lock
 ENV ARIADNE_VIDEO_DATA=/opt/ariadne-video
 WORKDIR /app
+FROM dependencies AS build
 COPY . /app
 RUN python scripts/build_release.py && ariadne models fetch && python -m pip check
 

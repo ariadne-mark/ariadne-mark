@@ -34,7 +34,13 @@ def probe(path: Path) -> dict:
         raise UnsupportedMedia("Anamorphic pixels require explicit square-pixel conversion")
     if video.get("field_order", "progressive") not in {"progressive", "unknown"}:
         raise UnsupportedMedia("Interlaced video requires explicit deinterlacing")
-    if video.get("color_transfer") in {"smpte2084", "arib-std-b67"} or "10" in video.get("pix_fmt", ""):
+    # Inspect the actual format descriptor: substring checks miss 12/16-bit SDR.
+    import av
+    try:
+        bits = {component.bits for component in av.VideoFormat(video.get('pix_fmt', '')).components}
+    except (ValueError, TypeError) as exc:
+        raise UnsupportedMedia('Unknown video pixel format') from exc
+    if video.get("color_transfer") in {"smpte2084", "arib-std-b67"} or bits != {8}:
         raise UnsupportedMedia("HDR / high-bit-depth video is not supported; explicit SDR conversion is required")
     if audios and audios[0].get("codec_name") != "aac":
         raise UnsupportedMedia("Only AAC audio can be preserved in this MP4 exporter")
@@ -57,6 +63,9 @@ def validate_decoder_streams(container):
         raise UnsupportedMedia('Unexpected streams in PyAV decoder')
     if videos[0].codec_context.name not in {'h264', 'hevc'}:
         raise UnsupportedMedia('PyAV video decoder must be H.264 or HEVC')
+    pixel_format = videos[0].codec_context.format
+    if pixel_format is not None and {c.bits for c in pixel_format.components} != {8}:
+        raise UnsupportedMedia('PyAV video decoder requires 8-bit SDR input')
     if audios and audios[0].codec_context.name != 'aac':
         raise UnsupportedMedia('PyAV audio decoder must be AAC')
 
@@ -148,13 +157,14 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
                     flush()
                 # Bypass PIL/RGBA/Node for unmarked frames; visible disclosure
                 # and display rotation still apply to the complete export.
-                output = converter.policy.tag(frame)
                 if visible or info["rotation"] % 360:
                     image = _orient(converter.image(frame), info["rotation"])
                     if visible:
                         image = apply_label(image, altered=altered)
                     output = converter.frame(image)
                     output.pts, output.time_base = frame.pts, frame.time_base
+                else:
+                    output = converter.encoder_frame(frame)
                 for packet in encoded.encode(output):
                     mux(packet)
             frames += 1
@@ -190,7 +200,8 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
             "watermark_algorithm": getattr(marker, "algorithm", "custom"),
             "batch_size": getattr(marker, "batch_size", 1), "h264_crf": 18,
             "color_pipeline": {"matrix": converter.policy.matrix, "range": converter.policy.range,
-                               "rounding": "accurate_full_chroma", "version": 1},
+                               "rounding": "accurate_full_chroma", "version": 2,
+                               "bypass": "explicit_encoder_format_preserve_code_values"},
             "profile": getattr(marker, "profile", "legacy"),
             "marked_frames": marked_frames,
             "watermark_period_s": period_for(profile),

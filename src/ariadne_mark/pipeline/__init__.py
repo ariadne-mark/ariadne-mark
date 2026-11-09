@@ -50,7 +50,10 @@ class SDK:
     def __post_init__(self):
         validate_profile(self.video_profile)
         from ariadne_mark.c2pa_runtime import check_if_installed
-        self.c2pa_runtime = check_if_installed()
+        # Pure core construction must not be broken by another application's
+        # optional C2PA installation. Export/verification and HTTP preflight
+        # still require the qualified runtime before touching media.
+        self.c2pa_runtime = check_if_installed() if self.identity is not None else None
         if self.video_marker is None:
             self.video_marker = VideoWatermarker(profile=self.video_profile)
         from ariadne_mark.videoseal import VideoSealWatermarker
@@ -60,7 +63,8 @@ class SDK:
 
     def check_runtime(self):
         from ariadne_mark.c2pa_runtime import require_runtime
-        return require_runtime()
+        self.c2pa_runtime = require_runtime()
+        return self.c2pa_runtime
 
     def close(self):
         for marker in [self.video_marker, *self._video_markers.values()]:
@@ -89,6 +93,7 @@ class SDK:
         self.close()
 
     def verify(self, path: Path) -> dict:
+        self.check_runtime()
         # All new presets share a decoder. Reuse a configured export's resident
         # worker instead of loading the otherwise-unused default worker as well.
         engine = self.video_marker

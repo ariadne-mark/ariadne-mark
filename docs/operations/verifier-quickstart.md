@@ -85,3 +85,13 @@ Public hosting, operator identity, production certificate enrollment, trust/TSA 
 For optional C2PA manifest storage, explicit publication and standard read-only
 lookup endpoints, see [C2PA recovery](c2pa-recovery.md). Provisional algorithm IDs
 are not yet enrolled for cross-provider discovery.
+
+## Reviewed public system fields
+
+Without `--public-sources`, startup reports that public provenance fields are
+withheld. This is a privacy default, not a declaration that provider disclosure
+is configured. Supply reviewed public provider/system names and issuer trust;
+test the actual public report. Set `deployment.verifier_public_sources_reviewed`
+in product planning only after that review. Arbitrary uploaded strings must
+not unlock publication. A lone legacy video read is `single_observation`, not
+a confirmed ID or authenticated provenance.

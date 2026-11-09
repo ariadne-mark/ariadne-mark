@@ -6,6 +6,7 @@ import tomllib
 import sys
 from setuptools.build_meta import build_sdist
 expected = tomllib.loads(Path('pyproject.toml').read_text())['project']['version']
+subprocess.run([sys.executable, 'scripts/check_runtime_locks.py'], check=True)
 out=Path('/opt/dist');out.mkdir(parents=True,exist_ok=True)
 subprocess.run([sys.executable,'-m','pip','wheel','--no-build-isolation','--no-deps','--wheel-dir',str(out),'.'],check=True)
 wheels=list(out.glob(f'ariadne_mark-{expected}-*.whl'))

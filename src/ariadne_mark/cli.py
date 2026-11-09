@@ -12,6 +12,12 @@ from ariadne_mark.errors import AriadneError
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="ariadne", description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    setup = commands.add_parser('setup', help='Explicit pinned media installation from this wheel; may download dependencies')
+    setup.add_argument('engine', choices=['media', 'video'])
+    setup.add_argument('--allow-system', action='store_true', help='Only for isolated container builds')
+    setup.add_argument('--cache-dir', type=Path, help='C2PA source/native bootstrap cache')
+    setup.add_argument('--wheelhouse', type=Path, help='Local dependency wheels; disables the pip index')
+    setup.add_argument('--fetch-models', action='store_true', help='Also provision/check the selected engines; requires FFmpeg and Node')
     runtime = commands.add_parser("runtime", help="Inspect the qualified C2PA wrapper/native pair; never installs packages")
     runtime.add_argument("action", choices=["check"])
     reports = commands.add_parser("report", help="Generate verifier keys or independently verify a signed receipt")
@@ -82,6 +88,12 @@ def main(argv=None) -> int:
         sub.add_argument("--threads", type=int, default=2)
     args = parser.parse_args(argv)
     try:
+        if args.command == 'setup':
+            from ariadne_mark.setup_runtime import install
+            result = install(args.engine, allow_system=args.allow_system, cache=args.cache_dir,
+                             wheelhouse=args.wheelhouse, fetch_models=args.fetch_models)
+            print(json.dumps(result, indent=2))
+            return 0
         if args.command == "runtime":
             from ariadne_mark.c2pa_runtime import runtime_info
             result = runtime_info()

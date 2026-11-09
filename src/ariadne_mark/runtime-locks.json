@@ -1,0 +1,13 @@
+{
+  "platform": "Linux x86-64 / Python 3.12",
+  "locks": {
+    "media": {
+      "filename": "media-runtime-linux-py312.lock",
+      "sha256": "65cafb753d74708834e5021562b876e379e1aad67b9e54ff97e1e0638570e75b"
+    },
+    "video": {
+      "filename": "video-runtime-linux-py312.lock",
+      "sha256": "cf806625c51cf7e148b92f592373e018f37140a6e58f8f2dde06381d1a38b517"
+    }
+  }
+}

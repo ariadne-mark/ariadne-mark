@@ -2,7 +2,7 @@ include Dockerfile compose.yaml .dockerignore THIRD_PARTY.md CHANGELOG.md CONTRI
 recursive-include docs *.md *.txt *.json
 recursive-include compliance *.md *.json
 recursive-include scripts *.py
-recursive-include benchmarks *.md *.txt *.py *.json
+recursive-include benchmarks *.md *.txt *.py *.json *.jsonl
 recursive-include examples *.py *.md *.txt *.json *.html *.yaml *.yml
 include examples/stock_product/Dockerfile examples/stock_product/.dockerignore
 recursive-include tests *.py *.md
@@ -17,3 +17,6 @@ recursive-include .github *.md *.yml *.yaml
 include .gitignore
 
 recursive-include requirements *.lock
+
+prune release-dist
+prune .ci-work

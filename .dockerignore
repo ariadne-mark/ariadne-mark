@@ -6,6 +6,8 @@ dist
 .venv
 .secrets
 .ariadne
+release-dist
+.ci-work
 examples/stateless_product
 **/*.egg-info
 **/._*

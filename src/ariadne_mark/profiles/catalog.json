@@ -1,5 +1,5 @@
 {
-  "version": "2026-11-06.1",
+  "version": "2026-11-09.1",
   "reviewed_on": "2026-11-06",
   "review_interval_days": 30,
   "scope": "Image/video provider marking and EU deployer deepfake disclosure; requirements planning, not a legal determination",
@@ -35,7 +35,7 @@
       "url": "https://digital-strategy.ec.europa.eu/en/policies/guidelines-ai-transparency-obligations",
       "document_url": "https://ec.europa.eu/newsroom/dae/redirection/document/131215",
       "kind": "official_nonbinding_guidance",
-      "basis": "Commission final Article50 guidelines, library updated2026-11-05; sections4.2.1\u20134.2.3 read from the official PDF2026-11-06. Marking/detection, reliability/robustness including common alterations and adversarial attacks, proportionality and narrow closed-environment cases. Not a statutory cadence rule."
+      "basis": "Commission final Article50 guidelines, library updated2026-11-05; sections4.2.1\u20134.2.3 read from the official PDF2026-11-06. Marking/detection, reliability/robustness including common alterations and adversarial attacks, proportionality and narrow closed-environment cases. Not a statutory cadence rule. Document identified as C(2026) 7702 final, 2026-11-05, in the 2026-11-09 external review; this metadata update does not claim a new full legal/adherence assessment."
     }
   }
 }

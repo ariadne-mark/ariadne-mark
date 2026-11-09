@@ -24,7 +24,7 @@ endpoint, configure trust/privacy/feedback, and assess its own duties. Public
 hosting of an Ariadne-operated verifier is not a prerequisite for this local
 alpha.
 
-See [current runtime/media evidence](../validation/0.7.1a1.md),
+See [current qualification protocol](../validation/0.7.1a2.md),
 [prior video qualification](../validation/0.7.1a0.md) and
 [qualification rules](releases.md) for publication gates.
 
@@ -38,3 +38,9 @@ licenses/notices, operator credentials and accurate public claims remain gates.
 adds current-version short/excerpt and public-remover evidence. These checks do
 not close spatial recovery, anti-removal, population calibration, production
 trust enrollment or the public release/publishing gates above.
+
+0.7.1a2 closes the reviewed full-range bypass and wheel-provisioning code gaps;
+actual release qualification is the exact-SHA EC2 workflow artifact, not this
+checklist's presence. [Server CI](server-ci.md) uses a temporary one-job runner
+for a trusted maintainer dispatch. SDK tests are not run on GitHub-hosted or
+Mac environments. Automatic PR notices do not satisfy the runtime gate.

@@ -399,11 +399,18 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
     check_runtime = getattr(sdk, "check_runtime", None)
     if check_runtime is not None:
         check_runtime()
-    return Server((host, port), Handler)
+    server = Server((host, port), Handler)
+    server.configuration_warnings = ([] if sources else [
+        'No reviewed public sources configured: provider/system provenance fields are withheld. '
+        'Configure --public-sources and issuer trust before relying on public provenance disclosure.'])
+    return server
 
 
 def serve(sdk, **kwargs):
     server = make_server(sdk, **kwargs)
+    import sys
+    for warning in server.configuration_warnings:
+        print('Verifier configuration: ' + warning, file=sys.stderr, flush=True)
     print(f"Verifier listening on http://{server.server_address[0]}:{server.server_address[1]}", flush=True)
     try:
         server.serve_forever()

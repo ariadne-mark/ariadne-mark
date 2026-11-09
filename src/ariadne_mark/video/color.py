@@ -22,6 +22,8 @@ class ColorPolicy:
 
     @classmethod
     def from_frame(cls, frame):
+        if {component.bits for component in frame.format.components} != {8}:
+            raise UnsupportedMedia('Color conversion requires 8-bit SDR frames')
         matrix = int(frame.colorspace)
         if matrix == 2:  # FFmpeg's historical SD matrix fallback, now explicit.
             matrix = 6
@@ -67,6 +69,38 @@ class ColorConverter:
             src_color_range=2, dst_color_range=self.policy.range,
             interpolation=SCALE_FLAGS)
         return self.policy.tag(frame)
+
+    def encoder_frame(self, frame):
+        """Give x264 its actual pixel format, preventing implicit range conversion.
+
+        yuvj420p and yuv420p have identical 8-bit plane layouts. Copy code
+        values rather than asking swscale to convert deprecated full-range
+        yuvj420p into limited-range yuv420p. The stream/frame range remains
+        explicit. Other chroma layouts use the already-qualified converter.
+        No NumPy, PIL or model inference on the common 4:2:0 bypass path.
+        """
+        self.policy.check(frame)
+        if frame.format.name == 'yuv420p':
+            return self.policy.tag(frame)
+        if frame.format.name == 'yuvj420p':
+            import av
+            output = av.VideoFrame(frame.width, frame.height, 'yuv420p')
+            for source, target in zip(frame.planes, output.planes):
+                if source.line_size == target.line_size and source.buffer_size == target.buffer_size:
+                    target.update(source)
+                else:
+                    # Decoder and allocator row strides need not match. Never
+                    # copy padding into visible pixels or leave output padding uninitialized.
+                    target.update(bytes(target.buffer_size))
+                    before, after = memoryview(source), memoryview(target)
+                    for row in range(target.height):
+                        start, dest = row * source.line_size, row * target.line_size
+                        after[dest:dest + target.width] = before[start:start + target.width]
+            output.pts, output.time_base = frame.pts, frame.time_base
+            return self.policy.tag(output)
+        output = self.frame(self.image(frame))
+        output.pts, output.time_base = frame.pts, frame.time_base
+        return output
 
 
 def frame_image(frame):

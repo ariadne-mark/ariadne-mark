@@ -101,7 +101,7 @@ class ProfileTests(unittest.TestCase):
     def test_complete_declarations_remain_unverified(self):
         c = self.config()
         c['deployment'].update(verifier_url='https://verify.example.invalid', verifier_free=True,
-            verifier_upload=True, verifier_api=True, verifier_provider='own',
+            verifier_upload=True, verifier_api=True, verifier_provider='own', verifier_public_sources_reviewed=True,
             feedback_url='https://feedback.example.invalid', privacy_review=True,
             durability_evidence='report-1', interoperability_evidence='report-2')
         r = self.report(c)
@@ -109,6 +109,12 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(r['declaration_verification'], 'not_performed')
         self.assertEqual(self.requirements(r)['ca_verifier_public']['state'], 'declared_not_verified')
         self.assertTrue(r['export_supported'])
+
+    def test_ca_public_provenance_requires_reviewed_configuration(self):
+        c=self.config(['US-CA'])
+        self.assertEqual(self.requirements(self.report(c))['ca_public_provenance']['state'],'action_required')
+        c['deployment']['verifier_public_sources_reviewed']=True
+        self.assertEqual(self.requirements(self.report(c))['ca_public_provenance']['state'],'declared_not_verified')
 
     def test_bad_public_urls_are_not_accepted(self):
         c = self.config(['US-CA'])

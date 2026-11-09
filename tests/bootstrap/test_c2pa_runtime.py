@@ -20,6 +20,14 @@ def _identity(path):
 
 
 class RuntimeTests(unittest.TestCase):
+    def test_core_construction_is_lazy_but_media_operations_reject_native_mismatch(self):
+        from ariadne_mark.pipeline import SDK
+        self.module.sdk_version=lambda:'0.91.6'
+        with SDK() as sdk:
+            self.assertIsNone(sdk.c2pa_runtime)
+            with self.assertRaises(C2paRuntimeMismatch):sdk.verify(Path('not-opened.png'))
+            with self.assertRaises(C2paRuntimeMismatch):sdk.mark(Path('not-opened.png'),Path('not-created.png'),None)
+
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.path=Path(self.temp.name)
         self.library=self.path/'loaded.so';self.library.write_bytes(b'qualified native fixture')

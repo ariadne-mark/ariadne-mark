@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.1a2 — public-alpha review fixes
+
+- Preserve full-range YUV420 sample values on Economy bypass frames; explicit encoder format avoids implicit range squeeze. Add per-frame contrast/plane regressions.
+- Reject 10/12/16-bit decoded input rather than silently quantizing unsupported SDR.
+- Add explicit wheel-based `setup media` / `setup video` with packaged hash locks and the unchanged native C2PA bootstrap.
+- Keep core SDK construction lazy; media methods and service startup enforce runtime qualification.
+- Legacy single-frame results remain `single_observation`; CA planning surfaces reviewed public provenance configuration; verifier startup reports withheld fields.
+- Document upstream-C2PA relay limits and measured detector scope; maintainer-dispatched CI runs SDK tests on a temporary EC2 runner only.
+
 ## 0.7.1a1 — C2PA runtime and release-documentation candidate
 
 - Check the actual loaded native C2PA version/path/hash and wrapper pin at media startup; mismatch fails closed with actionable diagnostics.

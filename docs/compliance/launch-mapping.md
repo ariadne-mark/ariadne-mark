@@ -18,7 +18,7 @@ The California consolidated page was read directly in the browser because the te
 
 None of the reviewed marking provisions specifies a mandatory number of marked frames or a 1/2/5-second cadence. That does **not** make every sparse cadence sufficient. The SDK keeps `economy_5s` as a requested engineering default and offers `economy_2s` and `resilient`; the requirement planner retains a durability-review finding for Economy.
 
-The [Commission's final guidelines](https://digital-strategy.ec.europa.eu/en/policies/guidelines-ai-transparency-obligations), sections4.2.1–4.2.3, discuss marking together with available detection, common alterations and adversarial robustness. The narrow controlled-environment cases are not blanket exemptions for publicly exported entertainment content. The [voluntary Code](https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content) is a distinct compliance route with further measures; this SDK does not claim full adherence or universal detector routing.
+The [Commission's final guidelines, C(2026) 7702 final of 5 November 2026](https://digital-strategy.ec.europa.eu/en/policies/guidelines-ai-transparency-obligations), sections4.2.1–4.2.3, discuss marking together with available detection, common alterations and adversarial robustness. The narrow controlled-environment cases are not blanket exemptions for publicly exported entertainment content. The [voluntary Code](https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content) is a distinct compliance route with further measures; this SDK does not claim full adherence or universal detector routing.
 
 **Measured limitation:** on one matched-payload720p24 street clip, replacing only the scheduled frames with adjacent unmarked frames removed Economy 5s at 6/240 frames and Economy 2s at 15/240. Duration/PTS were retained; metadata was removed by re-encoding. Applying the same 6-frame replacement to Resilient retained its ID. This is a small adversarial stress result, not a universal robustness ranking or a legal conclusion. It prevents treating the ordinary-transform24/24 recovery result as proof of statutory durability.
 
@@ -38,3 +38,21 @@ For federal context, the [COPIED Act S1396 page](https://www.congress.gov/bill/1
 Use: **“Open-source tools for implementing image/video labeling, provenance and verification controls, with a documented EU/California requirements map.”**
 
 Do not use: “install this SDK and your product is compliant everywhere,” “Economy 5s is the legal minimum,” “24/24 proves legal compliance,” “bulletproof watermark,” or “a missing mark proves human origin.”
+
+## Public verifier output and upstream inputs
+
+The reference verifier withholds unreviewed provider/system strings and private
+metadata. A California operator must configure reviewed `--public-sources` and
+issuer trust, test displayed system provenance, and declare
+`deployment.verifier_public_sources_reviewed`. The planner records a declaration,
+not proof of deployed behavior. Keep privacy filtering in place for arbitrary uploads.
+
+A valid existing C2PA input currently requires `action=altered`; the resulting
+assertion/visible label describes AI-altered/composite media. Merely adding a
+mark to an already AI-created upstream asset is not yet a distinct relay mode.
+That workflow needs semantic review; an `opened` + `created` action template
+should not be adopted without validating the C2PA action/source-type semantics.
+
+The existing California removal-resistance assessment remains open. Choosing
+Economy or Resilient does not itself close it. See [supported scope](../operations/support.md)
+and [measured reliability protocol](../../benchmarks/reliability/README.md).

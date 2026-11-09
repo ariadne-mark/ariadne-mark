@@ -1,4 +1,4 @@
-# C2PA runtime preflight — 0.7.1a1
+# C2PA runtime preflight — 0.7.1a2
 
 ```sh
 ariadne runtime check
@@ -22,8 +22,10 @@ processes are rechecked. It is not an extra binary hash per video frame.
 
 ## Startup and failure behavior
 
-- SDK construction checks C2PA if installed. Missing optional C2PA leaves core
-  SDK construction lazy; media export and CLI media commands require preflight.
+- Core `SDK()` construction is lazy, even when another application installed an
+  unqualified C2PA. Supplying a signing identity checks an installed runtime.
+  Every media export/verification, C2PA context and supplied HTTP service
+  requires preflight before media is inspected or output is published.
 - Signing and every C2PA context enforce preflight. A mismatch cannot proceed
   to signing/publication. No runtime request downloads or repairs packages.
 - The supplied HTTP verifier checks its default child before binding a socket.

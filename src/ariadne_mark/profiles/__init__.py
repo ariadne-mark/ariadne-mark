@@ -25,7 +25,7 @@ def template():
                        'verifier_url': None, 'verifier_free': None, 'verifier_upload': None,
                        'verifier_api': None, 'verifier_url_submission': None, 'verifier_provider': 'unknown',
                        'verifier_link_in_product': None, 'feedback_url': None,
-                       'privacy_review': False, 'durability_evidence': None,
+                       'privacy_review': False, 'verifier_public_sources_reviewed': None, 'durability_evidence': None,
                        'interoperability_evidence': None},
     }
 
@@ -65,6 +65,8 @@ def validate(config):
     # Older schema1 files remain valid; the new preset has a documented default.
     if isinstance(config['sdk'], dict):
         config['sdk'].setdefault('video_profile', 'economy_5s')
+    if isinstance(config.get('deployment'), dict):
+        config['deployment'].setdefault('verifier_public_sources_reviewed', None)
     for section in ('context', 'sdk', 'deployment', 'system'):
         _object(config[section], default[section], section)
     if type(config['schema_version']) is not int or config['schema_version'] != 1:
@@ -93,7 +95,7 @@ def validate(config):
     for key in ('accessibility_review', 'privacy_review'):
         if type(dep[key]) is not bool:
             raise ValueError(f'{key}: expected true or false')
-    for key in ('verifier_free', 'verifier_upload', 'verifier_api', 'verifier_url_submission', 'verifier_link_in_product'):
+    for key in ('verifier_free', 'verifier_upload', 'verifier_api', 'verifier_url_submission', 'verifier_link_in_product', 'verifier_public_sources_reviewed'):
         if dep[key] is not None and type(dep[key]) is not bool:
             raise ValueError(f'{key}: expected true, false or null')
     for key in ('verifier_url', 'feedback_url', 'durability_evidence', 'interoperability_evidence'):
@@ -235,6 +237,9 @@ def evaluate(config, *, as_of=None):
             declaration('ca_verifier_free', dep['verifier_free'] is True, 'Verification must be free to the user.', 'CA-22757', '22757.2(a)')
             declaration('ca_upload', dep['verifier_upload'] is True or dep['verifier_url_submission'] is True, 'Offer upload or URL submission. This SDK supplies upload; remote URL fetching is not required when upload is available.', 'CA-22757', '22757.2(a)(5)')
             declaration('ca_api', dep['verifier_api'] is True, 'Provide programmatic access; deploy and test the bundled verification API.', 'CA-22757', '22757.2(a)(6)')
+            declaration('ca_public_provenance', dep['verifier_public_sources_reviewed'] is True,
+                        'Configure --public-sources for reviewed provider/system fields and issuer trust; test that your public verifier displays your system provenance without exposing PII. Defaults withhold unreviewed provenance. This declaration does not inspect the deployment.',
+                        'CA-22757', '22757.2(a)(2)')
             declaration('ca_feedback', _public_https(dep['feedback_url']), 'Provide a working feedback route and use relevant feedback to improve verification.', 'CA-22757', '22757.2(b)')
             declaration('ca_privacy', dep['privacy_review'], 'Review necessary data processing, output PII controls, retention, proxy logs and access requirements. SDK defaults alone do not verify the deployment.', 'CA-22757', '22757.2(a), (c)-(d)')
             declaration('ca_robustness', dep['durability_evidence'], 'Evaluate removal/tampering resistance and content-to-record recovery; a short benchmark does not qualify statutory permanence.', 'CA-22757', '22757.3(a)(2)-(4)')

@@ -69,3 +69,18 @@ and post-export portrait crops must remain distinct.
   Measured temporal/removal limits are documented, not marked technically solved.
 
 See [0.7.1a1 validation](../validation/0.7.1a1.md) for the recorded scope.
+
+## 0.7.1a2 review disposition
+
+N-01: range-preserving encoder frames and pixel/contrast regressions. N-02:
+wheel-contained explicit pinned setup. N-03: exact-revision server CI and fresh
+wheel environments. N-04: documented existing-C2PA altered/composite boundary;
+relay design deferred. N-05: explicit CA public-source operator action and
+startup warning. N-06: lazy core construction, guarded media calls. N-07:
+8-bit format/decoded-frame enforcement. N-08: legacy single-observation state.
+N-09: archived production-path reliability protocol and accurate uncertainty;
+reference-decoder numerical equivalence remains an investigation.
+
+A unified ONNX stack, public FPR evaluation command, soft-binding registration
+and broader held-out calibration remain separate work; no new performance or
+anti-removal claim is made. Final CI logs/manifests determine qualification.

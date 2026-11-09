@@ -160,12 +160,12 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                                              "status": summarize_watermarks(rows, [aggregate] if aggregate else [], video=video)["status"]})
                         if aggregate:
                             aggregates.append({**aggregate, "algorithm": name})
-                        if any(row.get("token") for row in rows) or aggregate:
+                        if summarize_watermarks(rows, [aggregate] if aggregate else [], video=video)['status'] == 'recovered_claim':
                             confirmed_engines.append(name)
                     else:
                         rows = [{"time": timestamp, "token": engine.decode(frame)} for frame, timestamp in frames]
                         attempts.append({"algorithm": name, "samples": rows})
-                        if any(row.get("token") for row in rows):
+                        if summarize_watermarks(rows, [], video=video)['status'] == 'recovered_claim':
                             confirmed_engines.append(name)
                     observations.extend({**row, "algorithm": name} for row in rows)
                     engines.append(name)
@@ -300,21 +300,31 @@ def summarize_watermarks(observations, aggregates, *, video):
     if not observations:
         result.update(status="not_checked", reason="no_decodable_frames")
     elif len(tokens) == 1:
-        result["token"] = next(iter(tokens))
+        token = next(iter(tokens))
+        schemes = {row.get('algorithm', 'custom') for row in observations}
+        corroborated = any(sum(row.get('token') == token and row.get('algorithm', 'custom') == scheme
+                              for row in observations) >= 2 for scheme in schemes)
+        if video and not corroborated and not any(row.get('token') == token for row in aggregates):
+            result.update(status='single_observation', reason='id_not_confirmed')
+        else:
+            result['token'] = token
     elif len(tokens) > 1:
         result.update(status="invalid", reason="multiple_tokens")
     if video:
         per_engine = []
+        observed_token = next(iter(tokens)) if len(tokens) == 1 else None
         for name in sorted({row.get("algorithm", "custom") for row in observations}):
             rows = [row for row in observations if row.get("algorithm", "custom") == name]
-            matches = sum(row.get("token") == result.get("token") for row in rows) if result.get("token") else 0
+            matches = sum(row.get("token") == observed_token for row in rows) if observed_token else 0
             per_engine.append({"algorithm": name, "sampled_frames": len(rows), "matched_frames": matches,
                                "matched_fraction": matches / len(rows) if rows else None})
         best = max(per_engine, key=lambda row: row["matched_fraction"] or 0, default=None)
         result["sample_coverage"] = {"by_engine": per_engine,
+            "confirmation_status": result['status'],
             "matched_frames": best["matched_frames"] if best else 0,
             "sampled_frames": best["sampled_frames"] if best else 0,
-            "interpretation": "all_sampled_frames_match" if best and best["matched_fraction"] == 1 else
+            "interpretation": "partial_sample_evidence" if result['status'] == 'single_observation' else
+                              "all_sampled_frames_match" if best and best["matched_fraction"] == 1 else
                               "partial_sample_evidence" if best and best["matched_frames"] else
                               "aggregate_only_evidence" if result.get("token") else "no_id_recovered",
             "whole_video_coverage": "not_established"}

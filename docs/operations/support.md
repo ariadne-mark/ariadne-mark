@@ -1,4 +1,4 @@
-# Supported scope — 0.7.1a1 candidate
+# Supported scope — 0.7.1a2 candidate
 
 | Area | Supported | Boundary |
 | --- | --- | --- |
@@ -74,3 +74,10 @@ orphans and receipt reconciliation still require application-level cleanup.
 See [C2PA runtime preflight](c2pa-runtime.md) for mismatched installations and
 [short/excerpt limits](../implementation/video-profiles.md#short-clips-excerpts-and-deliberate-removal)
 for temporal coverage. Historical validation records retain their original versions.
+
+Full-range Economy bypass is corrected in 0.7.1a2. Formats beyond 8-bit SDR are
+rejected before processing and checked again on decoded frames.
+[Wheel media setup](wheel-install.md) no longer requires a source checkout.
+Upstream-C2PA pure marking relay remains unimplemented: existing credentials
+currently require altered/composite semantics. Public provenance disclosure
+requires reviewed sources/trust configuration; default redaction is intentional.
