@@ -18,6 +18,7 @@ class SampleConfirmationTests(unittest.TestCase):
             good=verify_video_export(Path('fixture.mp4'),engine,[0])['watermark']
             self.assertEqual(good['status'],'recovered_claim')
             self.assertEqual(good['token'],TOKEN)
+            self.assertNotIn('reason',good)
             self.assertEqual(good['sample_coverage']['confirmation_basis'],'known_schedule_export_readback')
             missing=verify_video_export(Path('fixture.mp4'),engine,[0,1])['watermark']
             self.assertEqual(missing['status'],'single_observation')

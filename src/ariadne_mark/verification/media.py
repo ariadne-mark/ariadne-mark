@@ -234,6 +234,7 @@ def verify_video_export(path, engine, expected_windows, *, trust_anchors=None, t
     if watermark['status'] == 'single_observation' and all_windows_have_id:
         token = next(row['token'] for row in rows if row.get('token'))
         watermark.update(status='recovered_claim', token=token)
+        watermark.pop('reason', None)
         watermark['sample_coverage'].update(confirmation_status='recovered_claim',
             confirmation_basis='known_schedule_export_readback')
     watermark["export_window_readback"] = {
