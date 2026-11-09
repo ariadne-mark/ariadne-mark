@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.2a0 — SDK / verifier / registry deployment kit
+
+- Add explicit kit init/check/render/export/serve commands, batch SDK reuse and operator-owned Compose deployment.
+- Separate provider, verifier-report and edge TLS keys; registry is read-only in the verifier; production init generates no fake credentials.
+- Add pinned TLS edge, reviewed public provenance configuration, persistent recovery and feedback, and end-to-end server acceptance.
+- Preserve model, payload, strength, all video modes and Economy5s default.
+- Add decoder-stride and startup-warning regressions, video lock composition check, stable source-archive instructions and accurate CI policy.
+
 ## 0.7.1a2 — public-alpha review fixes
 
 - Preserve full-range YUV420 sample values on Economy bypass frames; explicit encoder format avoids implicit range squeeze. Add per-frame contrast/plane regressions.

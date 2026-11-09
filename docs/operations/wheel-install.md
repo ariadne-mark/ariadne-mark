@@ -6,7 +6,7 @@ Use a new virtualenv. The Docker recipe provisions the system prerequisites.
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.1a2-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.2a0-py3-none-any.whl
 ariadne setup media --fetch-models
 ariadne runtime check
 ```

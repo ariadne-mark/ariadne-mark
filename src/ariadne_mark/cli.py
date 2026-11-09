@@ -12,6 +12,24 @@ from ariadne_mark.errors import AriadneError
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="ariadne", description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    kit = commands.add_parser('kit', help='Prepare and run a local SDK + verifier + registry deployment')
+    kit_commands = kit.add_subparsers(dest='kit_command', required=True)
+    kit_init = kit_commands.add_parser('init', help='Create a new deployment; never overwrite credentials')
+    kit_init.add_argument('directory', type=Path)
+    kit_init.add_argument('--publisher', required=True)
+    kit_init.add_argument('--system', required=True)
+    kit_init.add_argument('--system-version', required=True)
+    kit_init.add_argument('--development', action='store_true', help='Generate local test identities/TLS, not production trust')
+    kit_init.add_argument('--verifier-url', help='Actual public HTTPS origin; development defaults to https://localhost:8443')
+    kit_init.add_argument('--public-manifests', action='store_true', help='Allow explicitly approved full manifest publication')
+    kit_check = kit_commands.add_parser('check', help='Check local configuration, not legal compliance or public reachability')
+    kit_check.add_argument('directory', type=Path)
+    kit_check.add_argument('--runtime', action='store_true')
+    for name in ['serve', 'render']:
+        kit_commands.add_parser(name).add_argument('directory', type=Path)
+    kit_export = kit_commands.add_parser('export', help='Export a batch with one resident SDK')
+    kit_export.add_argument('directory', type=Path)
+    kit_export.add_argument('batch', type=Path)
     setup = commands.add_parser('setup', help='Explicit pinned media installation from this wheel; may download dependencies')
     setup.add_argument('engine', choices=['media', 'video'])
     setup.add_argument('--allow-system', action='store_true', help='Only for isolated container builds')
@@ -88,6 +106,23 @@ def main(argv=None) -> int:
         sub.add_argument("--threads", type=int, default=2)
     args = parser.parse_args(argv)
     try:
+        if args.command == 'kit':
+            from ariadne_mark import kit as deployment
+            if args.kit_command == 'init':
+                result = deployment.initialize(args.directory, publisher=args.publisher, system=args.system,
+                    system_version=args.system_version, development=args.development,
+                    verifier_url=args.verifier_url, public_manifests=args.public_manifests)
+            elif args.kit_command == 'check':
+                result = deployment.check(args.directory, runtime=args.runtime)
+            elif args.kit_command == 'export':
+                result = deployment.export_batch(args.directory, args.batch)
+            elif args.kit_command == 'render':
+                result = deployment.render(args.directory)
+            else:
+                deployment.serve(args.directory)
+                return 0
+            print(json.dumps(result, indent=2))
+            return 2 if result.get('errors') else 0
         if args.command == 'setup':
             from ariadne_mark.setup_runtime import install
             result = install(args.engine, allow_system=args.allow_system, cache=args.cache_dir,

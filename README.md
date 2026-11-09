@@ -4,14 +4,15 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer preview · 0.7.1a2 candidate.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer preview · 0.7.2a0 candidate.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 ## Quick start with Docker
 
 ```sh
-git clone --branch fix/0.7.1-alpha-readiness https://github.com/ariadne-mark/ariadne-mark.git
-cd ariadne-mark
-docker build --platform linux/amd64 -t ariadne-mark:local .
+# Use the source archive shipped with this exact release/candidate.
+tar -xzf ariadne_mark-0.7.2a0.tar.gz
+cd ariadne_mark-0.7.2a0
+docker build --platform linux/amd64 -t ariadne-mark:local -t ariadne-mark:0.7.2a0 .
 ```
 
 The build downloads CPU dependencies and verifies pinned model files. Processing can then run without a network connection:
@@ -58,7 +59,7 @@ The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free
 python3.12 -m venv .venv
 . .venv/bin/activate
 # Use the downloaded wheel, or use: python -m pip install --no-deps .
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.1a2-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.2a0-py3-none-any.whl
 # Explicit setup installs the pinned C2PA pair and CPU dependencies, then models.
 # FFmpeg/ffprobe and Node.js/npm must already be installed.
 ariadne setup media --fetch-models
@@ -145,6 +146,18 @@ acceptance script that deliberately interrupts and restarts services.
 
 Watermarks can be removed or copied. The tool does not detect every AI image, verify factual truth, or call other providers' closed detectors. Video watermark verification reports sample coverage and aggregate-only recovery; C2PA verifies the signed asset binding. No whole-video watermark percentage is inferred from the samples.
 
+## SDK + verifier + registry deployment kit
+
+`ariadne kit init DIRECTORY` prepares an operator-owned deployment. Add
+`--development` to explicitly generate local test credentials. The kit includes
+batch export with resident SDK workers, a read-only registry verifier, separate
+report keys and a pinned nginx TLS edge. No signing key is mounted in the
+verifier. Economy5s, Economy2s and Resilient are unchanged.
+
+See the [end-to-end kit guide](docs/operations/deployment-kit.md). Production
+credentials, public TLS/DNS and actual product-scope assessment remain operator
+steps; kit readiness is not a legal compliance determination.
+
 ## Tests and evidence
 
 ```sh
@@ -156,7 +169,7 @@ docker run --rm --network none --cpus 2 --memory 6g \
   ariadne-mark:local -m unittest discover -s tests -t . -v
 ```
 
-The ordinary core suite skips media tests unless explicitly enabled. CI requires both the Python matrix and real-engine Docker suite. [Reproducible benchmark](benchmarks/durability/README.md) · [0.7.1a2 qualification](docs/validation/0.7.1a2.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+The ordinary core suite skips media tests unless explicitly enabled. Release qualification runs the Python matrix and real-engine Docker suite in a maintainer-dispatched EC2 job for an exact commit. Automatic PR/push checks are notices and do not run SDK tests. [Reproducible benchmark](benchmarks/durability/README.md) · [0.7.2a0 qualification](docs/validation/0.7.2a0.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
 
 [Public alpha checklist](docs/operations/public-alpha-checklist.md).
 
@@ -185,7 +198,7 @@ Native C2PA 0.91.11 is pinned for correct CBOR byte-string assertions; rerun
 bootstrap when upgrading an existing 0.6 environment. Algorithm-list enrollment,
 production trust and mode-specific durability assessment remain separate work.
 
-### C2PA media preflight (0.7.1a2)
+### C2PA media preflight (0.7.2a0)
 
 `ariadne runtime check` reports the loaded native version and SHA-256 alongside
 Python-package pins. The qualified media pair is c2pa-python0.38.3/native0.91.11

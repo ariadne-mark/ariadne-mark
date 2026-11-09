@@ -1,4 +1,4 @@
-# Third-party components — 0.7.0a0
+# Third-party components — 0.7.2a0
 
 The wheel contains Ariadne Mark's code and a model checksum manifest, not model
 weights. It also contains the attributed Apache-2.0 vocabulary described below.
@@ -39,6 +39,14 @@ release validation artifacts.
 - Node.js and npm retain their own licenses and are external dependencies; the Docker recipe copies Node from a pinned official image and uses npm only in its build stage. No Node executable or model weights are embedded in the Python wheel.
 
 ## Distribution boundary
+
+The optional deployment kit explicitly provisions an official nginx image,
+pinned by digest in `ariadne_mark/kit.py`; nginx uses its BSD-style license and
+the image contains separately licensed Alpine packages. No nginx binary is in
+the SDK wheel/source. Maintainer acceptance tests independently download
+Content Authenticity Initiative `c2patool` 0.28.6 (MIT OR Apache-2.0), pinned by
+archive SHA-256 in `scripts/fetch_external_validator.py`. That standalone binary
+is a test tool, not a new SDK dependency or part of the distributed artifacts.
 
 The Ariadne wheel/source contain original adapters, upstream attribution,
 lockfiles and hash manifests. They do not bundle FFmpeg, PyAV, Torch, Node or

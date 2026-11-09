@@ -10,6 +10,11 @@ engine=sys.argv[1];root=Path(sys.argv[2]);fixtures=Path(sys.argv[3])
 root.mkdir(parents=True,exist_ok=True)
 import ariadne_mark
 assert Path(ariadne_mark.__file__).resolve().is_relative_to(Path(sys.prefix))
+from ariadne_mark import kit
+kit.initialize(root/'kit', publisher='Install smoke fixture', system='Deterministic fixture',
+               system_version='1', development=True)
+assert kit.check(root/'kit', runtime=True)['status']=='ready_for_development'
+print(json.dumps({'kind':'installed_kit_resources','engine':engine,'ok':True}),flush=True)
 if engine=='video':
     for name in ['torch','numpy','trustmark']:assert importlib.util.find_spec(name) is None,name
 from ariadne_mark.pipeline import SDK

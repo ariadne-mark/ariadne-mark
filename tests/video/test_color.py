@@ -18,6 +18,29 @@ class ColorPolicyTests(unittest.TestCase):
 
 @unittest.skipUnless(os.environ.get('ARIADNE_MEDIA_TESTS')=='1','requires PyAV and numpy')
 class ColorRoundtripTests(unittest.TestCase):
+    def test_decoder_stride_fallback_preserves_visible_planes_and_timing(self):
+        import av,subprocess,tempfile
+        from pathlib import Path
+        from ariadne_mark.video.color import ColorConverter,ColorPolicy
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as folder:
+            for width,height in [(854,480),(1366,768)]:
+                with self.subTest(width=width):
+                    source=Path(folder)/'full.mp4'
+                    subprocess.run(['ffmpeg','-v','error','-y','-f','lavfi','-i',f'testsrc2=size={width}x{height}:rate=24',
+                        '-frames:v','1','-c:v','libx264','-threads','2','-pix_fmt','yuvj420p','-color_range','pc',str(source)],
+                        check=True,capture_output=True)
+                    with av.open(str(source)) as container:frame=next(container.decode(video=0))
+                    convert=ColorConverter(ColorPolicy.from_frame(frame))
+                    with patch.object(convert,'image',side_effect=AssertionError('RGB bypass')):
+                        output=convert.encoder_frame(frame)
+                    self.assertNotEqual(frame.planes[0].line_size,output.planes[0].line_size)
+                    self.assertEqual((frame.pts,frame.time_base),(output.pts,output.time_base))
+                    for before,after in zip(frame.planes,output.planes):
+                        for row in range(before.height):
+                            self.assertEqual(bytes(before)[row*before.line_size:row*before.line_size+before.width],
+                                bytes(after)[row*after.line_size:row*after.line_size+after.width])
+
     def test_full_range_420_bypass_copies_code_values_without_rgb_or_models(self):
         import av
         from fractions import Fraction

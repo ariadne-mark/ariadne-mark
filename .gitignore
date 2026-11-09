@@ -23,3 +23,5 @@ dist/
 # Local/server qualification output, never source inputs.
 release-dist/
 .ci-work/
+deployments/
+.kit-work/

@@ -42,6 +42,13 @@ for engine in video media; do
     -e "ARIADNE_VIDEO_DATA=/work/$engine-video-runtime" -w /work --entrypoint "/work/$engine-venv/bin/python" "$build_image" \
     /scripts/ci_install_smoke.py "$engine" "/work/$engine-offline-smoke" /fixtures > "$out/logs/offline-wheel-$engine.jsonl" 2>&1
 done
+stage deployment-kit
+# Provision the independent validator and pinned edge only during explicit setup.
+sudo mkdir -p "$work/kit" "$work/tools"
+sudo chown "$(id -u):$(id -g)" "$work/kit" "$work/tools"
+python3 scripts/fetch_external_validator.py "$work/tools" > "$out/logs/external-validator.json"
+docker pull nginx@sha256:583b7f2fce1cdb8da5ad5c39ebd3c33b98b87d493190e548bdee1fa8c619c311 > "$out/logs/edge-provisioning.log" 2>&1
+python3 scripts/ci_kit_acceptance.py "$image" "$work/kit" "$work/fixtures" "$out/kit-acceptance" "$work/tools/c2patool" > "$out/logs/kit-acceptance.jsonl" 2>&1
 stage traceability-and-inventory
 python3 scripts/check_requirements.py > "$out/logs/requirements.log"
 python3 scripts/check_runtime_locks.py > "$out/logs/runtime-locks.log"
