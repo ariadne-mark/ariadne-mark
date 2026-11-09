@@ -35,6 +35,7 @@ def main():
     channel = os.fdopen(os.dup(sys.stdout.fileno()), 'wb', buffering=0)
     os.dup2(sys.stderr.fileno(), sys.stdout.fileno())
     sdk = None
+    initialized = False
     try:
         config = read_message(sys.stdin.buffer)
         if set(config) != {'threads', 'registry', 'trust_anchors', 'tsa_trust_anchors'}:
@@ -49,7 +50,9 @@ def main():
                   trust_anchors=Path(config['trust_anchors']) if config['trust_anchors'] else None,
                   tsa_trust_anchors=Path(config['tsa_trust_anchors']) if config['tsa_trust_anchors'] else None,
                   video_marker=VideoWatermarker(threads=config['threads']))
+        sdk.check_runtime()
         send_message(channel, {'ready': True})
+        initialized = True
         while True:
             command = read_message(sys.stdin.buffer)
             if set(command) != {'id', 'path'} or type(command['id']) is not int or not isinstance(command['path'], str):
@@ -64,7 +67,7 @@ def main():
         pass
     except Exception as exc:
         from ariadne_mark.errors import C2paRuntimeMismatch
-        if sdk is None and isinstance(exc, C2paRuntimeMismatch):
+        if not initialized and isinstance(exc, C2paRuntimeMismatch):
             send_message(channel, {'ready': False, 'error': 'c2pa_runtime_unqualified', 'runtime': exc.report})
         else:
             raise
