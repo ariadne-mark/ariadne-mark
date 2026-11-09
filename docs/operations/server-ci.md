@@ -27,6 +27,15 @@ processing offline. The full install also marks/verifies an image. Model setup
 is explicit and online, and uses packaged locks; no source SDK is imported in
 the wheel smokes. Source/system prerequisites are controlled by the Docker recipe.
 
+The deployment-kit stage provisions a checksum-pinned official standalone
+c2patool and digest-pinned nginx edge explicitly. It then runs the installed
+exporter/verifier/registry through Compose, pinned localhost TLS, report
+verification and rejection tests, metadata-loss recovery, read-only/key
+isolation and restart persistence. The external tool independently validates
+signature and content hashes; local development issuer trust is not promoted.
+Only the edge joins a standard bridge for publishing ports. SDK processing
+and verifier containers remain on the internal network.
+
 `scripts/ci_server.sh` records all stages, checks requirement/lock consistency,
 package/source/installed parity, distribution hygiene and inventories. Artifacts
 in `release-dist/` are uploaded by the workflow even on failure. The manifest

@@ -211,8 +211,11 @@ try:
             '--entrypoint', '/external/c2patool', image, '/assets/' + name, '--detailed'], 'external-validator-' + name)
         detailed = json.loads(output)
         active = detailed['manifests'][detailed['active_manifest']]
-        actions = [a for a in active['assertions'] if a['label'].startswith('c2pa.actions')]
-        assert any('trainedAlgorithmicMedia' in str(a) for a in actions)
+        # --detailed exposes raw assertion_store, not the compact assertions list.
+        actions = [action for label, value in active['assertion_store'].items()
+                   if label.startswith('c2pa.actions') for action in value['actions']]
+        assert any(a.get('action') == 'c2pa.created' and a.get('digitalSourceType') ==
+                   'http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia' for a in actions)
         validation = detailed['validation_results']['activeManifest']
         codes = {x['code'] for x in validation['success']}
         assert 'claimSignature.validated' in codes

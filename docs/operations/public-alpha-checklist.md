@@ -1,4 +1,4 @@
-# Public alpha checklist — 0.7.1 candidate
+# Public alpha checklist — 0.7.2a0 candidate
 
 Release target: local CPU SDK for JPEG/PNG and supported SDR MP4, with
 Economy5s/2s and Resilient video, signed provenance, self-hosted verification and partial
@@ -24,7 +24,7 @@ endpoint, configure trust/privacy/feedback, and assess its own duties. Public
 hosting of an Ariadne-operated verifier is not a prerequisite for this local
 alpha.
 
-See [current qualification protocol](../validation/0.7.1a2.md),
+See [current qualification protocol](../validation/0.7.2a0.md),
 [prior video qualification](../validation/0.7.1a0.md) and
 [qualification rules](releases.md) for publication gates.
 
@@ -44,3 +44,8 @@ actual release qualification is the exact-SHA EC2 workflow artifact, not this
 checklist's presence. [Server CI](server-ci.md) uses a temporary one-job runner
 for a trusted maintainer dispatch. SDK tests are not run on GitHub-hosted or
 Mac environments. Automatic PR notices do not satisfy the runtime gate.
+
+0.7.2a0 adds an operator-owned SDK/verifier/registry kit. Qualification also
+checks installed kit resources, real Compose/TLS deployment, persistent state,
+key isolation, signed reports, detached recovery and the independent official
+c2patool. Development credentials are local fixtures, not production enrollment.
