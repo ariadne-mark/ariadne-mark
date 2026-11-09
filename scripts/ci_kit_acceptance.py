@@ -205,6 +205,7 @@ try:
     # Independently downloaded c2patool validates C2PA structure/signature/binding.
     for name in ['image.png', 'economy_5s.mp4', 'economy_2s.mp4', 'resilient.mp4']:
         output = command(['docker', 'run', '--rm', '--network', 'none', '--cpus', '2', '--memory', '1g',
+            '--user', f'{os.getuid()}:{os.getgid()}',
             '--read-only', '--tmpfs', '/tmp:rw,noexec,nosuid,size=128m',
             '-v', str(validator) + ':/external/c2patool:ro', '-v', str(root / 'outputs') + ':/assets:ro',
             '--entrypoint', '/external/c2patool', image, '/assets/' + name, '--detailed'], 'external-validator-' + name)
