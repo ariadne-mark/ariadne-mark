@@ -168,6 +168,21 @@ establish population accuracy or legal compliance. Installed-SDK export gates
 and the cached-logit verifier differ from that private adapter; do not reuse
 its timing numbers as the timing of the integrated SDK.
 
+## Choosing a mode for your product
+
+| Delivery scenario | Practical starting point | What still needs validation |
+| --- | --- | --- |
+| Mostly full final exports; minimising model work | Economy5s, the SDK default | Actual delivery and short-content risk; not a statutory minimum |
+| Short clips or common leading trims | Compare Economy2s against Resilient | A window-free excerpt can still defeat Economy2s |
+| Higher temporal coverage is important | Resilient | More CPU work; crop/remover resistance is not guaranteed |
+| Multiple aspect ratios or social renditions | Prepare each rendition, then mark it | Switching a mode does not solve every spatial transformation |
+| Images | The image TrustMark path | Video mode choice does not change image watermarking |
+
+Keep the returned-file gate enabled in every mode. Choose against the actual
+product's output/delivery evidence, not the expected rarity of verification.
+Fewer marked frames means fewer model calls, not an identical percentage saving
+in end-to-end processing: decode/encode, signing and read-back still consume resources.
+
 ## Legacy Fast compatibility
 
 Explicit `fast` / `fast-cpu-v2` retains anchor-aware shared-residual encoding:
