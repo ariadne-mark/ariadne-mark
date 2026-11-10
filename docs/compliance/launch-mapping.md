@@ -1,6 +1,6 @@
 # Requirements → technical controls → deployment evidence
 
-Source review: **10 November 2026**. Scope: visual-content providers using a Python/CPU export pipeline. This is an implementation map, not a legal opinion or a certification of a product. Requirements for platforms, model hosts, capture devices, elections, likeness rights, prohibited content, privacy laws generally and other jurisdictions need separate assessment.
+EU/California source review: **10 November 2026**. Connecticut/New York navigator entries retain their **6 November 2026** review scope; they were not re-reviewed in this documentation pass. Scope: visual-content providers using a Python/CPU export pipeline. This is an implementation map, not a legal opinion or a certification of a product. Requirements for platforms, model hosts, capture devices, elections, likeness rights, prohibited content, privacy laws generally and other jurisdictions need separate assessment.
 
 | Source and role | Relevant obligation | Included technical controls | What remains product-specific |
 |---|---|---|---|
