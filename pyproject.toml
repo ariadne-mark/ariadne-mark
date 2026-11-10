@@ -18,8 +18,8 @@ classifiers = [
 
 [project.optional-dependencies]
 reports = ["cryptography==50.0.2"]
-video = ["Pillow==13.0.0", "av==16.0.1", "cryptography==50.0.2"]
-media = ["trustmark==0.9.2", "Pillow==13.0.0", "av==16.0.1", "cryptography==50.0.2"]
+video = ["Pillow==13.0.0", "av==18.1.0", "cryptography==50.0.2"]
+media = ["trustmark==0.9.2", "Pillow==13.0.0", "av==18.1.0", "cryptography==50.0.2"]
 
 [project.scripts]
 ariadne = "ariadne_mark.cli:main"
