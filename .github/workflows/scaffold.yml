@@ -35,7 +35,9 @@ jobs:
       - run: echo 'SDK/runtime tests execute only on the trusted EC2 runner. A maintainer must dispatch qualification for the reviewed commit before release.'
   qualify:
     if: github.event_name == 'workflow_dispatch' && github.actor == 'Genesius001' && github.repository == 'ariadne-mark/ariadne-mark'
-    name: Requirements traceability
+    # A skipped job is considered successful by branch protection. Only an
+    # actual maintainer dispatch may emit the required check context.
+    name: ${{ github.event_name == 'workflow_dispatch' && 'Requirements traceability' || 'EC2 qualification not dispatched' }}
     runs-on: ariadne-manual-qualified
     timeout-minutes: 90
     steps:
