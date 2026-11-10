@@ -1,6 +1,6 @@
 # Technical coverage, not a jurisdictional certification
 
-Review date: 2026-11-04. This release implements measures and records evidence;
+Source review updated: 2026-11-10. This release implements measures and records evidence;
 it does not decide a product's legal role, territorial scope or exceptions.
 The executable planner maps declared product facts to technical
 settings and remaining actions. It never returns `compliant=true`.
@@ -63,3 +63,7 @@ is separate from the statute. If relying on it, signatories must assess its
 Measure 3.4(c) interoperability solution by 2 February 2027. The planner flags
 this route-dependent work; a universal resolver/signpost is not implemented.
 The complete Code and Article 50 Guidelines have not been assessed for adherence.
+
+For current measure-level coverage use the [EU Code map](eu-code-map.md) and
+[requirements matrix](requirements-matrix.md). Applicable sections have been
+reviewed; full adherence remains unestablished.

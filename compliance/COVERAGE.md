@@ -1,45 +1,32 @@
-# Матрица требований Ariadne Mark
+# Implementation and operator coverage
 
-Все 15 пунктов включены в план. **Учтено в плане ≠ реализовано ≠ проверено ≠ полное юридическое соответствие.**
+Reviewed 10 November 2026 against qualified SDK 0.7.2a1. These 15 records are
+engineering/implementation controls, not 15 statutory duties. A component can
+be implemented and reference-tested while product deployment or legal acceptance
+remains open. The former 8/15 headline is not a readiness or compliance score.
 
-Статус сквозных требований: **8 из 15 реализовано и проверено в указанном техническом scope**, 7 в работе. Это включает эксплуатацию реального публичного сервиса, а не только наличие кода. См. [границы поддержки](../docs/operations/support.md), [актуальный протокол 0.7.2a0](../docs/validation/0.7.2a0.md) и [историю доказательств](../docs/validation/0.5.1a0.md). Юридическая применимость не становится подтверждённой автоматически.
+| Control | Component status | Reference evidence | Remaining action |
+| --- | --- | --- | --- |
+| [REQ-001](../docs/compliance/applicability.md) | implemented | profile/date/scope regressions | Verify real role, geography, dates and exception facts |
+| [REQ-002](../docs/implementation/image-marking.md) | implemented | real image/video ID export/read-back | Qualify actual content and transformations |
+| [REQ-003](../docs/implementation/provenance.md) | implemented | record validation, future-time guards, system/version scope | Provide truthful public source facts |
+| [REQ-004](../docs/implementation/signing.md) | implemented | external C2PA signature/hash/source validation | Production trust/enrollment and lifecycle |
+| [REQ-005](../docs/implementation/video.md) | implemented | all three modes, PTS/audio/rotation and read-back gates | Synthetic audio and actual delivery scope |
+| [REQ-006](../docs/implementation/recovery.md) | implemented | registry + detached manifest; metadata-only recovery | Permanent operation, restore and edited-copy limits |
+| [REQ-007](../docs/implementation/verifier.md) | implemented | HTTPS UI/API, public fields and restart/feedback | Public deployment, accessibility and availability |
+| [REQ-008](../docs/implementation/verification-results.md) | implemented | invalid/incomplete/negative/conflicting result regressions | Consumers must interpret evidence within scope |
+| [REQ-009](../docs/implementation/disclosure.md) | implemented | visible reference component tested | Disclosure applicability, placement and accessibility |
+| [REQ-010](../docs/implementation/provenance-relay.md) | partial | parent ingredient retention for appropriate altered inputs | Marking-only upstream relay semantics remain open |
+| [REQ-011](../docs/operations/privacy.md) | partial | reference upload cleanup/minimized output/key isolation | Actual host/proxy processing; no multi-tenant storage claim |
+| [REQ-012](../docs/benchmarks/durability.md) | partial | versioned small-corpus protocols/observations | Representative held-out error rates/quality/robustness |
+| [REQ-013](../docs/operations/cpu-deployment.md) | implemented | bounded CPU pipeline and failure/publication checks | Product capacity, queue, crash reconciliation and backups |
+| [REQ-014](../docs/operations/keys-and-trust.md) | partial | local issuer path/EKU, TSA tests, key-role isolation | Real production identity/TSA, rotation/revocation operations |
+| [REQ-015](../docs/operations/releases.md) | partial | artifact manifests, clean installs, source review and docs | Publish exact release and maintain scoped legal/dependency review |
 
-В 0.7.2a0 добавлен [готовый deployment kit](../docs/operations/deployment-kit.md): exporter, HTTPS verifier, persistent registry, feedback и раздельные ключи. Он автоматизирует подготовку инфраструктуры для REQ-007/011/014, но не публикует за оператора сервис и не выдаёт production-сертификаты. Поэтому статусы этих сквозных требований не повышаются только из-за появления Compose-файла.
-
-Машиночитаемый источник: [requirements.json](requirements.json). Нормативные источники: [sources/index.json](sources/index.json).
-
-| ID | Требование | Реализация | Проверки | Документация | Готово |
-|---|---|---|---|---|---|
-| REQ-001 | Определить применимые требования | [compliance/profiles](../compliance/profiles/README.md) | [tests/compliance](../tests/compliance/README.md) | [Руководство](../docs/compliance/applicability.md) | ☐ |
-| REQ-002 | Записать машиночитаемую маркировку изображения | [src/ariadne_mark/watermark](../src/ariadne_mark/watermark/README.md) | [tests/watermark](../tests/watermark/README.md) | [Руководство](../docs/implementation/image-marking.md) | ✓ |
-| REQ-003 | Сформировать сведения о происхождении | [src/ariadne_mark/provenance](../src/ariadne_mark/provenance/README.md) | [tests/provenance](../tests/provenance/README.md) | [Руководство](../docs/implementation/provenance.md) | ✓ |
-| REQ-004 | Подписать и проверить C2PA | [src/ariadne_mark/signing](../src/ariadne_mark/signing/README.md) | [tests/signing](../tests/signing/README.md) | [Руководство](../docs/implementation/signing.md) | ✓ |
-| REQ-005 | Реализовать полный путь для видео | [src/ariadne_mark/video](../src/ariadne_mark/video/README.md) | [tests/video](../tests/video/README.md) | [Руководство](../docs/implementation/video.md) | ✓ |
-| REQ-006 | Обеспечить восстановление связи с источником | [src/ariadne_mark/registry](../src/ariadne_mark/registry/README.md) | [tests/registry](../tests/registry/README.md) | [Руководство](../docs/implementation/recovery.md) | ✓ |
-| REQ-007 | Предоставить публичную проверку | [apps/verifier](../apps/verifier/README.md) | [tests/verifier](../tests/verifier/README.md) | [Руководство](../docs/implementation/verifier.md) | ☐ |
-| REQ-008 | Разделить результаты проверки и ошибки | [src/ariadne_mark/verification](../src/ariadne_mark/verification/README.md) | [tests/verification](../tests/verification/README.md) | [Руководство](../docs/implementation/verification-results.md) | ✓ |
-| REQ-009 | Предоставить нужные disclosure-компоненты | [src/ariadne_mark/disclosure](../src/ariadne_mark/disclosure/README.md) | [tests/disclosure](../tests/disclosure/README.md) | [Руководство](../docs/implementation/disclosure.md) | ☐ |
-| REQ-010 | Сохранять историю преобразований | [src/ariadne_mark/provenance](../src/ariadne_mark/provenance/README.md) | [tests/provenance](../tests/provenance/README.md) | [Руководство](../docs/implementation/provenance-relay.md) | ✓ |
-| REQ-011 | Ограничить обработку данных в verifier | [apps/verifier](../apps/verifier/README.md) | [tests/privacy](../tests/privacy/README.md) | [Руководство](../docs/operations/privacy.md) | ☐ |
-| REQ-012 | Измерить устойчивость и качество | [benchmarks/durability](../benchmarks/durability/README.md) | [tests/robustness](../tests/robustness/README.md) | [Руководство](../docs/benchmarks/durability.md) | ☐ |
-| REQ-013 | Обеспечить работу на CPU и явный отказ | [src/ariadne_mark/pipeline](../src/ariadne_mark/pipeline/README.md) | [tests/integration](../tests/integration/README.md) | [Руководство](../docs/operations/cpu-deployment.md) | ✓ |
-| REQ-014 | Организовать production-подписание | [src/ariadne_mark/signing](../src/ariadne_mark/signing/README.md) | [tests/signing](../tests/signing/README.md) | [Руководство](../docs/operations/keys-and-trust.md) | ☐ |
-| REQ-015 | Версионировать правила и выпускать доказательства | [compliance/profiles](../compliance/profiles/README.md) | [tests/compliance](../tests/compliance/README.md) | [Руководство](../docs/operations/releases.md) | ☐ |
-
-## Когда ставим галочку
-
-- Реализация есть в конкретном commit/release.
-- Выполнен критерий приёмки из requirements.json.
-- Есть отчёт исполняемых тестов с окружением и версиями.
-- Документация показывает использование и ограничения.
-- Для нормативного пункта проверена применимость и редакция источника.
-
-Галочка подтверждает этот конкретный пункт в указанном scope, а не все обязанности продукта.
-
-## Три типа связей
-
-Законодательные требования привязываются к источнику и применимости. Технические меры (например, C2PA или реестр) объясняют выбранный способ реализации. Инженерные требования (например, CPU и fail-closed) нужны для качества продукта. Эти категории не подменяют друг друга.
-
-В 0.5.1 технические evidence обновлены, но 7 открытых критериев не отмечены готовыми автоматически. `partial_measure` в профиле явно отделяет запись C2PA/ID от доказанной долговечной связи и публичного resolver. См. [разбор аудита](../docs/validation/0.5.1a0.md).
-
-REQ-003 и REQ-013 закрыты в техническом scope на основании 81 теста установленного пакета и 45 HTTP-проверок продукта. Это не подтверждение правдивости полей, универсальной устойчивости или полной юридической применимости.
+The [machine-readable tracker](requirements.json) retains its earlier broad
+acceptance fields and adds explicit technical assessments. New evidence does
+not automatically close unmet end-to-end criteria. Use the [legal matrix](../docs/compliance/requirements-matrix.md)
+for binding law versus voluntary Code versus SDK policy, and the
+[actual qualification record](../docs/validation/0.7.2a1-results.md) for exact
+artifacts/tests. Known failures, operator duties and out-of-scope modalities remain
+visible. No checkbox total certifies a product.

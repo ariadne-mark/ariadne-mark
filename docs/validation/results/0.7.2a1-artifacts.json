@@ -1,0 +1,25 @@
+{
+  "sdk_version": "0.7.2a1",
+  "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+  "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/42738430001",
+  "artifacts": [
+    {
+      "filename": "ariadne_mark-0.7.2a1-py3-none-any.whl",
+      "sha256": "05d2b28ae205dfc485d91cc06b7fdf09c53a4882a395e957a4bf15cd9a9931c2",
+      "bytes": 140965,
+      "members": 73
+    },
+    {
+      "filename": "ariadne_mark-0.7.2a1.tar.gz",
+      "sha256": "db5945b325cbf48620bb842689dfcb323c0210266df536bc8821b8b027a6371f",
+      "bytes": 340500,
+      "members": 327
+    }
+  ],
+  "readme_provenance": {
+    "source_readme_sha256": "8143a83a2c7efaa4fd604600b137eac738fe639fc08ca07bebd0935cc23b0290",
+    "wheel_metadata_sha256": "1f12de42be30e7d7d769ff555f966d51ac2a9612eca8bb6269e0f265597e3375",
+    "wheel_long_description_sha256": "8143a83a2c7efaa4fd604600b137eac738fe639fc08ca07bebd0935cc23b0290",
+    "note": "Exact bytes; wheel metadata may add a trailing newline to the source README."
+  }
+}

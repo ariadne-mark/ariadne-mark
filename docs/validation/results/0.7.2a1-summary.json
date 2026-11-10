@@ -1,0 +1,111 @@
+{
+  "sdk_version": "0.7.2a1",
+  "commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+  "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/42738430001",
+  "ci_conclusion": "success",
+  "full_media": {
+    "tests": 217,
+    "wall_s": 357.287,
+    "skipped": 0
+  },
+  "dependency_free_matrix": {
+    "3.11": {
+      "tests": 217,
+      "wall_s": 11.172,
+      "skipped": 79
+    },
+    "3.12": {
+      "tests": 217,
+      "wall_s": 12.868,
+      "skipped": 79
+    },
+    "3.13": {
+      "tests": 217,
+      "wall_s": 11.733,
+      "skipped": 79
+    },
+    "3.14": {
+      "tests": 217,
+      "wall_s": 12.195,
+      "skipped": 79
+    }
+  },
+  "package_files_matched": 66,
+  "clean_wheel_installs": [
+    "video: online + offline",
+    "media: online + offline"
+  ],
+  "video_only_python_packages_absent": [
+    "torch",
+    "numpy",
+    "trustmark"
+  ],
+  "external_validator": {
+    "url": "https://github.com/contentauth/c2patool/releases/download/v0.28.6/v0.28.6-x86_64-unknown-linux-gnu.tar.gz",
+    "archive_sha256": "e2dcd1cfcb872ee4f4cc4b353131615e09b608ed7cdea9f27a7f9d73d5d9af86",
+    "version": "0.28.6",
+    "binary_sha256": "cfad8e893eeab3aa5c7cc27e159439f977a4a4c9cef6e5395e40dd8aaeec7ba9"
+  },
+  "default_video_profile": "economy_5s",
+  "video_profiles": [
+    "economy_5s",
+    "economy_2s",
+    "resilient"
+  ],
+  "cadence_verified": [
+    {
+      "profile": "economy_5s",
+      "windows": [
+        0,
+        1
+      ],
+      "marked_frames": 4
+    },
+    {
+      "profile": "economy_2s",
+      "windows": [
+        0,
+        1,
+        2
+      ],
+      "marked_frames": 6
+    }
+  ],
+  "kit": {
+    "fresh_exports_verified": 5,
+    "metadata_loss_recovered": 4,
+    "independent_c2patool_checks": 4,
+    "report_tampering_and_wrong_asset_rejected": true,
+    "registry_and_feedback_survive_restart": true,
+    "provider_key_absent_in_verifier": true,
+    "edge_key_isolation": true,
+    "upload_files_removed": true
+  },
+  "kit_install_fixture": {
+    "generator": "scripts/ci_prepare_fixtures.py",
+    "seed": 42,
+    "size": "512x320",
+    "video_seconds": 6,
+    "fps": 12,
+    "codec": "H.264 yuv420p CRF18",
+    "scope": "deterministic integration fixture, not a durability corpus"
+  },
+  "scope": "Linux x86-64 CPU developer-alpha kit; local development credentials and pinned localhost TLS",
+  "review_disposition": {
+    "P2-1": "fixed",
+    "P2-2": "fixed local chain/EKU check",
+    "P2-3": "documented one-system/version scope",
+    "P3-1": "fixed cadence acceptance",
+    "P3-2": "fixed audio preflight",
+    "P3-3": "fixed incomplete-negative headline",
+    "P3-4": "fixed date separation",
+    "P3-5": "retained documented full-range 4:4:4 chroma limitation"
+  },
+  "not_performed": [
+    "real CA enrollment",
+    "public domain deployment",
+    "new population robustness benchmark",
+    "product-wide legal certification",
+    "new cold dependency rebuild"
+  ]
+}

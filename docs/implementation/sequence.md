@@ -1,30 +1,31 @@
-# Implementation status
+# Current implementation and remaining work
 
-The image-only stage was internal: the first media preview includes both images
-and MP4 video.
+The qualified 0.7.2a1 visual SDK combines image/video watermarking, signed C2PA,
+read-back gates, persistent recovery, a self-hosted verifier, signed reports and
+an operator-owned deployment kit. The [current results](../validation/0.7.2a1-results.md)
+bind the tested source and artifact hashes; earlier releases remain historical.
 
-Completed for 0.2.0a0: installable core, CPU TrustMark adapter, C2PA signing and
-read-back, timestamp-preserving video path, AAC retention, local registry,
-optional visible label, self-hosted UI/API, real-engine tests, Docker recipe and
-measured smoke benchmark. See [release evidence](../validation/0.2.0a0.md).
+Economy5s is the default, Economy2s is configurable, and Resilient marks every
+frame. Current video inference is CPU Node/ONNX TrustMark Q. Legacy Fast and
+VideoSeal formats remain readable in appropriately provisioned full installs.
 
-Added in 0.3.0a0: CPU VideoSeal video adapter, BCH-protected IDs, multi-frame
-verification, legacy-video dispatch and explicit model provisioning. See
-[VideoSeal release evidence](../validation/0.3.0a0.md).
+## Verified reference scope
 
-Added in 0.4.0a0: versioned offline EU/California requirement planning, strict
-product configuration, and profile-bound image/video export receipts.
-See the [profile guide](../compliance/applicability.md).
+217 installed-media tests with no skips; core Python 3.11–3.14; fresh media/video
+wheel installs and offline processing; 6 s cadence checks; HTTPS UI/API, report
+negatives, read-only registry and key isolation, restart persistence; four
+external official c2patool validations. Development identities/TLS only.
 
-Remaining before broad production/compliance claims:
+## Open product and programme work
 
-1. Representative product datasets, broader transformations and adversarial tests.
-2. Production credential/trust/revocation operations and public verifier hosting.
-3. Real load/queue/crash recovery qualification and deployment privacy review.
-4. Independent review of the partial executable legal mapping, official California
-   source reconciliation and full Code of Practice assessment.
-5. Independent synthetic-audio marking where the product workflow requires it.
-6. External interoperability testing and, where useful, standard soft-binding routing.
-7. Landing page and adoption materials that accurately reflect verified scope.
+- Product-specific production credentials, TSA/trust, public TLS, capacity,
+  privacy, backup restore, feedback, training and appropriate disclosures.
+- Representative reliability assessment and actual delivery-chain evidence;
+  known spatial, temporal, remover and full-range 4:4:4 colour limits remain.
+- Qualified cross-provider discovery/signposts and full chosen-Code assessment.
+- Synthetic audio, text and marking-only upstream provenance relay.
+- Published SDK release/download destinations and site/operator information.
 
-These are not silently marked complete because a small smoke suite passes.
+California primary text has been reconciled and rechecked; that source-review
+step is not an unresolved mirror issue. Use the [requirements matrix](../compliance/requirements-matrix.md)
+for actual remaining actions instead of treating all components as unfinished.

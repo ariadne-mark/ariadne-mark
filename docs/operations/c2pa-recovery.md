@@ -25,7 +25,8 @@ readable and gain an additive `manifests` table when opened for writing.
 ariadne mark input.png output.png --registry state/assets.sqlite \
   --publisher 'Example Inc.' --system 'Example Generator' --system-version 1 \
   --created-at 2026-11-06T10:00:00Z --identity production-identity \
-  --timestamp-url https://your-trusted-tsa.example
+  --timestamp-url https://YOUR-TRUSTED-TSA-HOST \
+  --trust-anchors issuer-roots.pem --tsa-trust-anchors tsa-roots.pem
 ariadne recover downloaded.png recovered.c2pa --registry state/assets.sqlite \
   --trust-anchors trusted-roots.pem
 ```
@@ -48,7 +49,8 @@ manifest cannot be redacted in place without invalidating its signature.
 Enable public read-only endpoints separately:
 
 ```sh
-ariadne serve --registry state/assets.sqlite --public-manifests \
+ariadne serve --registry state/assets.sqlite --public-manifests --production \
+  --trust-anchors issuer-roots.pem --public-sources reviewed-public-sources.json \
   --report-key .private/verifier-report/report.key \
   --verifier-id https://verify.example.org
 ```
@@ -87,3 +89,7 @@ Sources: [C2PA 2.4 §18.10](https://spec.c2pa.org/specifications/specifications/
 [C2PA Soft Binding API](https://spec.c2pa.org/specifications/specifications/2.4/softbinding/Decoupled.html),
 [official algorithm list](https://github.com/c2pa-org/softbinding-algorithm-list),
 [official native release](https://github.com/contentauth/c2pa-rs/releases/tag/c2pa-v0.91.11).
+
+The TSA/private-root and public-host values above must be replaced with actual
+operator configuration. Metadata-only recovery acceptance and current source
+identity are recorded in [0.7.2a1 results](../validation/0.7.2a1-results.md).

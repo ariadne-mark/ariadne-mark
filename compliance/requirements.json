@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-03",
+  "updated_at": "2026-11-10",
   "scope": "AI-generated images and video; EU and California first. Standalone audio/music excluded.",
-  "status_note": "Tracked in plan does not mean implemented, tested, or legally sufficient.",
+  "status_note": "Existing implementation_status/verification_status retain broad acceptance tracking. technical_assessment records available components/reference tests; neither is product-wide legal compliance.",
   "requirements": [
     {
       "id": "REQ-001",
@@ -18,8 +18,25 @@
       ],
       "implementation_status": "in_progress",
       "verification_status": "not_run",
-      "evidence": [],
-      "progress_note": "0.4.0a0 adds executable product profiles and receipt binding; technical scenarios tested separately from unresolved legal/source review. See docs/validation/0.4.0a0.md."
+      "evidence": [
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "profile/date/scope regressions; remaining: Verify real role, geography, dates and exception facts"
+        }
+      ],
+      "progress_note": "0.4.0a0 adds executable product profiles and receipt binding; technical scenarios tested separately from unresolved legal/source review. See docs/validation/0.4.0a0.md.",
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "implemented",
+        "reference_verification": "profile/date/scope regressions",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Verify real role, geography, dates and exception facts"
+      }
     },
     {
       "id": "REQ-002",
@@ -59,8 +76,24 @@
           "result": "passed",
           "report": "docs/validation/0.5.1a0.md",
           "scope": "Installed SDK regression scope; sampled video coverage and lookup-only registry semantics; not complete legal compliance or production qualification"
+        },
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "real image/video ID export/read-back; remaining: Qualify actual content and transformations"
         }
-      ]
+      ],
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "implemented",
+        "reference_verification": "real image/video ID export/read-back",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Qualify actual content and transformations"
+      }
     },
     {
       "id": "REQ-003",
@@ -83,9 +116,25 @@
           "result": "passed",
           "report": "docs/validation/0.5.1a0.md",
           "scope": "81 installed package tests, 45 HTTP acceptance checks; provenance field/configuration binding, measured CPU processing, failure and retry behavior in documented single-host scope. Caller-supplied facts are not independently authenticated; no production throughput SLA."
+        },
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "record validation, future-time guards, system/version scope; remaining: Provide truthful public source facts"
         }
       ],
-      "progress_note": "0.4.0a0 adds executable product profiles and receipt binding; technical scenarios tested separately from unresolved legal/source review. See docs/validation/0.4.0a0.md."
+      "progress_note": "0.4.0a0 adds executable product profiles and receipt binding; technical scenarios tested separately from unresolved legal/source review. See docs/validation/0.4.0a0.md.",
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "implemented",
+        "reference_verification": "record validation, future-time guards, system/version scope",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Provide truthful public source facts"
+      }
     },
     {
       "id": "REQ-004",
@@ -124,8 +173,24 @@
           "result": "passed",
           "report": "docs/validation/0.5.1a0.md",
           "scope": "Installed SDK regression scope; sampled video coverage and lookup-only registry semantics; not complete legal compliance or production qualification"
+        },
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "external C2PA signature/hash/source validation; remaining: Production trust/enrollment and lifecycle"
         }
-      ]
+      ],
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "implemented",
+        "reference_verification": "external C2PA signature/hash/source validation",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Production trust/enrollment and lifecycle"
+      }
     },
     {
       "id": "REQ-005",
@@ -165,8 +230,24 @@
           "result": "passed",
           "report": "docs/validation/0.5.1a0.md",
           "scope": "Installed SDK regression scope; sampled video coverage and lookup-only registry semantics; not complete legal compliance or production qualification"
+        },
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "all three modes, PTS/audio/rotation and read-back gates; remaining: Synthetic audio and actual delivery scope"
         }
-      ]
+      ],
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "implemented",
+        "reference_verification": "all three modes, PTS/audio/rotation and read-back gates",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Synthetic audio and actual delivery scope"
+      }
     },
     {
       "id": "REQ-006",
@@ -206,8 +287,24 @@
           "result": "passed",
           "report": "docs/validation/0.5.1a0.md",
           "scope": "Installed SDK regression scope; sampled video coverage and lookup-only registry semantics; not complete legal compliance or production qualification"
+        },
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "registry + detached manifest; metadata-only recovery; remaining: Permanent operation, restore and edited-copy limits"
         }
-      ]
+      ],
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "implemented",
+        "reference_verification": "registry + detached manifest; metadata-only recovery",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Permanent operation, restore and edited-copy limits"
+      }
     },
     {
       "id": "REQ-007",
@@ -223,7 +320,24 @@
       ],
       "implementation_status": "in_progress",
       "verification_status": "not_run",
-      "evidence": []
+      "evidence": [
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "HTTPS UI/API, public fields and restart/feedback; remaining: Public deployment, accessibility and availability"
+        }
+      ],
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "implemented",
+        "reference_verification": "HTTPS UI/API, public fields and restart/feedback",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Public deployment, accessibility and availability"
+      }
     },
     {
       "id": "REQ-008",
@@ -260,8 +374,24 @@
           "result": "passed",
           "report": "docs/validation/0.5.1a0.md",
           "scope": "Installed SDK regression scope; sampled video coverage and lookup-only registry semantics; not complete legal compliance or production qualification"
+        },
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "invalid/incomplete/negative/conflicting result regressions; remaining: Consumers must interpret evidence within scope"
         }
-      ]
+      ],
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "implemented",
+        "reference_verification": "invalid/incomplete/negative/conflicting result regressions",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Consumers must interpret evidence within scope"
+      }
     },
     {
       "id": "REQ-009",
@@ -276,7 +406,24 @@
       ],
       "implementation_status": "in_progress",
       "verification_status": "not_run",
-      "evidence": []
+      "evidence": [
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "visible reference component tested; remaining: Disclosure applicability, placement and accessibility"
+        }
+      ],
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "implemented",
+        "reference_verification": "visible reference component tested",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Disclosure applicability, placement and accessibility"
+      }
     },
     {
       "id": "REQ-010",
@@ -315,8 +462,24 @@
           "result": "passed",
           "report": "docs/validation/0.5.1a0.md",
           "scope": "Installed SDK regression scope; sampled video coverage and lookup-only registry semantics; not complete legal compliance or production qualification"
+        },
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "parent ingredient retention for appropriate altered inputs; remaining: Marking-only upstream relay semantics remain open"
         }
-      ]
+      ],
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "partial",
+        "reference_verification": "parent ingredient retention for appropriate altered inputs",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Marking-only upstream relay semantics remain open"
+      }
     },
     {
       "id": "REQ-011",
@@ -331,7 +494,24 @@
       ],
       "implementation_status": "in_progress",
       "verification_status": "not_run",
-      "evidence": []
+      "evidence": [
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "reference upload cleanup/minimized output/key isolation; remaining: Actual host/proxy processing; no multi-tenant storage claim"
+        }
+      ],
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "partial",
+        "reference_verification": "reference upload cleanup/minimized output/key isolation",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Actual host/proxy processing; no multi-tenant storage claim"
+      }
     },
     {
       "id": "REQ-012",
@@ -348,7 +528,24 @@
       ],
       "implementation_status": "in_progress",
       "verification_status": "not_run",
-      "evidence": []
+      "evidence": [
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "versioned small-corpus protocols/observations; remaining: Representative held-out error rates/quality/robustness"
+        }
+      ],
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "partial",
+        "reference_verification": "versioned small-corpus protocols/observations",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Representative held-out error rates/quality/robustness"
+      }
     },
     {
       "id": "REQ-013",
@@ -369,8 +566,24 @@
           "result": "passed",
           "report": "docs/validation/0.5.1a0.md",
           "scope": "81 installed package tests, 45 HTTP acceptance checks; provenance field/configuration binding, measured CPU processing, failure and retry behavior in documented single-host scope. Caller-supplied facts are not independently authenticated; no production throughput SLA."
+        },
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "bounded CPU pipeline and failure/publication checks; remaining: Product capacity, queue, crash reconciliation and backups"
         }
-      ]
+      ],
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "implemented",
+        "reference_verification": "bounded CPU pipeline and failure/publication checks",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Product capacity, queue, crash reconciliation and backups"
+      }
     },
     {
       "id": "REQ-014",
@@ -383,7 +596,24 @@
       "source_ids": [],
       "implementation_status": "in_progress",
       "verification_status": "not_run",
-      "evidence": []
+      "evidence": [
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "local issuer path/EKU, TSA tests, key-role isolation; remaining: Real production identity/TSA, rotation/revocation operations"
+        }
+      ],
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "partial",
+        "reference_verification": "local issuer path/EKU, TSA tests, key-role isolation",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Real production identity/TSA, rotation/revocation operations"
+      }
     },
     {
       "id": "REQ-015",
@@ -396,8 +626,25 @@
       "source_ids": [],
       "implementation_status": "in_progress",
       "verification_status": "not_run",
-      "evidence": [],
-      "progress_note": "0.4.0a0 adds executable product profiles and receipt binding; technical scenarios tested separately from unresolved legal/source review. See docs/validation/0.4.0a0.md."
+      "evidence": [
+        {
+          "release": "0.7.2a1",
+          "environment": "EC2 Linux x86-64 CPU; installed wheel; scoped kit development credentials",
+          "command": "maintainer-dispatched scripts/ci_server.sh",
+          "result": "reference_technical_checks_passed",
+          "report": "docs/validation/0.7.2a1-results.md",
+          "scope": "artifact manifests, clean installs, source review and docs; remaining: Publish exact release and maintain scoped legal/dependency review"
+        }
+      ],
+      "progress_note": "0.4.0a0 adds executable product profiles and receipt binding; technical scenarios tested separately from unresolved legal/source review. See docs/validation/0.4.0a0.md.",
+      "technical_assessment": {
+        "sdk_version": "0.7.2a1",
+        "tested_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+        "implementation": "partial",
+        "reference_verification": "artifact manifests, clean installs, source review and docs",
+        "evidence_record": "docs/validation/0.7.2a1-results.md",
+        "remaining_action": "Publish exact release and maintain scoped legal/dependency review"
+      }
     }
   ]
 }

@@ -46,3 +46,8 @@ The reference `/privacy` page describes application behavior, not the practices
 of an unknown hosting operator. Supply actual operator/contact/retention
 information when required by your deployment. Do not infer compliance from
 running the software or setting a privacy-review flag.
+
+The explicitly configured production timestamp request is a separate network
+operation. Review the chosen TSA/request metadata and operator policy. Verifier
+egress remains disabled in the kit. Application defaults do not describe unknown
+proxy/host practices or establish complete data-protection compliance.

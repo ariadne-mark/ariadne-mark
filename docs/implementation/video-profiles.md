@@ -111,8 +111,8 @@ Provisioning is explicit and uses the packaged npm lockfile plus SHA-256 model
 and source checks. Runtime requests never download code/models. The dependency
 cache is `~/.cache/ariadne-mark/video-v1`, configurable by `ARIADNE_VIDEO_DATA`.
 Docker preprovisions it under `/opt/ariadne-video`, readable by the runtime user.
-The qualified 0.7.1 baseline uses Node24.22.2, Linux x86-64/Python3.12,
-PyAV 16.0.1 and c2pa-python 0.38.3 / native 0.91.11. The 0.7.1a2 candidate
+The qualified 0.7.2a1 media environment uses Node24, Linux x86-64/Python3.12,
+PyAV 16.0.1 and c2pa-python 0.38.3 / native 0.91.11. Runtime preflight
 checks that actual C2PA pair before media operations and HTTP startup; other media platforms are not qualified.
 
 ## Python
@@ -246,3 +246,13 @@ PyAV's implicit full-to-limited conversion. Non-420 layouts use explicit color
 conversion. Receipts identify color pipeline v2. Pixel/contrast checks span all
 frames; mean-only gradient tests are insufficient. HDR and non-8-bit formats
 are rejected using descriptors and decoded-frame properties.
+
+## Current qualification and interpretation
+
+[0.7.2a1 results](../validation/0.7.2a1-results.md) confirm distinct schedules on
+a 6 s/12 fps fixture (Economy5s: 4 selected frames, Economy2s: 6, Resilient: 72).
+This is integration evidence, not a new speed/durability benchmark. Follow the
+[protocols](../benchmarks/protocols.md) and [evidence index](../benchmarks/evidence-index.md)
+for cold/warm, positive/negative verification, CPU/memory and transformation scope.
+Known full-range 4:4:4 chroma offset remains; evaluate prepared 4:2:0 SDR inputs.
+No profile is a statutory minimum or an unremovable watermark.

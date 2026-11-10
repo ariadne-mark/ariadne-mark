@@ -1,6 +1,6 @@
 # Requirements → technical controls → deployment evidence
 
-Source review: **6 November 2026**. Scope: visual-content providers using a Python/CPU export pipeline. This is an implementation map, not a legal opinion or a certification of a product. Requirements for platforms, model hosts, capture devices, elections, likeness rights, prohibited content, privacy laws generally and other jurisdictions need separate assessment.
+Source review: **10 November 2026**. Scope: visual-content providers using a Python/CPU export pipeline. This is an implementation map, not a legal opinion or a certification of a product. Requirements for platforms, model hosts, capture devices, elections, likeness rights, prohibited content, privacy laws generally and other jurisdictions need separate assessment.
 
 | Source and role | Relevant obligation | Included technical controls | What remains product-specific |
 |---|---|---|---|
@@ -56,3 +56,8 @@ should not be adopted without validating the C2PA action/source-type semantics.
 The existing California removal-resistance assessment remains open. Choosing
 Economy or Resilient does not itself close it. See [supported scope](../operations/support.md)
 and [measured reliability protocol](../../benchmarks/reliability/README.md).
+
+Current public guides: [EU](eu-ai-act.md), [California](california.md),
+[source excerpts](source-excerpts.md), [Code map](eu-code-map.md), and
+[requirement/evidence matrix](requirements-matrix.md). The PDF edition date and
+website publication/update dates are distinguished in the source review record.

@@ -1,6 +1,6 @@
 # Unsigned provenance records
 
-Related: **REQ-003 (in progress)**. Available in the Python core.
+Related: **REQ-003**. Record handling is implemented and tested in the Python core; product facts remain publisher assertions.
 
 `ProvenanceRecord.create()` accepts a publisher, a `GenerativeSystem` with its
 own name and version, image/video `MediaKind`, created/altered `Action`, and a
@@ -30,6 +30,7 @@ There is no user identifier field. Do not put personal data in publisher or
 system strings; the SDK cannot determine whether arbitrary text is personal
 data. Local operation requires no account, API key or network access.
 
-REQ-003 remains incomplete until profile-specific legal mapping is validated.
-Media/signing integration is covered by the real-engine tests. Passing data tests is not proof of
-legal sufficiency.
+Issuance rejects timestamps more than five minutes in the future; parsing external
+claims remains possible. The allowance is engineering policy. See the
+[current record/signing qualification](../validation/0.7.2a1-results.md) and
+[requirements matrix](../compliance/requirements-matrix.md).

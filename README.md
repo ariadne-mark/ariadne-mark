@@ -6,6 +6,9 @@ A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and 
 
 **Developer preview · 0.7.2a1 candidate.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
+[Documentation hub](docs/index.md) · [EU guide](docs/compliance/eu-ai-act.md) ·
+[California guide](docs/compliance/california.md) · [Test protocols and evidence](docs/benchmarks/protocols.md)
+
 ## Quick start with Docker
 
 ```sh
