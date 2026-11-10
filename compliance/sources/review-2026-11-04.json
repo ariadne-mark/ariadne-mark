@@ -11,7 +11,7 @@
       "22757.1 provider scope; no monthly-user threshold",
       "22757.2 free verification, upload or URL, API, feedback, privacy and third-party UI access",
       "22757.3 latent fields, durability/interoperability, licensing workflow",
-      "22757.4/22757.4.1 exclusions; assistive technology until 2029",
+      "22757.5 exclusions; assistive technology until 2029",
       "22757.6 operative date; SB 1000 effective 2026-09-30",
       "AB 853 platform/hosting and capture-device roles outside provider profile"
     ],
@@ -30,5 +30,6 @@
     "Legal opinion on any particular product",
     "Full EU Code of Practice conformance assessment",
     "Certification of removal resistance or independent interoperability"
-  ]
+  ],
+  "correction_note_2026_11_05": "Corrected section reference only; the November 4 source review date is retained."
 }

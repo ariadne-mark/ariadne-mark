@@ -1,0 +1,275 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Ariadne Mark public verifier",
+    "version": "0.7.1a2",
+    "description": "Self-hosted, no-account, supported-scheme provenance verification. Operator must configure reviewed public sources, trust roots, feedback and durable registry as applicable."
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Read capabilities and upload limit",
+        "responses": {
+          "200": {
+            "description": "Service configuration; readiness is not a legal determination"
+          }
+        }
+      }
+    },
+    "/verify": {
+      "post": {
+        "summary": "Inspect a local upload without an account",
+        "description": "C2PA and supported Ariadne watermark schemes only. Returns a compact public report, not a universal AI-origin verdict. Files are deleted before response. Search exhaustion due to a budget is not an absence result. When configured, signed_report is an Ed25519 compact JWS over the public result, exact asset SHA256/size/type, verifier ID and verification time.",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "png",
+                "jpg",
+                "jpeg",
+                "mp4"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Report; inspect c2pa/watermark status and public_output redactions"
+          },
+          "408": {
+            "description": "Upload timed out; not_checked"
+          },
+          "413": {
+            "description": "Invalid or excessive upload length"
+          },
+          "415": {
+            "description": "Unsupported extension"
+          },
+          "422": {
+            "description": "Unsupported content or operational verification failure; not_checked"
+          },
+          "429": {
+            "description": "Upload or inference capacity busy"
+          },
+          "504": {
+            "description": "Whole-job verification deadline exceeded; worker/children terminated; not_checked, never a negative"
+          }
+        }
+      }
+    },
+    "/records/{token}": {
+      "get": {
+        "summary": "Resolve a public opaque asset ID in the operator registry",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^014d[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public provenance fields; not authentication of a media copy"
+          },
+          "400": {
+            "description": "Invalid ID"
+          },
+          "404": {
+            "description": "ID not present or no registry configured"
+          },
+          "503": {
+            "description": "Registry could not be read"
+          }
+        }
+      }
+    },
+    "/feedback": {
+      "post": {
+        "summary": "Add one anonymous efficacy-category counter",
+        "description": "Enabled only when the operator configures a feedback database. No free text, media, IDs, contact information or event history is accepted.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "rating",
+                  "media"
+                ],
+                "properties": {
+                  "rating": {
+                    "type": "string",
+                    "enum": [
+                      "correct_result",
+                      "incorrect_result",
+                      "unable_to_check"
+                    ]
+                  },
+                  "media": {
+                    "type": "string",
+                    "enum": [
+                      "image",
+                      "video",
+                      "unknown"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Aggregate counter updated"
+          },
+          "400": {
+            "description": "Invalid feedback; no extra fields allowed"
+          },
+          "413": {
+            "description": "Payload too large"
+          },
+          "503": {
+            "description": "Feedback unavailable or not configured"
+          }
+        }
+      }
+    },
+    "/report-key": {
+      "get": {
+        "summary": "Public report-signing JWK set; trust requires independent key pinning",
+        "responses": {
+          "200": {
+            "description": "Public report-signing JWK set; trust requires independent key pinning"
+          },
+          "404": {
+            "description": "Report signing not configured"
+          }
+        }
+      }
+    },
+    "/report-key.pem": {
+      "get": {
+        "summary": "Report public key in PEM format",
+        "responses": {
+          "200": {
+            "description": "Report public key in PEM format"
+          },
+          "404": {
+            "description": "Report signing not configured"
+          }
+        }
+      }
+    },
+    "/services/supportedAlgorithms": {
+      "get": {
+        "summary": "Read-only C2PA recovery algorithms; identifiers provisional, unregistered",
+        "responses": {
+          "200": {
+            "description": "watermarks with alg; registration_status is provisional_not_registered"
+          }
+        }
+      }
+    },
+    "/matches/byBinding": {
+      "get": {
+        "summary": "Find public manifests by base64 binding value and alg",
+        "parameters": [
+          {
+            "name": "alg",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "matches array with manifestId"
+          },
+          "400": {
+            "description": "Invalid/unsupported algorithm or binding"
+          }
+        }
+      },
+      "post": {
+        "summary": "Same lookup with JSON alg/value body",
+        "responses": {
+          "200": {
+            "description": "matches array with manifestId"
+          }
+        }
+      }
+    },
+    "/matches/byContent": {
+      "post": {
+        "summary": "Blindly recover an ID from uploaded JPEG/PNG/MP4 and return public manifest matches",
+        "description": "Content-Type identifies media; query alg is optional. Incomplete searches return an error, never an empty successful absence.",
+        "responses": {
+          "200": {
+            "description": "matches array with manifestId"
+          },
+          "503": {
+            "description": "Search incomplete"
+          }
+        }
+      }
+    },
+    "/manifests/{manifestId}": {
+      "get": {
+        "summary": "Fetch an explicitly published full C2PA manifest store",
+        "parameters": [
+          {
+            "name": "manifestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exact application/c2pa bytes"
+          },
+          "400": {
+            "description": "Invalid ID or unsupported active-only option"
+          },
+          "404": {
+            "description": "Not found or not published"
+          }
+        }
+      }
+    }
+  },
+  "security": []
+}

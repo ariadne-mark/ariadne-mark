@@ -78,7 +78,7 @@ is no longer needed.
 
 ## 0.5.1 profile and audit follow-up
 
-Jobs accept `video_profile: "fast" | "resilient"` (default Fast). The request key
+Jobs accept `video_profile: "economy_5s" | "economy_2s" | "resilient"` (default Economy 5s). Explicit legacy `fast` jobs remain supported. Historical database rows retain their original Fast setting; new requests record the new default explicitly. The request key
 includes this setting in its conflict check. One persistent SDK exists per
 profile. The HTTP acceptance run additionally exports all three video fixtures
 with Resilient and checks its per-frame inference count.

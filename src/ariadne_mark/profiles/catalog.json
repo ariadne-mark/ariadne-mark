@@ -1,34 +1,41 @@
 {
-  "version": "2026-11-04.1",
-  "reviewed_on": "2026-11-04",
+  "version": "2026-11-09.1",
+  "reviewed_on": "2026-11-06",
   "review_interval_days": 30,
   "scope": "Image/video provider marking and EU deployer deepfake disclosure; requirements planning, not a legal determination",
   "sources": {
     "EU-50": {
       "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50",
       "kind": "statute_official_explainer",
-      "basis": "Consolidated AI Act 2026-07-27 as reproduced by European Commission"
+      "basis": "Current Commission reproduction of consolidated AI Act2026-07-27, Article50(2),(4),(5) re-read2026-11-06; direct EUR-Lex robot gate not bypassed."
     },
     "EU-TIMING": {
-      "url": "https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act",
-      "kind": "official_guidance",
-      "basis": "Article 50 starts 2026-08-02; provider marking transition for systems first placed before that date until 2026-12-02"
+      "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-111",
+      "kind": "statute_official_reproduction",
+      "basis": "Article 111(4), introduced by Regulation (EU) 2026/1744; pre-2026-08-02 provider systems comply with 50(2) by 2026-12-02. Official Commission reproduction read 2026-11-05; direct OJ access unavailable."
     },
     "EU-CODE": {
       "url": "https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content",
       "kind": "voluntary_code",
-      "basis": "Separate voluntary route; full code adherence is not evaluated by this profile"
+      "basis": "Final voluntary Code, 2026-06-10; Measures 1.1 and 3.4 reviewed from official PDF on 2026-11-05. Signatory interoperability solution under 3.4(c) by 2027-02-02; full Code adherence not evaluated.",
+      "document_url": "https://ec.europa.eu/newsroom/dae/redirection/document/129555"
     },
     "CA-22757": {
       "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=8.&chapter=25.&part=&lawCode=BPC",
       "amendment_url": "https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB1000",
       "kind": "consolidated_statute_official",
-      "basis": "Official consolidated BPC Chapter 25 and chaptered SB 1000 read in Chrome on 2026-11-04; Stats. 2026, Ch. 861, effective 2026-09-30. Partial provider mapping; other roles and full legal determination excluded."
+      "basis": "Official consolidated BPC Chapter25 re-read in browser2026-11-06; SB1000 amendment notes effective2026-09-30. Sections22757.2/.3 require no-cost upload OR URL + programmatic verifier, system-only disclosure, feedback, minimization and latent durability. Provider scope partial; other roles excluded."
     },
     "SDK": {
       "url": "https://github.com/ariadne-mark/ariadne-mark",
       "kind": "implementation_choice",
       "basis": "C2PA + watermark is the SDK implementation, not a statutory mandate to use these particular algorithms"
+    },
+    "EU-GUIDANCE": {
+      "url": "https://digital-strategy.ec.europa.eu/en/policies/guidelines-ai-transparency-obligations",
+      "document_url": "https://ec.europa.eu/newsroom/dae/redirection/document/131215",
+      "kind": "official_nonbinding_guidance",
+      "basis": "Commission final Article50 guidelines, library updated2026-11-05; sections4.2.1\u20134.2.3 read from the official PDF2026-11-06. Marking/detection, reliability/robustness including common alterations and adversarial attacks, proportionality and narrow closed-environment cases. Not a statutory cadence rule. Document identified as C(2026) 7702 final, 2026-11-05, in the 2026-11-09 external review; this metadata update does not claim a new full legal/adherence assessment."
     }
   }
 }

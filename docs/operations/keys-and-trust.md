@@ -45,3 +45,9 @@ waits for expiry and checks both stamped and unstamped files. See
 
 Primary references: [C2PA Python context settings](https://github.com/contentauth/c2pa-python/blob/main/docs/context-settings.md),
 [C2PA implementation guidance — time-stamp authorities](https://spec.c2pa.org/specifications/specifications/2.3/guidance/Guidance.html).
+
+0.7 / native 0.91.11 separates manifest and TSA trust. `--trust-anchors`
+adds only manifest roots. For a private TSA, explicitly supply
+`--tsa-trust-anchors`; built-in public TSA roots remain in use. No signer root
+is implicitly trusted as a TSA. The same setting reaches isolated verifier
+workers, export read-back and recovered-manifest validation.

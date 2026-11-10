@@ -1,5 +1,71 @@
 # Changelog
 
+## 0.7.2a1 — external-review follow-up
+
+- Reject generation timestamps over five minutes in the future at batch/export/signing boundaries; parsing external claims remains possible.
+- Check production issuer chains against configured roots with C2PA signer EKUs; local checks remain distinct from enrollment and production readiness.
+- Preflight MP4 audio declarations across the batch before any export; explicitly document one system/version per kit.
+- Headline incomplete negative checks as `Check incomplete`, preserving invalid/positive evidence.
+- Separate California chapter commencement and supported-amendment dates.
+- Extend acceptance fixtures to six seconds and assert distinct Economy schedules and full-frame Resilient coverage.
+- Clarify tested metadata-only recovery and retain the full-range 4:4:4 chroma, crop, short-excerpt and remover limitations.
+- Preserve all three profiles, default Economy5s, cadence, payload, models, strength and native-runtime pins.
+
+## 0.7.2a0 — SDK / verifier / registry deployment kit
+
+- Add explicit kit init/check/render/export/serve commands, batch SDK reuse and operator-owned Compose deployment.
+- Separate provider, verifier-report and edge TLS keys; registry is read-only in the verifier; production init generates no fake credentials.
+- Add pinned TLS edge, reviewed public provenance configuration, persistent recovery and feedback, and end-to-end server acceptance.
+- Preserve model, payload, strength, all video modes and Economy5s default.
+- Add decoder-stride and startup-warning regressions, video lock composition check, stable source-archive instructions and accurate CI policy.
+
+## 0.7.1a2 — public-alpha review fixes
+
+- Preserve full-range YUV420 sample values on Economy bypass frames; explicit encoder format avoids implicit range squeeze. Add per-frame contrast/plane regressions.
+- Reject 10/12/16-bit decoded input rather than silently quantizing unsupported SDR.
+- Add explicit wheel-based `setup media` / `setup video` with packaged hash locks and the unchanged native C2PA bootstrap.
+- Keep core SDK construction lazy; media methods and service startup enforce runtime qualification.
+- Legacy single-frame results remain `single_observation`; CA planning surfaces reviewed public provenance configuration; verifier startup reports withheld fields.
+- Document upstream-C2PA relay limits and measured detector scope; maintainer-dispatched CI runs SDK tests on a temporary EC2 runner only.
+
+## 0.7.1a1 — C2PA runtime and release-documentation candidate
+
+- Check the actual loaded native C2PA version/path/hash and wrapper pin at media startup; mismatch fails closed with actionable diagnostics.
+- Add `ariadne runtime check`; supplied verifier probes its child before HTTP binding, and low-level inspection distinguishes an unsupported runtime from absent/forged evidence.
+- Synchronize current guides and document short-clip, excerpt and remover limitations. Historical records remain unchanged.
+- Preserve all marking modes, model/payload/strength/cadence and native pins; server-only targeted media rechecks recorded separately.
+
+## 0.7.1a0 — color, fractional FPS and decoder hardening candidate
+
+- Explicit SDR matrix/range on export and read-back; accurate rounding removes conversion-only luma bias; YUV bypass retained for Economy.
+- Bounded, timestamp-based unknown-phase bank completes on NTSC rates; narrower recovery windows handle phase quantization.
+- Canonical BCH5 re-encode/distance checks around pinned Python and Node decoders, without changing payloads, models, cadence or strength.
+- Server-only Linux qualification, before/after identity exports and real fractional-rate transforms logged; ready crop/letterbox approaches documented separately.
+
+## 0.7.0a0 — signed reports and C2PA recovery
+
+- Signed verifier JWS reports, immutable exact C2PA manifests and explicit read-only recovery API; native C2PA 0.91.11.
+- Qualified installed wheel on Linux x86-64, 156 tests, zero skips. See the versioned validation record.
+
+## 0.6.0a0 — Economy and verifier launch candidate
+
+- Default Economy5s, configurable Economy2s and per-frame Resilient in one wheel; config, CLI and per-export API selection.
+- PTS windows, selected-frame bypass, per-window export gates, AAC/VFR/rotation and read-back failure isolation.
+- One-pass blind search with cached-logit recovery and explicit partial/incomplete/conflicting evidence.
+- Verification-only service subprocess, total model deadline, process-group cleanup and restart after timeout/crash.
+- Packaged verifier UI, OpenAPI, anonymous aggregate feedback and reviewed public-source output controls.
+- Operator registry resolver, deployable Compose/TLS-edge recipes and privacy/data-handling documentation.
+- Rechecked EU/California primary sources plus conditional Connecticut/New York navigator; known temporal-removal limitation is explicit.
+
+## 0.5.3a0 — external-review follow-up candidate
+
+- Fresh-export sample gate and anchor-aware Fast v2 refresh; motion can reduce the speed advantage.
+- Total HTTP header deadline, stricter production CA configuration and development-signature headlines.
+- Scoped image negatives without Node; actual PyAV decoder-context validation.
+- Hash-locked bootstrap/full CPU dependency graph; npm scripts disabled and native ONNX integrity receipts.
+- Bundled PyAV binary inventory, upstream notices and corrected statutory transition source type.
+
+
 ## 0.5.2a0 — release-readiness candidate
 
 - Explicit SHA-verified upstream C2PA 0.38.3/native 0.91.7 bootstrap; pip 26.3 and patched adm-zip dependency policy.

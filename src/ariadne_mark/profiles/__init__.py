@@ -20,12 +20,12 @@ def template():
                     'deepfake': None, 'creative_work': None, 'eu_exception': 'none',
                     'ca_public_access': None, 'ca_produces_system': None, 'ca_exception': 'none',
                     'licenses_system_to_third_parties': None},
-        'sdk': {'audio_kind': 'unknown'},
+        'sdk': {'audio_kind': 'unknown', 'video_profile': 'economy_5s'},
         'deployment': {'disclosure': 'none', 'accessibility_review': False,
                        'verifier_url': None, 'verifier_free': None, 'verifier_upload': None,
                        'verifier_api': None, 'verifier_url_submission': None, 'verifier_provider': 'unknown',
                        'verifier_link_in_product': None, 'feedback_url': None,
-                       'privacy_review': False, 'durability_evidence': None,
+                       'privacy_review': False, 'verifier_public_sources_reviewed': None, 'durability_evidence': None,
                        'interoperability_evidence': None},
     }
 
@@ -61,6 +61,12 @@ def parse_date(value, name):
 def validate(config):
     default = template()
     _object(config, default, 'config')
+    config = deepcopy(config)
+    # Older schema1 files remain valid; the new preset has a documented default.
+    if isinstance(config['sdk'], dict):
+        config['sdk'].setdefault('video_profile', 'economy_5s')
+    if isinstance(config.get('deployment'), dict):
+        config['deployment'].setdefault('verifier_public_sources_reviewed', None)
     for section in ('context', 'sdk', 'deployment', 'system'):
         _object(config[section], default[section], section)
     if type(config['schema_version']) is not int or config['schema_version'] != 1:
@@ -82,12 +88,14 @@ def validate(config):
     _enum(ctx['eu_exception'], {'none', 'standard_editing', 'law_enforcement', 'other', 'unknown'}, 'eu_exception')
     _enum(ctx['ca_exception'], {'none', 'minor_modification', 'assistive_technology', 'non_user_generated_videogames', 'other', 'unknown'}, 'ca_exception')
     _enum(config['sdk']['audio_kind'], {'none', 'original', 'synthetic', 'unknown'}, 'audio_kind')
+    from ariadne_mark.video.policy import validate_profile
+    validate_profile(config['sdk']['video_profile'])
     _enum(dep['disclosure'], {'none', 'in_app', 'baked_in', 'both'}, 'disclosure')
     _enum(dep['verifier_provider'], {'own', 'third_party', 'unknown'}, 'verifier_provider')
     for key in ('accessibility_review', 'privacy_review'):
         if type(dep[key]) is not bool:
             raise ValueError(f'{key}: expected true or false')
-    for key in ('verifier_free', 'verifier_upload', 'verifier_api', 'verifier_url_submission', 'verifier_link_in_product'):
+    for key in ('verifier_free', 'verifier_upload', 'verifier_api', 'verifier_url_submission', 'verifier_link_in_product', 'verifier_public_sources_reviewed'):
         if dep[key] is not None and type(dep[key]) is not bool:
             raise ValueError(f'{key}: expected true, false or null')
     for key in ('verifier_url', 'feedback_url', 'durability_evidence', 'interoperability_evidence'):
@@ -156,6 +164,9 @@ def evaluate(config, *, as_of=None):
         finding('unsupported_media', 'error', 'This SDK profile exports images/video only; audio/text require a separate solution.')
     if 'video' in config['media_kinds'] and config['sdk']['audio_kind'] in {'synthetic', 'unknown'}:
         finding('audio_scope', 'error' if config['sdk']['audio_kind'] == 'synthetic' else 'review', 'Audio is retained but not independently watermarked. Resolve unknown/synthetic audio outside the visual profile.')
+    if 'video' in config['media_kinds'] and config['sdk']['video_profile'].startswith('economy_'):
+        finding('economy_durability_review', 'review',
+                'Economy is a cost preset, not a statutory marking-frequency minimum. A documented known-window frame-replacement stress removed sparse marks. Review delivery/adversarial durability and detection evidence for your use case; passing ordinary transforms does not certify EU/CA sufficiency.')
     if config['role'] == 'unknown' and 'EU' in config['jurisdictions']:
         finding('eu_role', 'review', 'Determine whether the product is a provider, deployer, or both.', 'EU-50')
 
@@ -186,6 +197,7 @@ def evaluate(config, *, as_of=None):
                     declaration('eu_robustness', dep['durability_evidence'], 'Evaluate reliability and robustness on the actual product pipeline; a report reference is not a passing assessment.', 'EU-50', '50(2)')
                     declaration('eu_interoperability', dep['interoperability_evidence'], 'Test interoperability with intended consumers and document feasibility/state-of-art considerations.', 'EU-50', '50(2)')
                     requirement('eu_code_route', 'review_required', 'Choose and assess the voluntary Code of Practice route or substantiate alternative measures. Full code adherence is not evaluated here.', 'EU-CODE', 'provider measures')
+                    requirement('eu_code_interoperability', 'review_required', 'If relying on the voluntary Code, assess Measure 3.4(c): signatories implement an interoperable detection access/signpost solution by 2027-02-02. This SDK does not implement universal resolver discovery.', 'EU-CODE', '3.4(c)')
             if deployer:
                 if today < start:
                     applicability['EU']['deployer_disclosure'] = {'state': 'not_yet_applicable', 'effective_on': start.isoformat()}
@@ -217,16 +229,19 @@ def evaluate(config, *, as_of=None):
             finding('ca_exception', 'review', f'Claimed exception ({exception}) requires review; it does not automatically disable technical measures.', 'CA-22757')
             if exception == 'assistive_technology' and today >= date(2029, 1, 1):
                 finding('ca_assistive_expired', 'review', 'The statutory temporary assistive-technology exclusion ended on 2029-01-01.', 'CA-22757')
-        applicability['US-CA'] = {'provider_duties': ca_state, 'effective_on': '2026-09-30', 'monthly_user_threshold': None}
+        applicability['US-CA'] = {'provider_duties': ca_state, 'effective_on': '2026-08-02', 'profile_revision_effective_on': '2026-09-30', 'monthly_user_threshold': None}
         if ca_state != 'provider_duties_not_triggered_by_declaration' and today >= date(2026, 9, 30):
-            requirement('ca_latent_metadata', 'partial_measure', 'C2PA records the disclosure fields; the watermark contains only an ID. After metadata loss, fields need an accessible resolver; namespace discovery and durable authenticated linkage are not implemented.', 'CA-22757', '22757.3(a)(1)', 'sdk')
+            requirement('ca_latent_metadata', 'partial_measure', 'C2PA records the disclosure fields; the watermark contains only an ID. After metadata loss, fields need the operator’s persistent registry and deployed /records resolver. Cross-provider discovery, deployment permanence and authenticated linkage of edited copies are not established.', 'CA-22757', '22757.3(a)(1)', 'sdk')
             requirement('ca_no_mandatory_overlay', 'information', 'The amended provider duties do not require offering a manifest/visible disclosure. Other laws or product contexts may still require one.', 'CA-22757', 'SB 1000 section 4')
             declaration('ca_verifier_public', _public_https(dep['verifier_url']), 'Publish a working verifier; HTTPS URL syntax is checked, reachability is not.', 'CA-22757', '22757.2(a)(4)')
             declaration('ca_verifier_free', dep['verifier_free'] is True, 'Verification must be free to the user.', 'CA-22757', '22757.2(a)')
             declaration('ca_upload', dep['verifier_upload'] is True or dep['verifier_url_submission'] is True, 'Offer upload or URL submission. This SDK supplies upload; remote URL fetching is not required when upload is available.', 'CA-22757', '22757.2(a)(5)')
             declaration('ca_api', dep['verifier_api'] is True, 'Provide programmatic access; deploy and test the bundled verification API.', 'CA-22757', '22757.2(a)(6)')
+            declaration('ca_public_provenance', dep['verifier_public_sources_reviewed'] is True,
+                        'Configure --public-sources for reviewed provider/system fields and issuer trust; test that your public verifier displays your system provenance without exposing PII. Defaults withhold unreviewed provenance. This declaration does not inspect the deployment.',
+                        'CA-22757', '22757.2(a)(2)')
             declaration('ca_feedback', _public_https(dep['feedback_url']), 'Provide a working feedback route and use relevant feedback to improve verification.', 'CA-22757', '22757.2(b)')
-            declaration('ca_privacy', dep['privacy_review'], 'Review necessary data processing, output PII controls, retention, proxy logs and access requirements. SDK defaults alone do not verify the deployment.', 'CA-22757', '22757.2(a)(2)-(3), (c)-(d)')
+            declaration('ca_privacy', dep['privacy_review'], 'Review necessary data processing, output PII controls, retention, proxy logs and access requirements. SDK defaults alone do not verify the deployment.', 'CA-22757', '22757.2(a), (c)-(d)')
             declaration('ca_robustness', dep['durability_evidence'], 'Evaluate removal/tampering resistance and content-to-record recovery; a short benchmark does not qualify statutory permanence.', 'CA-22757', '22757.3(a)(2)-(4)')
             declaration('ca_interoperability', dep['interoperability_evidence'], 'Validate interoperability and verifier compatibility, including metadata-loss cases.', 'CA-22757', '22757.3(a)(3)-(4)')
             if dep['verifier_provider'] != 'own':
@@ -234,7 +249,7 @@ def evaluate(config, *, as_of=None):
             if today >= date(2029, 1, 1):
                 finding('ca_2029_metadata', 'error', '2029 assistive-technology metadata is not represented by this SDK schema; update the profile and schema.', 'CA-22757')
         if ctx['licenses_system_to_third_parties'] is not False:
-            requirement('ca_licensing', 'review_required', 'Assess third-party licensing duties and notice/remediation workflows. These are not implemented by a marking library.', 'CA-22757', '22757.3(b)')
+            requirement('ca_licensing', 'review_required', 'Assess third-party licensing duties, the 72-hour remediation/revocation and 96-hour notice workflows, and Attorney General reporting under 22757.3(b). These are not implemented by a marking library.', 'CA-22757', '22757.3(b)')
         requirement('ca_other_roles', 'review_required', 'Hosting-platform, large-platform and capture-device obligations are outside this covered-provider profile.', 'CA-22757', 'chapter 25 scope')
 
     errors = [x for x in findings if x['level'] == 'error']
@@ -242,7 +257,8 @@ def evaluate(config, *, as_of=None):
     needs_action = any(x['state'] == 'action_required' for x in open_items)
     needs_review = bool(open_items or any(x['level'] == 'review' for x in findings))
     options = {'watermark': True, 'c2pa': True, 'image_engine': 'TrustMark Q/BCH-5',
-               'video_engine': 'TrustMark Q Fast/Resilient; legacy VideoSeal decoder', 'visible': dep['disclosure'] in {'baked_in', 'both'},
+               'video_engine': 'TrustMark Q Economy/Resilient; legacy Fast and VideoSeal compatibility',
+               'video_profile': config['sdk']['video_profile'], 'visible': dep['disclosure'] in {'baked_in', 'both'},
                'audio_kind': config['sdk']['audio_kind'], 'configuration_source': 'SDK implementation choices'}
     return {'schema_version': 1, 'profile_version': CATALOG['version'], 'evaluated_on': today.isoformat(),
             'sources_reviewed_on': CATALOG['reviewed_on'],

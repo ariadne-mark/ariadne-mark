@@ -1,7 +1,8 @@
 """Explicit installation of an unmodified official C2PA release absent from PyPI.
 
 Only Linux x86-64 is qualified. Models/runtime requests never call this module.
-Downloads are SHA-256 pinned, including the initial installer/CA-store wheels.
+Upstream archives and the initial installer/CA-store wheels are SHA-256 pinned.
+Build/runtime wheels use the packaged qualified-platform hash lock.
 """
 import argparse
 import ctypes
@@ -68,17 +69,22 @@ def install(*, allow_system=False, cache=None, wheel_dir=None):
         raise RuntimeError('Qualified bootstrap is Linux x86-64; use the linux/amd64 Docker recipe')
     if sys.prefix == sys.base_prefix and not allow_system:
         raise RuntimeError('Activate a Python virtualenv first; --allow-system is for an isolated Docker build')
+    if sys.version_info[:2] != (3, 12):
+        raise RuntimeError('Qualified hashed bootstrap requires Python 3.12; use the Docker recipe')
+    lock = ROOT / 'bootstrap-linux-py312.lock'
+    if digest(lock) != MANIFEST['bootstrap_lock_sha256']:
+        raise ValueError('Bootstrap requirements lock checksum mismatch')
     cache = Path(cache or Path.home() / '.cache/ariadne-mark/c2pa-bootstrap-v1').resolve()
     cache.mkdir(parents=True, exist_ok=True)
     # Exact wheel digests protect the initial update even on an older TLS store.
     wheels = [download(MANIFEST[key], cache) for key in ['pip', 'certifi']]
-    run('-m', 'pip', 'install', '--no-deps', '--upgrade', *wheels)
+    run('-m', 'pip', 'install', '--no-index', '--no-deps', '--upgrade', *wheels)
     importlib.invalidate_caches()
     import certifi
     tls = ssl.create_default_context(cafile=certifi.where())
     source = download(MANIFEST['source'], cache, context=tls)
     native = download(MANIFEST['native'], cache, context=tls)
-    run('-m', 'pip', 'install', *MANIFEST['build_tools'])
+    run('-m', 'pip', 'install', '--require-hashes', '--only-binary=:all:', '--no-deps', '-r', lock)
     with tempfile.TemporaryDirectory(prefix='ariadne-c2pa-build-') as folder:
         work = Path(folder)
         upstream = extract_source(source, work / 'source')
@@ -100,7 +106,7 @@ def install(*, allow_system=False, cache=None, wheel_dir=None):
         built = list(out.glob('c2pa_python-0.38.3-*.whl'))
         if len(built) != 1:
             raise ValueError('Unexpected C2PA wheel output')
-        run('-m', 'pip', 'install', '--upgrade', built[0])
+        run('-m', 'pip', 'install', '--no-deps', '--upgrade', '--force-reinstall', built[0])
         if wheel_dir:
             target = Path(wheel_dir); target.mkdir(parents=True, exist_ok=True)
             shutil.copy2(built[0], target / built[0].name)

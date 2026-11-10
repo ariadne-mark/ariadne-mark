@@ -1,0 +1,598 @@
+{
+  "sdk": "0.7.1a1",
+  "qualified_code_commit": "35cf34d4b794f0ba65588ba6f8d0b49f9040a24c",
+  "scope": "Two 720p24 stock clips on Oregon m6a.large, not population statistics",
+  "environment": {
+    "cgroup_memory_peak_scope": "whole job, not per operation",
+    "cpu_limit": "2 vCPU",
+    "kind": "environment",
+    "memory_limit": "6 GiB",
+    "modes": [
+      "economy_5s",
+      "economy_2s",
+      "resilient"
+    ],
+    "network": "none",
+    "packages": {
+      "Pillow": "13.0.0",
+      "ariadne-mark": "0.7.1a1",
+      "av": "16.0.1",
+      "c2pa-python": "0.38.3",
+      "torch": "2.14.1+cpu",
+      "trustmark": "0.9.2"
+    },
+    "runtime": {
+      "expected": {
+        "native_sha256": "d046de02d826e90bc3c6d8896faa2b04ca280638960b69283bb5ce404280f0a8",
+        "native_version": "0.91.11",
+        "platform": "Linux x86-64 / Python 3.12",
+        "python_package": "0.38.3"
+      },
+      "native_sha256": "d046de02d826e90bc3c6d8896faa2b04ca280638960b69283bb5ce404280f0a8",
+      "native_version": "0.91.11",
+      "python_package": "0.38.3",
+      "reason": null,
+      "status": "qualified"
+    },
+    "stock_is_not_claimed_to_be_AI": true,
+    "threads": 2,
+    "utc": "2026-11-08T09:35:12.340684+00:00"
+  },
+  "tests": {
+    "focused": {
+      "run": 17,
+      "seconds": 2.827,
+      "skipped": 0,
+      "passed": true
+    },
+    "full-media": {
+      "run": 177,
+      "seconds": 336.166,
+      "skipped": 0,
+      "passed": true
+    },
+    "core-3.11": {
+      "run": 177,
+      "seconds": 12.097,
+      "skipped": 56,
+      "passed": true
+    },
+    "core-3.12": {
+      "run": 177,
+      "seconds": 12.552,
+      "skipped": 56,
+      "passed": true
+    },
+    "core-3.13": {
+      "run": 177,
+      "seconds": 12.746,
+      "skipped": 56,
+      "passed": true
+    },
+    "core-3.14": {
+      "run": 177,
+      "seconds": 13.069,
+      "skipped": 56,
+      "passed": true
+    }
+  },
+  "short_cases": {
+    "fresh_10s": {
+      "economy_5s": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      },
+      "economy_2s": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      },
+      "resilient": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      }
+    },
+    "identity_crf23_10s": {
+      "economy_5s": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      },
+      "economy_2s": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      },
+      "resilient": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      }
+    },
+    "cut_1_to_4": {
+      "economy_5s": {
+        "n": 2,
+        "recovered": 0,
+        "statuses": {
+          "not_found": 2
+        }
+      },
+      "economy_2s": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      },
+      "resilient": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      }
+    },
+    "window_free_0p2_to_1p8": {
+      "economy_5s": {
+        "n": 2,
+        "recovered": 0,
+        "statuses": {
+          "not_found": 2
+        }
+      },
+      "economy_2s": {
+        "n": 2,
+        "recovered": 0,
+        "statuses": {
+          "not_found": 2
+        }
+      },
+      "resilient": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      }
+    },
+    "fresh_3s": {
+      "economy_5s": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      },
+      "economy_2s": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      },
+      "resilient": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      }
+    },
+    "identity_crf23_3s": {
+      "economy_5s": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      },
+      "economy_2s": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      },
+      "resilient": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      }
+    },
+    "trim_0p2_3s": {
+      "economy_5s": {
+        "n": 2,
+        "recovered": 0,
+        "statuses": {
+          "not_found": 2
+        }
+      },
+      "economy_2s": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      },
+      "resilient": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      }
+    },
+    "identity": {
+      "resilient": {
+        "n": 2,
+        "recovered": 2,
+        "statuses": {
+          "recovered_claim": 2
+        }
+      }
+    },
+    "remover": {
+      "resilient": {
+        "n": 2,
+        "recovered": 1,
+        "statuses": {
+          "recovered_claim": 1,
+          "not_found": 1
+        }
+      }
+    }
+  },
+  "exports": {
+    "economy_5s": {
+      "10s": [
+        {
+          "clip": "crowd_720p24.mp4",
+          "wall_s": 15.267822947993409,
+          "cgroup_cpu_s": 24.034296000000012
+        },
+        {
+          "clip": "face_720p24.mp4",
+          "wall_s": 12.567438230034895,
+          "cgroup_cpu_s": 21.51504699999998
+        }
+      ],
+      "3s": [
+        {
+          "clip": "crowd_source_3s.mp4",
+          "wall_s": 6.484183169959579,
+          "cgroup_cpu_s": 8.604065999999989
+        },
+        {
+          "clip": "face_source_3s.mp4",
+          "wall_s": 5.138114661036525,
+          "cgroup_cpu_s": 8.283775999999989
+        }
+      ]
+    },
+    "economy_2s": {
+      "10s": [
+        {
+          "clip": "crowd_720p24.mp4",
+          "wall_s": 18.513106193044223,
+          "cgroup_cpu_s": 29.834750999999983
+        },
+        {
+          "clip": "face_720p24.mp4",
+          "wall_s": 16.067669234005734,
+          "cgroup_cpu_s": 27.72882800000002
+        }
+      ],
+      "3s": [
+        {
+          "clip": "crowd_source_3s.mp4",
+          "wall_s": 6.608674281975254,
+          "cgroup_cpu_s": 10.378903000000037
+        },
+        {
+          "clip": "face_source_3s.mp4",
+          "wall_s": 6.347964484011754,
+          "cgroup_cpu_s": 10.429558999999927
+        }
+      ]
+    },
+    "resilient": {
+      "10s": [
+        {
+          "clip": "crowd_720p24.mp4",
+          "wall_s": 95.69568706903374,
+          "cgroup_cpu_s": 166.836143
+        },
+        {
+          "clip": "face_720p24.mp4",
+          "wall_s": 93.6941629559733,
+          "cgroup_cpu_s": 165.61224500000003
+        }
+      ],
+      "3s": [
+        {
+          "clip": "crowd_source_3s.mp4",
+          "wall_s": 30.126281176984776,
+          "cgroup_cpu_s": 52.182704
+        },
+        {
+          "clip": "face_source_3s.mp4",
+          "wall_s": 29.57723845000146,
+          "cgroup_cpu_s": 51.71212800000012
+        }
+      ]
+    }
+  },
+  "images": [
+    {
+      "clip": "crowd",
+      "repeat": 0,
+      "token": "014dc83cf9c9cabb",
+      "decoded": {
+        "control": "014dc83cf9c9cabb",
+        "marked": "014dc83cf9c9cabb",
+        "removed": null
+      },
+      "psnr_to_marked": 45.026582550986674,
+      "psnr_to_source": 39.82113655196029
+    },
+    {
+      "clip": "crowd",
+      "repeat": 1,
+      "token": "014d27d2530aeb58",
+      "decoded": {
+        "control": "014d27d2530aeb58",
+        "marked": "014d27d2530aeb58",
+        "removed": null
+      },
+      "psnr_to_marked": 45.38321190579923,
+      "psnr_to_source": 40.06220112511323
+    },
+    {
+      "clip": "face",
+      "repeat": 0,
+      "token": "014d2e5cb62a57d6",
+      "decoded": {
+        "control": "014d2e5cb62a57d6",
+        "marked": "014d2e5cb62a57d6",
+        "removed": null
+      },
+      "psnr_to_marked": 49.54486517307794,
+      "psnr_to_source": 46.74670178636775
+    },
+    {
+      "clip": "face",
+      "repeat": 1,
+      "token": "014d86eae627cef3",
+      "decoded": {
+        "control": "014d86eae627cef3",
+        "marked": "014d86eae627cef3",
+        "removed": null
+      },
+      "psnr_to_marked": 49.62397402898194,
+      "psnr_to_source": 46.93282389953104
+    }
+  ],
+  "remover_videos": [
+    {
+      "clip": "crowd",
+      "treatment": "identity",
+      "expected_id_recovered": true,
+      "psnr_median": null,
+      "psnr_min": null,
+      "wall_s": 11.799346179992426,
+      "cgroup_cpu_s": 18.213727999999946,
+      "status": "recovered_claim",
+      "frames_decoded": 2,
+      "search_reason": "two_concordant_ids",
+      "individual_id_observations": 2,
+      "aggregate_ids": [],
+      "file_exhausted": false
+    },
+    {
+      "clip": "crowd",
+      "treatment": "remover",
+      "expected_id_recovered": true,
+      "psnr_median": 45.70281796078164,
+      "psnr_min": 44.10067085096032,
+      "wall_s": 1108.702657907037,
+      "cgroup_cpu_s": 2121.1494860000003,
+      "status": "recovered_claim",
+      "frames_decoded": 240,
+      "search_reason": null,
+      "individual_id_observations": 0,
+      "aggregate_ids": [
+        "014d5dcffbaa5eee"
+      ],
+      "file_exhausted": true
+    },
+    {
+      "clip": "face",
+      "treatment": "identity",
+      "expected_id_recovered": true,
+      "psnr_median": null,
+      "psnr_min": null,
+      "wall_s": 10.80927183496533,
+      "cgroup_cpu_s": 17.54102499999999,
+      "status": "recovered_claim",
+      "frames_decoded": 2,
+      "search_reason": "two_concordant_ids",
+      "individual_id_observations": 2,
+      "aggregate_ids": [],
+      "file_exhausted": false
+    },
+    {
+      "clip": "face",
+      "treatment": "remover",
+      "expected_id_recovered": false,
+      "psnr_median": 49.505948858805155,
+      "psnr_min": 48.030142797719876,
+      "wall_s": 1110.7652822189848,
+      "cgroup_cpu_s": 2129.051747,
+      "status": "not_found",
+      "frames_decoded": 240,
+      "search_reason": null,
+      "individual_id_observations": 0,
+      "aggregate_ids": [],
+      "file_exhausted": true
+    }
+  ],
+  "unexpected_ids": 0,
+  "complete": true,
+  "remover_models": {
+    "files": [
+      {
+        "bytes": 77081406,
+        "name": "trustmark_rm_Q.ckpt",
+        "sha256": "cb23dc28b69104ae551286f63da6e965d269f715a87748e3ae7fe0d790f7dc9a"
+      },
+      {
+        "bytes": 1658,
+        "name": "trustmark_rm_Q.yaml",
+        "sha256": "d8ae92c8ad0135a5d085c295be8560fbb67af9b8f5ab46bbf25f4a1038a8626f"
+      }
+    ],
+    "kind": "remover_model_inventory",
+    "utc": "2026-11-08T09:45:20.514674+00:00"
+  },
+  "image_remove_timing": [
+    {
+      "clip": "crowd",
+      "repeat": 0,
+      "wall_s": 4.242238539969549,
+      "cgroup_cpu_s": 8.115514000000076
+    },
+    {
+      "clip": "crowd",
+      "repeat": 1,
+      "wall_s": 4.053880153980572,
+      "cgroup_cpu_s": 7.689341999999897
+    },
+    {
+      "clip": "face",
+      "repeat": 0,
+      "wall_s": 4.4102236140170135,
+      "cgroup_cpu_s": 8.529690999999957
+    },
+    {
+      "clip": "face",
+      "repeat": 1,
+      "wall_s": 4.438521090021823,
+      "cgroup_cpu_s": 8.532684999999901
+    }
+  ],
+  "whole_job_peak_memory_bytes": 2454904832,
+  "wheel": {
+    "file": "ariadne_mark-0.7.1a1-py3-none-any.whl",
+    "sha256": "b57da6792fb91d15fcf1dae212a48efa602acffa3da854f67227b140c4dc3049",
+    "bytes": 117536
+  },
+  "runtime_cases": [
+    {
+      "case": "qualified_copy",
+      "runtime_report": {
+        "status": "qualified",
+        "reason": null,
+        "expected": {
+          "python_package": "0.38.3",
+          "native_version": "0.91.11",
+          "native_sha256": "d046de02d826e90bc3c6d8896faa2b04ca280638960b69283bb5ce404280f0a8",
+          "platform": "Linux x86-64 / Python 3.12"
+        },
+        "python_package": "0.38.3",
+        "native_version": "0.91.11",
+        "native_sha256": "d046de02d826e90bc3c6d8896faa2b04ca280638960b69283bb5ce404280f0a8"
+      },
+      "cli_exit": 0,
+      "sdk_exit": 0,
+      "serve_exit": null
+    },
+    {
+      "case": "older_native",
+      "runtime_report": {
+        "status": "not_checked",
+        "reason": "native_version_mismatch",
+        "expected": {
+          "python_package": "0.38.3",
+          "native_version": "0.91.11",
+          "native_sha256": "d046de02d826e90bc3c6d8896faa2b04ca280638960b69283bb5ce404280f0a8",
+          "platform": "Linux x86-64 / Python 3.12"
+        },
+        "python_package": "0.38.3",
+        "native_version": "0.91.7"
+      },
+      "cli_exit": 2,
+      "sdk_exit": 1,
+      "serve_exit": 2
+    },
+    {
+      "case": "same_version_changed_bytes",
+      "runtime_report": {
+        "status": "not_checked",
+        "reason": "native_hash_mismatch",
+        "expected": {
+          "python_package": "0.38.3",
+          "native_version": "0.91.11",
+          "native_sha256": "d046de02d826e90bc3c6d8896faa2b04ca280638960b69283bb5ce404280f0a8",
+          "platform": "Linux x86-64 / Python 3.12"
+        },
+        "python_package": "0.38.3",
+        "native_version": "0.91.11",
+        "native_sha256": "41daf76617c0c7f70447e332016f834f051272f4aa2e9dcd40fb4b7aff7beba3"
+      },
+      "cli_exit": 2,
+      "sdk_exit": 1,
+      "serve_exit": 2
+    },
+    {
+      "case": "startup_cost",
+      "native_api_version": "0.91.11",
+      "first_check_wall_s": 0.06995700602419674,
+      "mean_cached_check_wall_s": 0.0004005680698901415,
+      "report": {
+        "status": "qualified",
+        "reason": null,
+        "expected": {
+          "python_package": "0.38.3",
+          "native_version": "0.91.11",
+          "native_sha256": "d046de02d826e90bc3c6d8896faa2b04ca280638960b69283bb5ce404280f0a8",
+          "platform": "Linux x86-64 / Python 3.12"
+        },
+        "python_package": "0.38.3",
+        "native_version": "0.91.11",
+        "native_sha256": "d046de02d826e90bc3c6d8896faa2b04ca280638960b69283bb5ce404280f0a8"
+      }
+    },
+    {
+      "case": "atomic_path_replacement_after_load",
+      "exit": 0,
+      "runtime_report": {
+        "status": "not_checked",
+        "reason": "native_file_identity_mismatch",
+        "expected": {
+          "python_package": "0.38.3",
+          "native_version": "0.91.11",
+          "native_sha256": "d046de02d826e90bc3c6d8896faa2b04ca280638960b69283bb5ce404280f0a8",
+          "platform": "Linux x86-64 / Python 3.12"
+        },
+        "python_package": null,
+        "native_version": null
+      }
+    }
+  ]
+}

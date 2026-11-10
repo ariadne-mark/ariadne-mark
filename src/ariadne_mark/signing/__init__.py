@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 
+from ariadne_mark.c2pa_types import DigitalSourceType
 from ariadne_mark.errors import AriadneError
 from ariadne_mark.provenance import ProvenanceRecord
 from ariadne_mark.version import sdk_version
@@ -81,38 +82,116 @@ def validate_trust_roots(path: Path):
     roots = x509.load_pem_x509_certificates(data)
     if not roots:
         raise ValueError('Trust roots contain no certificates')
+    now = datetime.now(timezone.utc)
+    for root in roots:
+        if 'Ariadne Mark development' in root.subject.rfc4514_string() or 'Ariadne Mark development' in root.issuer.rfc4514_string():
+            raise ValueError('Development roots are not allowed in production')
+        if not root.not_valid_before_utc <= now <= root.not_valid_after_utc:
+            raise ValueError('Production trust root is not currently valid')
+        try:
+            constraints = root.extensions.get_extension_for_class(x509.BasicConstraints).value
+        except x509.ExtensionNotFound as exc:
+            raise ValueError('Production trust roots require CA basic constraints') from exc
+        if not constraints.ca:
+            raise ValueError('Production trust root must be a CA certificate')
+        try:
+            if not root.extensions.get_extension_for_class(x509.KeyUsage).value.key_cert_sign:
+                raise ValueError('Production trust root cannot sign certificates')
+        except x509.ExtensionNotFound:
+            pass
     return len(roots)
 
 
-def context(trust_anchors: Path | None = None):
+def validate_provider_chain(certificate: Path, trust_roots: Path) -> None:
+    """Offline path validation to operator roots, with a C2PA signer EKU policy.
+
+    Uses cryptography's path builder (signatures, constraints, validity, depth),
+    not a hand-written issuer-name/signature walk. Override its TLS-specific
+    SAN/EKU requirements: this is a document/claim signer, not a TLS client.
+    Does not establish C2PA enrollment, revocation status or public trust.
+    """
+    from cryptography import x509
+    from cryptography.x509.verification import (
+        PolicyBuilder, Store, ExtensionPolicy, Criticality, VerificationError,
+    )
+    from cryptography.x509.oid import ExtendedKeyUsageOID, ObjectIdentifier
+    accepted = {ExtendedKeyUsageOID.EMAIL_PROTECTION, ObjectIdentifier('1.3.6.1.5.5.7.3.36'),
+                ObjectIdentifier('1.3.6.1.4.1.62558.2.1')}
+    forbidden = {ExtendedKeyUsageOID.TIME_STAMPING, ExtendedKeyUsageOID.OCSP_SIGNING,
+                 ExtendedKeyUsageOID.ANY_EXTENDED_KEY_USAGE}
+
+    def signer_eku(policy, cert, extension):
+        values = set(extension)
+        if not values.intersection(accepted) or values.intersection(forbidden):
+            raise ValueError('Provider certificate requires a C2PA signing EKU without timestamp/OCSP/any-purpose use')
+
+    def ca_eku(policy, cert, extension):
+        if extension is not None:
+            values = set(extension)
+            if not values.intersection(accepted | {ExtendedKeyUsageOID.ANY_EXTENDED_KEY_USAGE}):
+                raise ValueError('CA EKU does not permit C2PA signing')
+
+    chain = x509.load_pem_x509_certificates(Path(certificate).read_bytes())
+    roots = x509.load_pem_x509_certificates(Path(trust_roots).read_bytes())
+    if not chain or not roots:
+        raise ValueError('Provider certificate chain and configured issuer roots are required')
+    ee = (ExtensionPolicy.webpki_defaults_ee()
+          .may_be_present(x509.SubjectAlternativeName, Criticality.AGNOSTIC, None)
+          .require_present(x509.ExtendedKeyUsage, Criticality.AGNOSTIC, signer_eku))
+    ca = (ExtensionPolicy.webpki_defaults_ca()
+          .may_be_present(x509.ExtendedKeyUsage, Criticality.AGNOSTIC, ca_eku))
+    try:
+        verifier = (PolicyBuilder().store(Store(roots)).time(datetime.now(timezone.utc))
+                    .max_chain_depth(8).extension_policies(ca_policy=ca, ee_policy=ee)
+                    .build_client_verifier())
+        verifier.verify(chain[0], chain[1:])
+    except (VerificationError, ValueError) as exc:
+        raise ValueError('Provider certificate chain/EKU is not valid against configured issuer roots: ' + str(exc)) from exc
+
+
+def context(trust_anchors: Path | None = None, *, tsa_trust_anchors: Path | None = None):
+    from ariadne_mark.c2pa_runtime import require_runtime
+    require_runtime()
     import c2pa
     settings = {
         "verify": {"verify_after_reading": True, "verify_after_sign": True, "verify_trust": True,
                    "remote_manifest_fetch": False, "ocsp_fetch": False, "verify_timestamp_trust": True},
         "builder": {"thumbnail": {"enabled": False}},
     }
+    anchors = []
     if trust_anchors:
-        # Add operator roots without removing the built-in TSA trust store.
-        settings["trust"] = {"user_anchors": Path(trust_anchors).read_text()}
+        anchors.append({"trust_anchors": Path(trust_anchors).read_text(),
+                        "trust_kind": "manifest", "trust_uri": "ariadne:operator:manifest"})
+    if tsa_trust_anchors:
+        anchors.append({"trust_anchors": Path(tsa_trust_anchors).read_text(),
+                        "trust_kind": "tsa", "trust_uri": "ariadne:operator:tsa"})
+    if anchors:
+        # Native overlays merge these lists with built-in roots. A signer root
+        # is never silently promoted to timestamp-authority trust.
+        settings["trust"] = {"anchors": anchors}
     return c2pa.Context.from_dict(settings)
 
 
 def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: str,
               identity: SigningIdentity, *, parent: Path | None = None, disclosure: bool = False,
               audio: str = "none", algorithm: str = "adobe.trustmark.Q.bch5",
-              payload_format: str = "ariadne-v1", watermark_profile: str | None = None) -> None:
+              payload_format: str = "ariadne-v1", watermark_profile: str | None = None, tsa_trust_anchors: Path | None = None) -> bytes:
+    record.validate_for_export()
+    from ariadne_mark.c2pa_runtime import require_runtime
+    require_runtime()
     import c2pa
     if not identity.development and not identity.timestamp_url:
         raise AriadneError("Production signing requires an explicit TSA URL; development fixtures use allow_dev")
     action = "c2pa.created" if record.action.value == "created" else "c2pa.edited"
-    source_type = "trainedAlgorithmicMedia" if record.action.value == "created" else "compositeWithTrainedAlgorithmicMedia"
+    source_type = (DigitalSourceType.TRAINED_ALGORITHMIC_MEDIA if record.action.value == "created"
+                   else DigitalSourceType.COMPOSITE_WITH_TRAINED_ALGORITHMIC_MEDIA)
     manifest = {
         "claim_generator_info": [{"name": "Ariadne Mark", "version": sdk_version()}],
         "title": "AI-generated media" if record.action.value == "created" else "AI-altered media",
         "format": MIME[source.suffix.lower()],
         "assertions": [
             {"label": "c2pa.actions", "data": {"actions": [{"action": action,
-                "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/" + source_type,
+                "digitalSourceType": source_type.value,
                 "when": record.to_dict()["created_at"],
                 "softwareAgent": {"name": record.system.name, "version": record.system.version}}]}},
             {"label": ASSERTION, "data": {"record": record.to_dict(), "watermark": {
@@ -122,18 +201,36 @@ def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: 
                 "audio": audio}},
         ],
     }
+    from ariadne_mark.softbinding import assertion
+    manifest['assertions'].append(assertion(algorithm, token))
+    manifest['assertions'][0]['data']['actions'].append({'action': 'c2pa.watermarked.bound'})
     info = c2pa.C2paSignerInfo("es256", identity.certificate.read_bytes(), identity.private_key.read_bytes(), identity.timestamp_url)
-    with context() as ctx, c2pa.Signer.from_info(info) as signer, c2pa.Builder(manifest, ctx) as builder:
+    with context(tsa_trust_anchors=tsa_trust_anchors) as ctx, c2pa.Signer.from_info(info) as signer, c2pa.Builder(manifest, ctx) as builder:
         if parent is not None:
             builder.set_intent(c2pa.C2paBuilderIntent.EDIT)
             with parent.open("rb") as stream:
                 builder.add_ingredient({"title": "Source material", "relationship": "parentOf"}, MIME[parent.suffix.lower()], stream)
-        builder.sign_file(source, destination, signer)
+        return builder.sign_file(source, destination, signer)
 
 
-def read_manifest(path: Path, *, trust_anchors: Path | None = None) -> dict:
+def read_manifest(path: Path, *, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None) -> dict:
     import c2pa
     # Remote manifests and OCSP fetching are disabled: reading an upload cannot
     # trigger arbitrary network requests through its embedded URLs.
-    with context(trust_anchors) as ctx, c2pa.Reader(path, context=ctx) as reader:
+    with context(trust_anchors, tsa_trust_anchors=tsa_trust_anchors) as ctx, c2pa.Reader(path, context=ctx) as reader:
         return json.loads(reader.json())
+
+
+def read_recovered_manifest(store: bytes, asset: Path, *, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None) -> dict:
+    """Validate a retrieved manifest store against a supplied asset, offline.
+
+    Modified assets may have a data-hash mismatch even when a recoverable
+    watermark and a valid signature remain. Never suppress that mismatch.
+    """
+    import c2pa
+    from ariadne_mark.softbinding import MAX_MANIFEST_BYTES
+    if not isinstance(store, bytes) or not 0 < len(store) <= MAX_MANIFEST_BYTES:
+        raise ValueError('Invalid manifest store size')
+    with context(trust_anchors, tsa_trust_anchors=tsa_trust_anchors) as ctx, Path(asset).open('rb') as stream:
+        with c2pa.Reader(MIME[Path(asset).suffix.lower()], stream, manifest_data=store, context=ctx) as reader:
+            return json.loads(reader.json())

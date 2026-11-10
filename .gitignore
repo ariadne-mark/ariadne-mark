@@ -19,3 +19,9 @@ dist/
 
 # Provision model weights explicitly; do not commit binaries.
 *.jit
+
+# Local/server qualification output, never source inputs.
+release-dist/
+.ci-work/
+deployments/
+.kit-work/

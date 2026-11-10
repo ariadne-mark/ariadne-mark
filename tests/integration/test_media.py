@@ -119,8 +119,12 @@ class MediaTests(unittest.TestCase):
         self.assertEqual(receipt["verification"]["c2pa"]["record"]["publisher"], "Test Publisher")
 
     def test_profile_video_roundtrip(self):
+        from ariadne_mark.pipeline import SDK
         output = self.path / "profile.mp4"
-        receipt = self.sdk.mark(self.video(audio=False), output, self.record("video"), profile=self.product_profile())
+        # This product config selects the current built-in Economy preset;
+        # other tests explicitly retain the injected legacy VideoSeal encoder.
+        with SDK(self.marker, self.identity, self.sdk.registry) as configured:
+            receipt = configured.mark(self.video(audio=False), output, self.record("video"), profile=self.product_profile())
         self.assertEqual(receipt["audio_kind"], "none")
         self.assertEqual(self.sdk.verify(output)["watermark"]["token"], receipt["token"])
         self.assertEqual(receipt["profile_assessment"]["configuration_status"], "valid")

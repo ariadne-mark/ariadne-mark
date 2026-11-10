@@ -44,6 +44,13 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(self.requirements(r)['eu_disclosure']['state'], 'action_required')
         self.assertEqual(self.report(c, '2026-12-02')['applicability']['EU']['provider_marking']['state'], 'applies_to_declared_scenario')
 
+    def test_california_chapter_date_is_distinct_from_supported_amendment(self):
+        report = self.report(self.config(['US-CA']))['applicability']['US-CA']
+        self.assertEqual(report['effective_on'], '2026-08-02')
+        self.assertEqual(report['profile_revision_effective_on'], '2026-09-30')
+        historical = self.report(self.config(['US-CA']), '2026-08-15')['applicability']['US-CA']
+        self.assertEqual(historical['provider_duties'], 'historical_version_not_supported')
+
     def test_eu_date_boundaries_and_unknown_date(self):
         c = self.config(['EU']); c['context']['eu_first_placed_on_market'] = '2026-08-02'
         self.assertEqual(self.report(c, '2026-08-01')['applicability']['EU']['provider_marking']['state'], 'not_yet_applicable')
@@ -101,7 +108,7 @@ class ProfileTests(unittest.TestCase):
     def test_complete_declarations_remain_unverified(self):
         c = self.config()
         c['deployment'].update(verifier_url='https://verify.example.invalid', verifier_free=True,
-            verifier_upload=True, verifier_api=True, verifier_provider='own',
+            verifier_upload=True, verifier_api=True, verifier_provider='own', verifier_public_sources_reviewed=True,
             feedback_url='https://feedback.example.invalid', privacy_review=True,
             durability_evidence='report-1', interoperability_evidence='report-2')
         r = self.report(c)
@@ -109,6 +116,12 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(r['declaration_verification'], 'not_performed')
         self.assertEqual(self.requirements(r)['ca_verifier_public']['state'], 'declared_not_verified')
         self.assertTrue(r['export_supported'])
+
+    def test_ca_public_provenance_requires_reviewed_configuration(self):
+        c=self.config(['US-CA'])
+        self.assertEqual(self.requirements(self.report(c))['ca_public_provenance']['state'],'action_required')
+        c['deployment']['verifier_public_sources_reviewed']=True
+        self.assertEqual(self.requirements(self.report(c))['ca_public_provenance']['state'],'declared_not_verified')
 
     def test_bad_public_urls_are_not_accepted(self):
         c = self.config(['US-CA'])
@@ -165,6 +178,15 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(first, self.report(dict(reversed(list(c.items()))))['configuration_sha256'])
         c['system']['version'] = '2'
         self.assertNotEqual(first, self.report(c)['configuration_sha256'])
+
+    def test_economy_retains_durability_review_without_changing_requested_preset(self):
+        c = self.config()
+        for mode in ['economy_5s', 'economy_2s']:
+            c['sdk']['video_profile'] = mode
+            report = self.report(c)
+            self.assertEqual(report['sdk_options']['video_profile'], mode)
+            self.assertIn('economy_durability_review', [f['id'] for f in report['findings']])
+            self.assertEqual(report['legal_determination'], 'not_performed')
 
     def test_cli_without_models_and_exit_status(self):
         with redirect_stdout(io.StringIO()) as out:

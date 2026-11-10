@@ -1,0 +1,165 @@
+test_bootstrap_lock_tampering_stops_before_any_install (tests.bootstrap.test_bootstrap.BootstrapTests.test_bootstrap_lock_tampering_stops_before_any_install) ... ok
+test_checksum_failure_never_leaves_an_installable_archive (tests.bootstrap.test_bootstrap.BootstrapTests.test_checksum_failure_never_leaves_an_installable_archive) ... ok
+test_modified_versioned_native_library_invalidates_cache (tests.bootstrap.test_bootstrap.BootstrapTests.test_modified_versioned_native_library_invalidates_cache) ... ok
+test_source_zip_cannot_write_outside_build_directory (tests.bootstrap.test_bootstrap.BootstrapTests.test_source_zip_cannot_write_outside_build_directory) ... ok
+test_stale_dependency_policy_is_not_accepted_as_provisioned (tests.bootstrap.test_bootstrap.BootstrapTests.test_stale_dependency_policy_is_not_accepted_as_provisioned) ... ok
+test_system_install_requires_explicit_isolated_build_flag (tests.bootstrap.test_bootstrap.BootstrapTests.test_system_install_requires_explicit_isolated_build_flag) ... ok
+test_bad_public_urls_are_not_accepted (tests.compliance.test_profiles.ProfileTests.test_bad_public_urls_are_not_accepted) ... ok
+test_ca_amendment_has_no_size_threshold_or_required_overlay (tests.compliance.test_profiles.ProfileTests.test_ca_amendment_has_no_size_threshold_or_required_overlay) ... ok
+test_ca_upload_or_url_and_third_party_ui (tests.compliance.test_profiles.ProfileTests.test_ca_upload_or_url_and_third_party_ui) ... ok
+test_cli_rejects_conflicting_profile_before_model_loading (tests.compliance.test_profiles.ProfileTests.test_cli_rejects_conflicting_profile_before_model_loading) ... ok
+test_cli_without_models_and_exit_status (tests.compliance.test_profiles.ProfileTests.test_cli_without_models_and_exit_status) ... ok
+test_complete_declarations_remain_unverified (tests.compliance.test_profiles.ProfileTests.test_complete_declarations_remain_unverified) ... ok
+test_configuration_fingerprint_is_stable_and_sensitive (tests.compliance.test_profiles.ProfileTests.test_configuration_fingerprint_is_stable_and_sensitive) ... ok
+test_declared_outside_scope_does_not_claim_compliance (tests.compliance.test_profiles.ProfileTests.test_declared_outside_scope_does_not_claim_compliance) ... ok
+test_deployer_and_creative_content (tests.compliance.test_profiles.ProfileTests.test_deployer_and_creative_content) ... ok
+test_economy_retains_durability_review_without_changing_requested_preset (tests.compliance.test_profiles.ProfileTests.test_economy_retains_durability_review_without_changing_requested_preset) ... ok
+test_eu_date_boundaries_and_unknown_date (tests.compliance.test_profiles.ProfileTests.test_eu_date_boundaries_and_unknown_date) ... ok
+test_media_and_audio_scope (tests.compliance.test_profiles.ProfileTests.test_media_and_audio_scope) ... ok
+test_provider_transition_does_not_delay_deployer (tests.compliance.test_profiles.ProfileTests.test_provider_transition_does_not_delay_deployer) ... ok
+test_record_binding_and_export_settings (tests.compliance.test_profiles.ProfileTests.test_record_binding_and_export_settings) ... ok
+test_stale_snapshot_and_future_schema_gap (tests.compliance.test_profiles.ProfileTests.test_stale_snapshot_and_future_schema_gap) ... ok
+test_strict_schema_and_json (tests.compliance.test_profiles.ProfileTests.test_strict_schema_and_json) ... ok
+test_unknowns_and_exceptions_never_disable_marks (tests.compliance.test_profiles.ProfileTests.test_unknowns_and_exceptions_never_disable_marks) ... ok
+test_copied_id_is_not_authenticated_as_the_source_content (tests.integration.test_audit_media.AuditMediaTests.test_copied_id_is_not_authenticated_as_the_source_content) ... skipped 'requires real media bundle'
+test_foreign_signer_is_not_attributed_and_strict_cli_rejects_it (tests.integration.test_audit_media.AuditMediaTests.test_foreign_signer_is_not_attributed_and_strict_cli_rejects_it) ... skipped 'requires real media bundle'
+test_icc_input_requires_explicit_color_conversion (tests.integration.test_audit_media.AuditMediaTests.test_icc_input_requires_explicit_color_conversion) ... skipped 'requires real media bundle'
+test_spliced_new_profile_video_reports_partial_evidence (tests.integration.test_audit_media.AuditMediaTests.test_spliced_new_profile_video_reports_partial_evidence) ... skipped 'requires real media bundle'
+test_concurrent_per_export_profiles_do_not_mutate_the_default (tests.integration.test_economy.EconomyIntegrationTests.test_concurrent_per_export_profiles_do_not_mutate_the_default) ... skipped 'requires provisioned video runtime'
+test_configured_worker_is_reused_for_verification (tests.integration.test_economy.EconomyIntegrationTests.test_configured_worker_is_reused_for_verification) ... skipped 'requires provisioned video runtime'
+test_explicit_override_conflict_and_typo_publish_nothing (tests.integration.test_economy.EconomyIntegrationTests.test_explicit_override_conflict_and_typo_publish_nothing) ... skipped 'requires provisioned video runtime'
+test_missing_later_window_is_not_published (tests.integration.test_economy.EconomyIntegrationTests.test_missing_later_window_is_not_published) ... skipped 'requires provisioned video runtime'
+test_same_sdk_default_config_and_explicit_resilient_preserve_audio_timing_and_ids (tests.integration.test_economy.EconomyIntegrationTests.test_same_sdk_default_config_and_explicit_resilient_preserve_audio_timing_and_ids) ... skipped 'requires provisioned video runtime'
+test_vfr_rotation_and_full_frame_disclosure_in_economy (tests.integration.test_economy.EconomyIntegrationTests.test_vfr_rotation_and_full_frame_disclosure_in_economy) ... skipped 'requires provisioned video runtime'
+test_worker_death_after_last_selected_frame_fails_before_publication (tests.integration.test_economy.EconomyIntegrationTests.test_worker_death_after_last_selected_frame_fails_before_publication) ... skipped 'requires provisioned video runtime'
+test_cli_mark_verify_and_refuse_overwrite (tests.integration.test_media.MediaTests.test_cli_mark_verify_and_refuse_overwrite) ... skipped 'requires media extra and provisioned models'
+test_explicit_development_opt_in (tests.integration.test_media.MediaTests.test_explicit_development_opt_in) ... skipped 'requires media extra and provisioned models'
+test_failed_watermark_publishes_nothing (tests.integration.test_media.MediaTests.test_failed_watermark_publishes_nothing) ... skipped 'requires media extra and provisioned models'
+test_legacy_video_and_new_engine_metadata_dispatch (tests.integration.test_media.MediaTests.test_legacy_video_and_new_engine_metadata_dispatch) ... skipped 'requires media extra and provisioned models'
+test_metadata_loss_recovers_record_without_claiming_signature (tests.integration.test_media.MediaTests.test_metadata_loss_recovers_record_without_claiming_signature) ... skipped 'requires media extra and provisioned models'
+test_parent_manifest_is_preserved (tests.integration.test_media.MediaTests.test_parent_manifest_is_preserved) ... skipped 'requires media extra and provisioned models'
+test_png_jpeg_alpha_signed_roundtrip_and_trust (tests.integration.test_media.MediaTests.test_png_jpeg_alpha_signed_roundtrip_and_trust) ... skipped 'requires media extra and provisioned models'
+test_profile_cli_signed_image_and_receipt_persistence (tests.integration.test_media.MediaTests.test_profile_cli_signed_image_and_receipt_persistence) ... skipped 'requires media extra and provisioned models'
+test_profile_mismatch_fails_before_publication (tests.integration.test_media.MediaTests.test_profile_mismatch_fails_before_publication) ... skipped 'requires media extra and provisioned models'
+test_profile_video_roundtrip (tests.integration.test_media.MediaTests.test_profile_video_roundtrip) ... skipped 'requires media extra and provisioned models'
+test_public_api_runs_real_verification (tests.integration.test_media.MediaTests.test_public_api_runs_real_verification) ... skipped 'requires media extra and provisioned models'
+test_registry_error_removes_export_and_receipt (tests.integration.test_media.MediaTests.test_registry_error_removes_export_and_receipt) ... skipped 'requires media extra and provisioned models'
+test_saturated_test_pattern_is_not_silently_published (tests.integration.test_media.MediaTests.test_saturated_test_pattern_is_not_silently_published) ... skipped 'requires media extra and provisioned models'
+test_signature_tampering_is_invalid (tests.integration.test_media.MediaTests.test_signature_tampering_is_invalid) ... skipped 'requires media extra and provisioned models'
+test_video_recompression_recovery (tests.integration.test_media.MediaTests.test_video_recompression_recovery) ... skipped 'requires media extra and provisioned models'
+test_video_roundtrip_audio_timestamps_and_rotation (tests.integration.test_media.MediaTests.test_video_roundtrip_audio_timestamps_and_rotation) ... skipped 'requires media extra and provisioned models'
+test_videoseal_tail_batch_negative_and_fail_closed (tests.integration.test_media.MediaTests.test_videoseal_tail_batch_negative_and_fail_closed) ... skipped 'requires media extra and provisioned models'
+test_fast_refreshes_when_anchor_content_moves (tests.integration.test_motion_refresh.MotionRefreshTests.test_fast_refreshes_when_anchor_content_moves) ... skipped 'requires real video engine'
+test_repeated_worker_death_stops_retrying_and_unblocks_next_job (tests.integration.test_product_queue.ProductQueueTests.test_repeated_worker_death_stops_retrying_and_unblocks_next_job) ... ok
+test_clean_image_no_human_origin_claim_and_feedback_works (tests.integration.test_public_verifier_media.PublicVerifierMediaTests.test_clean_image_no_human_origin_claim_and_feedback_works) ... skipped 'requires real media bundle'
+test_real_signed_private_name_is_not_reflected_by_public_api (tests.integration.test_public_verifier_media.PublicVerifierMediaTests.test_real_signed_private_name_is_not_reflected_by_public_api) ... skipped 'requires real media bundle'
+test_video_upload_metadata_loss_and_operator_resolver (tests.integration.test_public_verifier_media.PublicVerifierMediaTests.test_video_upload_metadata_loss_and_operator_resolver) ... skipped 'requires real media bundle'
+test_kill_at_each_boundary_never_exposes_media_without_receipt_and_registry (tests.integration.test_publication_order.PublicationTests.test_kill_at_each_boundary_never_exposes_media_without_receipt_and_registry) ... ok
+test_read_only_registry_sees_updates_but_rejects_writes (tests.integration.test_publication_order.PublicationTests.test_read_only_registry_sees_updates_but_rejects_writes) ... ok
+test_actual_pyav_codec_is_checked_even_if_preflight_is_wrong (tests.integration.test_review_053.ReviewRegressions.test_actual_pyav_codec_is_checked_even_if_preflight_is_wrong) ... skipped 'requires real media runtime'
+test_partial_video_export_is_rejected_before_publication (tests.integration.test_review_053.ReviewRegressions.test_partial_video_export_is_rejected_before_publication) ... skipped 'requires real media runtime'
+test_production_rejects_real_development_root (tests.integration.test_review_053.ReviewRegressions.test_production_rejects_real_development_root) ... skipped 'requires real media runtime'
+test_trusted_time_preserves_expired_signer_but_unstamped_file_is_not_tampering (tests.integration.test_timestamp_expiry.TimestampExpiryTests.test_trusted_time_preserves_expired_signer_but_unstamped_file_is_not_tampering) ... skipped 'requires OpenSSL, C2PA and Pillow'
+test_closed_worker_can_restart_without_retained_exit_callback (tests.integration.test_video_profiles.VideoProfileTests.test_closed_worker_can_restart_without_retained_exit_callback) ... skipped 'requires provisioned real media runtime'
+test_fast_resilient_audio_vfr_rotation_and_source_recovery (tests.integration.test_video_profiles.VideoProfileTests.test_fast_resilient_audio_vfr_rotation_and_source_recovery) ... skipped 'requires provisioned real media runtime'
+test_no_cross_export_cache_and_worker_failure_publishes_nothing (tests.integration.test_video_profiles.VideoProfileTests.test_no_cross_export_cache_and_worker_failure_publishes_nothing) ... skipped 'requires provisioned real media runtime'
+test_shared_worker_concurrent_exports_keep_ids_and_receipts_isolated (tests.integration.test_video_profiles.VideoProfileTests.test_shared_worker_concurrent_exports_keep_ids_and_receipts_isolated) ... skipped 'requires provisioned real media runtime'
+test_worker_exit_after_last_frame_still_publishes_nothing (tests.integration.test_video_profiles.VideoProfileTests.test_worker_exit_after_last_frame_still_publishes_nothing) ... skipped 'requires provisioned real media runtime'
+test_duplicate_fields_and_invalid_json_rejected (tests.provenance.test_records.RecordTests.test_duplicate_fields_and_invalid_json_rejected) ... ok
+test_image_and_video_created_and_altered_roundtrip (tests.provenance.test_records.RecordTests.test_image_and_video_created_and_altered_roundtrip) ... ok
+test_malformed_values_rejected (tests.provenance.test_records.RecordTests.test_malformed_values_rejected) ... ok
+test_missing_unknown_and_personal_fields_rejected (tests.provenance.test_records.RecordTests.test_missing_unknown_and_personal_fields_rejected) ... ok
+test_naive_timestamp_and_non_random_uuid_rejected (tests.provenance.test_records.RecordTests.test_naive_timestamp_and_non_random_uuid_rejected) ... ok
+test_new_public_ids_are_random_and_distinct (tests.provenance.test_records.RecordTests.test_new_public_ids_are_random_and_distinct) ... ok
+test_python_api_rejects_untyped_inputs (tests.provenance.test_records.RecordTests.test_python_api_rejects_untyped_inputs) ... ok
+test_records_are_immutable (tests.provenance.test_records.RecordTests.test_records_are_immutable) ... ok
+test_aggregate_recovery_does_not_invent_matched_frames (tests.verification.test_audit_policy.AuditPolicyTests.test_aggregate_recovery_does_not_invent_matched_frames) ... ok
+test_one_marked_frame_is_reported_as_partial_sample_evidence (tests.verification.test_audit_policy.AuditPolicyTests.test_one_marked_frame_is_reported_as_partial_sample_evidence) ... ok
+test_operational_reader_failure_is_not_tampering (tests.verification.test_audit_policy.AuditPolicyTests.test_operational_reader_failure_is_not_tampering) ... ok
+test_untrusted_timestamp_never_overrides_expiry (tests.verification.test_audit_policy.AuditPolicyTests.test_untrusted_timestamp_never_overrides_expiry) ... ok
+test_caller_owned_decoder_is_retained (tests.verification.test_audit_policy.ResourceOwnershipTests.test_caller_owned_decoder_is_retained) ... ok
+test_temporary_decoder_is_closed_on_failure (tests.verification.test_audit_policy.ResourceOwnershipTests.test_temporary_decoder_is_closed_on_failure) ... ok
+test_external_credential_is_not_labelled_provenance_unavailable (tests.verification.test_c2pa_policy.C2paPolicyTests.test_external_credential_is_not_labelled_provenance_unavailable) ... ok
+test_signature_without_content_binding_is_not_verified (tests.verification.test_c2pa_policy.C2paPolicyTests.test_signature_without_content_binding_is_not_verified) ... /usr/local/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/unittest/mock.py:2263: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10c005ee0>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/unittest/mock.py:2263: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10c005e00>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/unittest/mock.py:2263: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10c006260>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/unittest/mock.py:2263: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10c005d20>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/unittest/mock.py:2263: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10c0059a0>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/unittest/mock.py:2263: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10c005b60>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/local/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/unittest/mock.py:2263: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x10c005a80>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_unknown_failure_is_not_silently_ignored (tests.verification.test_c2pa_policy.C2paPolicyTests.test_unknown_failure_is_not_silently_ignored) ... ok
+test_untrusted_valid_signature_is_distinct_from_tampering (tests.verification.test_c2pa_policy.C2paPolicyTests.test_untrusted_valid_signature_is_distinct_from_tampering) ... ok
+test_development_claim_is_never_headlined_as_trusted (tests.verification.test_image_scope.ImageScopeTests.test_development_claim_is_never_headlined_as_trusted) ... ok
+test_unsigned_image_negative_needs_no_node_worker (tests.verification.test_image_scope.ImageScopeTests.test_unsigned_image_negative_needs_no_node_worker) ... ok
+test_contradictory_results_rejected (tests.verification.test_results.VerificationTests.test_contradictory_results_rejected) ... ok
+test_no_implicit_compliance_or_human_origin_verdict (tests.verification.test_results.VerificationTests.test_no_implicit_compliance_or_human_origin_verdict) ... ok
+test_operational_failures_are_not_negative_detections (tests.verification.test_results.VerificationTests.test_operational_failures_are_not_negative_detections) ... ok
+test_signature_validity_does_not_imply_issuer_trust (tests.verification.test_results.VerificationTests.test_signature_validity_does_not_imply_issuer_trust) ... ok
+test_tampered_claim_is_invalid (tests.verification.test_results.VerificationTests.test_tampered_claim_is_invalid) ... ok
+test_unsigned_recovered_claim_is_not_trusted (tests.verification.test_results.VerificationTests.test_unsigned_recovered_claim_is_not_trusted) ... ok
+test_ai_declaration_does_not_upgrade_invalid_or_untrusted_signatures (tests.verification.test_source_declarations.SourceDeclarationTests.test_ai_declaration_does_not_upgrade_invalid_or_untrusted_signatures) ... ok
+test_edit_history_is_preserved_without_inferring_final_origin (tests.verification.test_source_declarations.SourceDeclarationTests.test_edit_history_is_preserved_without_inferring_final_origin) ... ok
+test_external_standard_claim_without_ariadne_payload_is_readable (tests.verification.test_source_declarations.SourceDeclarationTests.test_external_standard_claim_without_ariadne_payload_is_readable) ... ok
+test_ingredients_cannot_declare_origin_of_active_asset (tests.verification.test_source_declarations.SourceDeclarationTests.test_ingredients_cannot_declare_origin_of_active_asset) ... ok
+test_signing_vocabulary_retains_wire_values (tests.verification.test_source_declarations.SourceDeclarationTests.test_signing_vocabulary_retains_wire_values) ... ok
+test_unknown_and_malformed_declarations_do_not_become_claims (tests.verification.test_source_declarations.SourceDeclarationTests.test_unknown_and_malformed_declarations_do_not_become_claims) ... ok
+test_all_handler_slots_recover_after_total_header_deadline (tests.verifier.test_header_deadline.HeaderDeadlineTests.test_all_handler_slots_recover_after_total_header_deadline) ... ok
+test_crash_is_not_a_negative_and_closed_worker_cannot_restart (tests.verifier.test_process_isolation.IsolationTests.test_crash_is_not_a_negative_and_closed_worker_cannot_restart) ... ok
+test_http_timeout_is_explicit_temp_is_cleaned_and_gate_recovers (tests.verifier.test_process_isolation.IsolationTests.test_http_timeout_is_explicit_temp_is_cleaned_and_gate_recovers) ... ok
+test_inherited_instance_cannot_use_or_kill_parent_worker (tests.verifier.test_process_isolation.IsolationTests.test_inherited_instance_cannot_use_or_kill_parent_worker) ... ok
+test_repeated_jobs_reuse_worker_without_more_live_fds (tests.verifier.test_process_isolation.IsolationTests.test_repeated_jobs_reuse_worker_without_more_live_fds) ... ok
+test_timeout_kills_descendant_and_next_request_uses_a_fresh_worker (tests.verifier.test_process_isolation.IsolationTests.test_timeout_kills_descendant_and_next_request_uses_a_fresh_worker) ... ok
+test_only_aggregate_enum_counts_persist_under_concurrency (tests.verifier.test_public_output.FeedbackTests.test_only_aggregate_enum_counts_persist_under_concurrency) ... ok
+test_feedback_is_anonymous_bounded_and_operational (tests.verifier.test_public_output.PublicEndpointTests.test_feedback_is_anonymous_bounded_and_operational) ... ok
+test_packaged_ui_api_spec_and_privacy_have_no_third_party_scripts (tests.verifier.test_public_output.PublicEndpointTests.test_packaged_ui_api_spec_and_privacy_have_no_third_party_scripts) ... ok
+test_upload_and_registry_return_public_system_fields_only (tests.verifier.test_public_output.PublicEndpointTests.test_upload_and_registry_return_public_system_fields_only) ... ok
+test_extra_record_fields_are_not_copied_even_for_reviewed_names (tests.verifier.test_public_output.PublicOutputTests.test_extra_record_fields_are_not_copied_even_for_reviewed_names) ... ok
+test_names_alone_do_not_unlock_untrusted_uploaded_metadata (tests.verifier.test_public_output.PublicOutputTests.test_names_alone_do_not_unlock_untrusted_uploaded_metadata) ... ok
+test_source_config_is_strict_and_size_bounded (tests.verifier.test_public_output.PublicOutputTests.test_source_config_is_strict_and_size_bounded) ... ok
+test_unreviewed_free_text_and_unknown_metadata_never_escape_public_response (tests.verifier.test_public_output.PublicOutputTests.test_unreviewed_free_text_and_unknown_metadata_never_escape_public_response) ... ok
+test_unreviewed_optional_assertion_strings_are_not_reflected (tests.verifier.test_public_output.PublicOutputTests.test_unreviewed_optional_assertion_strings_are_not_reflected) ... ok
+test_error_is_not_a_negative_detection_and_temp_is_deleted (tests.verifier.test_server.ServerTests.test_error_is_not_a_negative_detection_and_temp_is_deleted) ... ok
+test_no_account_and_cleanup_on_success (tests.verifier.test_server.ServerTests.test_no_account_and_cleanup_on_success) ... ok
+test_reject_unsupported_and_oversized_upload_before_inference (tests.verifier.test_server.ServerTests.test_reject_unsupported_and_oversized_upload_before_inference) ... ok
+test_empty_roots_are_rejected_before_binding (tests.verifier.test_upload_isolation.ProductionConfigurationTests.test_empty_roots_are_rejected_before_binding) ... ok
+test_production_requires_roots (tests.verifier.test_upload_isolation.UploadIsolationTests.test_production_requires_roots) ... ok
+test_slow_upload_does_not_lock_inference_and_has_total_deadline (tests.verifier.test_upload_isolation.UploadIsolationTests.test_slow_upload_does_not_lock_inference_and_has_total_deadline) ... ok
+test_budgets_cannot_turn_a_partial_search_into_absence (tests.video.test_blind_search.BlindSearchTests.test_budgets_cannot_turn_a_partial_search_into_absence) ... ok
+test_cached_aggregation_does_not_run_a_second_cnn_pass (tests.video.test_blind_search.BlindSearchTests.test_cached_aggregation_does_not_run_a_second_cnn_pass) ... ok
+test_conflicting_aggregate_never_chooses_a_preferred_id (tests.video.test_blind_search.BlindSearchTests.test_conflicting_aggregate_never_chooses_a_preferred_id) ... ok
+test_direct_early_stop_does_not_claim_complete_video_coverage (tests.video.test_blind_search.BlindSearchTests.test_direct_early_stop_does_not_claim_complete_video_coverage) ... ok
+test_full_negative_and_single_observation_are_distinct (tests.video.test_blind_search.BlindSearchTests.test_full_negative_and_single_observation_are_distinct) ... ok
+test_lazy_default_and_per_export_worker_selection (tests.video.test_economy_policy.EconomyPolicyTests.test_lazy_default_and_per_export_worker_selection) ... ok
+test_nonzero_timebase_and_window_boundaries (tests.video.test_economy_policy.EconomyPolicyTests.test_nonzero_timebase_and_window_boundaries) ... ok
+test_old_config_defaults_without_mutating_input_and_new_config_is_fingerprinted (tests.video.test_economy_policy.EconomyPolicyTests.test_old_config_defaults_without_mutating_input_and_new_config_is_fingerprinted) ... ok
+test_vfr_gap_does_not_skip_an_occupied_period (tests.video.test_economy_policy.EconomyPolicyTests.test_vfr_gap_does_not_skip_an_occupied_period) ... ok
+test_constructor_lazy_and_profile_validation (tests.watermark.test_videoq.NewVideoPolicyTests.test_constructor_lazy_and_profile_validation) ... ok
+test_signed_new_engine_routes_and_falls_back_without_expected_id (tests.watermark.test_videoq.NewVideoPolicyTests.test_signed_new_engine_routes_and_falls_back_without_expected_id) ... ok
+test_missing_video_model_is_not_reported_as_absent_mark (tests.watermark.test_videoseal.VideoRoutingTests.test_missing_video_model_is_not_reported_as_absent_mark) ... ok
+test_signed_videoseal_dispatch_does_not_invoke_legacy_engine (tests.watermark.test_videoseal.VideoRoutingTests.test_signed_videoseal_dispatch_does_not_invoke_legacy_engine) ... ok
+test_error_correction_integrity_and_negative_packets (tests.watermark.test_videoseal.VideoSealPayloadTests.test_error_correction_integrity_and_negative_packets) ... skipped 'requires pinned TrustMark BCH'
+test_aggregate_cannot_hide_conflicting_frame_id (tests.watermark.test_videoseal.VideoSealPolicyTests.test_aggregate_cannot_hide_conflicting_frame_id) ... ok
+test_aggregate_recovers_when_individual_frames_do_not (tests.watermark.test_videoseal.VideoSealPolicyTests.test_aggregate_recovers_when_individual_frames_do_not) ... ok
+test_constructor_is_lazy_and_validates_threads (tests.watermark.test_videoseal.VideoSealPolicyTests.test_constructor_is_lazy_and_validates_threads) ... ok
+test_empty_samples_are_not_a_negative_detection (tests.watermark.test_videoseal.VideoSealPolicyTests.test_empty_samples_are_not_a_negative_detection) ... ok
+test_missing_and_modified_models_fail_before_deserialization (tests.watermark.test_videoseal.VideoSealPolicyTests.test_missing_and_modified_models_fail_before_deserialization) ... ok
+
+----------------------------------------------------------------------
+Ran 139 tests in 9.063s
+
+OK (skipped=42)

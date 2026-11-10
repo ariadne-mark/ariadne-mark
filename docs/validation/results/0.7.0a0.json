@@ -1,0 +1,23 @@
+{
+  "version": "0.7.0a0",
+  "source_commit": "ce2cbad",
+  "wheel_sha256": "408e3fdcb6d8e2c1d9b19a3c16d8c5b0da9bc1b866356bacd36d4dfdf5f6cc04",
+  "qualification": {
+    "tests": 156,
+    "skips": 0,
+    "failures": 0,
+    "seconds": 333.306,
+    "platform": "Linux x86_64 Python3.12",
+    "cpus": 2,
+    "memory_limit_gib": 6,
+    "network": "none",
+    "uid": 10001,
+    "package": "installed wheel; source PYTHONPATH disabled"
+  },
+  "native_c2pa": "0.91.11",
+  "independent_jws": "Node standard crypto: signature valid, asset matched",
+  "python_sources_matching_checkout": 28,
+  "pip_check": "No broken requirements found",
+  "algorithm_registration": "provisional_not_registered",
+  "not_a_legal_verdict": true
+}

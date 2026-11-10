@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ariadne marking/detection observation",
+  "type": "object",
+  "required": [
+    "protocol_id",
+    "sdk_version",
+    "commit",
+    "environment",
+    "source",
+    "profile",
+    "operation",
+    "outcome",
+    "raw_log"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "protocol_id": {
+      "type": "string"
+    },
+    "sdk_version": {
+      "type": "string"
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "environment": {
+      "type": "object",
+      "required": [
+        "os",
+        "architecture",
+        "cpu",
+        "threads",
+        "network"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "os": {
+          "type": "string"
+        },
+        "architecture": {
+          "type": "string"
+        },
+        "cpu": {
+          "type": "string"
+        },
+        "threads": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "network": {
+          "enum": [
+            "offline-processing",
+            "explicit-setup-online",
+            "production-tsa-only",
+            "operator-declared"
+          ]
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "asset_id",
+        "sha256",
+        "distinct_source_group"
+      ],
+      "properties": {
+        "asset_id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "distinct_source_group": {
+          "type": "string"
+        },
+        "duration_s": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "width": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "height": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "fps": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "codec": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "license_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "profile": {
+      "enum": [
+        "image-trustmark-q",
+        "economy_5s",
+        "economy_2s",
+        "resilient",
+        "legacy"
+      ]
+    },
+    "operation": {
+      "enum": [
+        "export",
+        "verify",
+        "recover",
+        "transform",
+        "adversarial-control",
+        "installation",
+        "deployment"
+      ]
+    },
+    "cache_state": {
+      "enum": [
+        "cold",
+        "warm",
+        "not-applicable",
+        "not-recorded"
+      ]
+    },
+    "expected_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observed_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "transform": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "outcome": {
+      "enum": [
+        "correct_id",
+        "wrong_id",
+        "not_found",
+        "not_checked",
+        "invalid",
+        "single_observation",
+        "operational_failure",
+        "passed_control"
+      ]
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "wall_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cgroup_cpu_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "container_peak_bytes": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "output_bytes": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "video_duration_s": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "c2pa": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "scope": {
+      "type": "string"
+    },
+    "raw_log": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

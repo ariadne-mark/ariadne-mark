@@ -1,0 +1,104 @@
+x-sdk: &sdk
+  image: ${KIT_SDK_IMAGE:?Build the qualified SDK image and set KIT_SDK_IMAGE}
+  pull_policy: never
+  user: "${KIT_UID:?Run kit init}:${KIT_GID:?Run kit init}"
+  read_only: true
+  tmpfs: ["/tmp:rw,noexec,nosuid,size=512m,mode=1777"]
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  pids_limit: 128
+  networks: [private]
+
+services:
+  exporter:
+    <<: *sdk
+    profiles: [tools]
+    command: ["kit", "export", "/kit", "/batch.json"]
+    volumes:
+      - type: bind
+        source: ./config
+        target: /kit/config
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ./private/provider
+        target: /kit/private/provider
+        read_only: true
+        bind: {create_host_path: false}
+      - ./registry:/kit/registry
+      - ./inputs:/kit/inputs:ro
+      - ./outputs:/kit/outputs
+      - type: bind
+        source: ./batch.json
+        target: /batch.json
+        read_only: true
+        bind: {create_host_path: false}
+    mem_limit: 4g
+    cpus: 2
+  verifier:
+    <<: *sdk
+    restart: unless-stopped
+    command: ["kit", "serve", "/kit"]
+    volumes:
+      - ./config:/kit/config:ro
+      - ./registry:/kit/registry:ro
+      - ./state:/kit/state
+      - type: bind
+        source: ./private/reports/report.key
+        target: /kit/private/reports/report.key
+        read_only: true
+        bind: {create_host_path: false}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2).read()"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
+    mem_limit: 3g
+    cpus: 2
+  edge:
+    image: ${KIT_NGINX_IMAGE:?Use the pinned image recorded by kit init}
+    pull_policy: never
+    user: "${KIT_UID}:${KIT_GID}"
+    entrypoint: [nginx, -g, "daemon off;"]
+    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=64m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 32
+    depends_on:
+      verifier: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, 'test -s /tmp/nginx.pid && kill -0 "$$(cat /tmp/nginx.pid)"']
+      interval: 3s
+      timeout: 2s
+      retries: 10
+    volumes:
+      - type: bind
+        source: ./nginx.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+        bind: {create_host_path: false}
+      - ./kit-proxy.conf:/etc/nginx/kit-proxy.conf:ro
+      - type: bind
+        source: ./private/tls/cert.pem
+        target: /tls/cert.pem
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ./private/tls/key.pem
+        target: /tls/key.pem
+        read_only: true
+        bind: {create_host_path: false}
+    ports:
+      - "${KIT_BIND_ADDRESS:-127.0.0.1}:${KIT_HTTP_PORT:-8800}:8080"
+      - "${KIT_BIND_ADDRESS:-127.0.0.1}:${KIT_HTTPS_PORT:-8443}:8443"
+    networks: [private, public]
+    mem_limit: 192m
+    cpus: 0.25
+
+networks:
+  private:
+    internal: true
+  public: {}

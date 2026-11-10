@@ -1,7 +1,7 @@
-# Public alpha checklist — 0.5.2 candidate
+# Public alpha checklist — 0.7.2a1 candidate
 
 Release target: local CPU SDK for JPEG/PNG and supported SDR MP4, with
-Fast/Resilient video, signed provenance, self-hosted verification and partial
+Economy5s/2s and Resilient video, signed provenance, self-hosted verification and partial
 EU/California requirements planning. Assets: Ariadne wheel + source + Docker
 recipe. A maintained hosted service and a prebuilt combined image are separate.
 
@@ -24,5 +24,30 @@ endpoint, configure trust/privacy/feedback, and assess its own duties. Public
 hosting of an Ariadne-operated verifier is not a prerequisite for this local
 alpha.
 
-See [release evidence](../validation/0.5.2a0.md) for current results and
+See [current qualification protocol](../validation/0.7.2a1.md),
+[prior video qualification](../validation/0.7.1a0.md) and
 [qualification rules](releases.md) for publication gates.
+
+0.7.1 follow-up adds explicit color handling, bounded fractional-FPS recovery
+and canonical BCH5 guards. Severe portrait crops and letterbox recovery are
+separate qualification items; a cropdetect feasibility result is not a public
+verifier capability. A clean CI run for the final commit, published source
+licenses/notices, operator credentials and accurate public claims remain gates.
+
+0.7.1a1 checks the actual loaded native C2PA pair at media/verifier startup and
+adds current-version short/excerpt and public-remover evidence. These checks do
+not close spatial recovery, anti-removal, population calibration, production
+trust enrollment or the public release/publishing gates above.
+
+0.7.1a2 closes the reviewed full-range bypass and wheel-provisioning code gaps;
+actual release qualification is the exact-SHA EC2 workflow artifact, not this
+checklist's presence. [Server CI](server-ci.md) uses a temporary one-job runner
+for a trusted maintainer dispatch. SDK tests are not run on GitHub-hosted or
+Mac environments. Automatic PR notices do not satisfy the runtime gate.
+
+0.7.2a0 adds an operator-owned SDK/verifier/registry kit. Qualification also
+checks installed kit resources, real Compose/TLS deployment, persistent state,
+key isolation, signed reports, detached recovery and the independent official
+c2patool. Development credentials are local fixtures, not production enrollment.
+
+0.7.2a1 closes external-review timestamp, local issuer-chain/EKU and incomplete-label gaps, preflights audio declarations, separates California dates and checks distinct six-second video cadences. One system/version per kit and metadata-only acceptance recovery are explicit. Retained 4:4:4 color and durability limits are not declared fixed.

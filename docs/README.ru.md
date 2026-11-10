@@ -1,8 +1,16 @@
 # Ariadne Mark
 
-**Open-source compliance toolkit for AI-generated images and video.**
+**Open-source labeling/provenance toolkit for AI-generated images and video.**
 
-Статус: рабочая developer-preview сборка SDK 0.5.2a0. Реализованы CPU-маркировка изображений через TrustMark и MP4 через TrustMark Q (Fast/Resilient) с коррекцией ошибок и чтением прежних VideoSeal-меток, C2PA-подписание, локальный реестр и self-hosted verifier. Границы поддержки и оставшиеся юридические/эксплуатационные задачи указаны в документации. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#quick-start-with-docker) и [очередность реализации](implementation/sequence.md).
+Статус: developer-preview кандидат SDK 0.7.2a1. CPU-маркировка изображений через TrustMark и MP4 через TrustMark Q: Economy 5s по умолчанию, Economy 2s и Resilient в одной сборке. Выбор: `SDK(video_profile="economy_2s")`, параметр `sdk.mark(..., video_profile="resilient")`, CLI `--video-profile` или поле `sdk.video_profile` в конфиге продукта. Сохраняются чтение прежних форматов, C2PA-подписание, локальный реестр и self-hosted verifier. Границы поддержки и оставшиеся юридические/эксплуатационные задачи указаны в документации. Аккаунт и API-ключ для локальной работы не нужны. См. [установку](../README.md#quick-start-with-docker) и [режимы видео](implementation/video-profiles.md).
+
+## Документация для внедрения
+
+[Единая навигация](index.md) связывает quickstart, API/CLI, production-настройку,
+режимы и протоколы испытаний. Публичные материалы подготовлены на английском.
+Нормативные страницы: [ЕС](compliance/eu-ai-act.md), [Калифорния](compliance/california.md),
+[матрица](compliance/requirements-matrix.md), [выдержки](compliance/source-excerpts.md).
+Фактические результаты: [0.7.2a1](validation/0.7.2a1-results.md).
 
 ## Требования → код → тесты
 
@@ -39,3 +47,19 @@ python3 scripts/check_requirements.py
 Организация: https://github.com/ariadne-mark. Основной репозиторий: https://github.com/ariadne-mark/ariadne-mark. Каркас опубликован; лицензия исходного кода и нашей документации — Apache-2.0. Сторонние материалы сохраняют собственные условия использования.
 
 В 0.4 добавлен [планировщик требований ЕС/Калифорнии](compliance/applicability.md): `ariadne profile check` показывает настройки, недостающие действия и вопросы для проверки. `mark --profile` применяет конфигурацию и сохраняет оценку в receipt. Это не автоматическое юридическое заключение.
+
+## Проверка C2PA перед запуском
+
+`ariadne runtime check` проверяет Python-пакет, фактически загруженную native
+библиотеку, её версию и SHA-256. Поддержанная media-среда: Linux x86-64,
+Python 3.12, c2pa-python 0.38.3 / native 0.91.11. Несовпадение останавливает
+media-операции и запуск verifier; core-конструктор без signing identity остаётся ленивым; проверки records/profiles не требуют native.
+См. [диагностику runtime](operations/c2pa-runtime.md). Режимы 5s/2s/Resilient
+сохранены. Короткий ролик может потерять единственное окно после обрезки;
+его длительность сама по себе не означает провал свежей маркировки.
+
+Установка из wheel: `pip install --no-deps /path/to/ariadne_mark-0.7.2a1-py3-none-any.whl`,
+затем `ariadne setup media --fetch-models` в Linux x86-64 / Python 3.12 virtualenv
+с установленными FFmpeg/ffprobe и Node/npm. Для видео без Torch/NumPy/Python
+TrustMark: `ariadne setup video --fetch-models`. Установщик использует hash-lock
+ресурсы внутри wheel; C2PA/native pins сохраняются.

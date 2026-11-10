@@ -26,7 +26,8 @@
     "licenses_system_to_third_parties": false
   },
   "sdk": {
-    "audio_kind": "none"
+    "audio_kind": "none",
+    "video_profile": "economy_5s"
   },
   "deployment": {
     "disclosure": "none",

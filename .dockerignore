@@ -6,6 +6,12 @@ dist
 .venv
 .secrets
 .ariadne
+release-dist
+.ci-work
+deployments
+.kit-work
+**/private
+**/*.sqlite3
 examples/stateless_product
 **/*.egg-info
 **/._*

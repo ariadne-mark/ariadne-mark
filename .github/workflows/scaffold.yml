@@ -1,91 +1,65 @@
 name: SDK and traceability checks
 
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
   workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Reviewed full commit SHA to qualify on the temporary EC2 runner
+        required: true
+        type: string
+      qualification_mode:
+        description: Source rebuild or unchanged published-package documentation qualification
+        required: true
+        default: source-build
+        type: choice
+        options:
+          - source-build
+          - published-package
 
 permissions:
   contents: read
 
 concurrency:
-  group: scaffold-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ec2-qualification-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  sdk:
-    name: SDK Python ${{ matrix.python }}
+  review:
+    if: github.event_name != 'workflow_dispatch'
+    name: Runtime qualification requires maintainer dispatch
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        python: ["3.11", "3.12", "3.13", "3.14"]
     steps:
-      - name: Check out source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - run: echo 'SDK/runtime tests execute only on the trusted EC2 runner. A maintainer must dispatch qualification for the reviewed commit before release.'
+  qualify:
+    if: github.event_name == 'workflow_dispatch' && github.actor == 'Genesius001' && github.repository == 'ariadne-mark/ariadne-mark'
+    name: Requirements traceability
+    runs-on: ariadne-manual-qualified
+    timeout-minutes: 90
+    steps:
+      - name: Check out reviewed revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-      - name: Set up Python
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Build distributable
-        run: python -m pip wheel --no-deps --wheel-dir dist .
-      - name: Install wheel without dependencies
-        run: python -m pip install --no-index --no-deps dist/*.whl
-      - name: Test installed package
-        run: python -m unittest discover -s tests -t . -v
-      - name: Run integration example
-        run: python examples/provenance_record.py
-  media:
-    name: CPU media integration
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - name: Check out source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-      - name: Build standalone CPU image
-        run: docker build -t ariadne-mark:test .
-      - name: Test real media offline
-        run: >-
-          docker run --rm --network none --cpus 2 --memory 6g
-          --read-only --tmpfs /tmp:rw,noexec,nosuid,size=512m
-          -e ARIADNE_MEDIA_TESTS=1 -w /app --entrypoint python
-          ariadne-mark:test -m unittest discover -s tests -t . -v
-      - name: Collect tested distributions and dependency inventory
+      - name: Require the exact reviewed SHA
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
         run: |
-          mkdir release-dist
-          container=$(docker create ariadne-mark:test true)
-          docker cp "$container":/opt/dist/. release-dist/
-          docker rm "$container"
-          docker run --rm --network none --entrypoint python ariadne-mark:test -c 'import importlib.metadata as m,json; print(json.dumps({p.metadata["Name"]:p.version for p in m.distributions()},indent=2))' > release-dist/installed-packages.json
-          python3 scripts/package_release_evidence.py
-      - name: Retain tested alpha candidate
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+          test "$GITHUB_SHA" = "$EXPECTED_SHA"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Qualify source build on EC2
+        if: inputs.qualification_mode == 'source-build'
+        run: bash scripts/ci_server.sh
+      - name: Qualify unchanged published package on EC2
+        if: inputs.qualification_mode == 'published-package'
+        run: bash scripts/ci_published_package.sh
+      - name: Retain evidence from this revision
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: alpha-candidate-${{ github.sha }}
           path: release-dist/
           if-no-files-found: error
           retention-days: 30
-  requirements:
-    name: Requirements traceability
-    needs: [sdk, media]
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Check out source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-      - name: Validate requirement records
-        run: python3 scripts/check_requirements.py
-      - name: Require passing SDK checks
-        env:
-          SDK_RESULT: ${{ needs.sdk.result }}
-          MEDIA_RESULT: ${{ needs.media.result }}
-        run: test "$SDK_RESULT" = success && test "$MEDIA_RESULT" = success

@@ -34,7 +34,13 @@ def probe(path: Path) -> dict:
         raise UnsupportedMedia("Anamorphic pixels require explicit square-pixel conversion")
     if video.get("field_order", "progressive") not in {"progressive", "unknown"}:
         raise UnsupportedMedia("Interlaced video requires explicit deinterlacing")
-    if video.get("color_transfer") in {"smpte2084", "arib-std-b67"} or "10" in video.get("pix_fmt", ""):
+    # Inspect the actual format descriptor: substring checks miss 12/16-bit SDR.
+    import av
+    try:
+        bits = {component.bits for component in av.VideoFormat(video.get('pix_fmt', '')).components}
+    except (ValueError, TypeError) as exc:
+        raise UnsupportedMedia('Unknown video pixel format') from exc
+    if video.get("color_transfer") in {"smpte2084", "arib-std-b67"} or bits != {8}:
         raise UnsupportedMedia("HDR / high-bit-depth video is not supported; explicit SDR conversion is required")
     if audios and audios[0].get("codec_name") != "aac":
         raise UnsupportedMedia("Only AAC audio can be preserved in this MP4 exporter")
@@ -45,6 +51,25 @@ def probe(path: Path) -> dict:
             "audio": bool(audios), "source": data}
 
 
+def validate_decoder_streams(container):
+    """Check the actual PyAV decoder contexts before the first frame decode.
+
+    The ffprobe preflight is separate; format/codec options alone are not
+    relied on to constrain PyAV's bundled FFmpeg.
+    """
+    videos = list(container.streams.video)
+    audios = list(container.streams.audio)
+    if len(videos) != 1 or len(audios) > 1 or len(container.streams) != len(videos) + len(audios):
+        raise UnsupportedMedia('Unexpected streams in PyAV decoder')
+    if videos[0].codec_context.name not in {'h264', 'hevc'}:
+        raise UnsupportedMedia('PyAV video decoder must be H.264 or HEVC')
+    pixel_format = videos[0].codec_context.format
+    if pixel_format is not None and {c.bits for c in pixel_format.components} != {8}:
+        raise UnsupportedMedia('PyAV video decoder requires 8-bit SDR input')
+    if audios and audios[0].codec_context.name != 'aac':
+        raise UnsupportedMedia('PyAV audio decoder must be AAC')
+
+
 def _orient(image, rotation: int):
     # ffprobe reports display-matrix counter-clockwise rotation.
     return image.rotate(rotation, expand=True) if rotation % 360 else image
@@ -53,13 +78,20 @@ def _orient(image, rotation: int):
 def encode_video(source: Path, destination: Path, marker, token: str, *, visible=False, altered=False) -> dict:
     import av
     from ariadne_mark.disclosure import apply_label
+    from ariadne_mark.video.color import ColorPolicy, ColorConverter
 
     info = probe(source)
     silent = destination.with_name("frames.mp4")
     frames = 0
+    marked_frames = 0
+    windows = {}
+    from ariadne_mark.video.policy import WindowSelector, period_for
+    profile = getattr(marker, "profile", "resilient")
+    selector = WindowSelector(profile)
     last_pts = None
     decoded_end = Fraction(0)
     with (marker.encoding_session(token) if hasattr(marker, "encoding_session") else nullcontext()) as watermark_session, av.open(str(source), format="mp4", options={"protocol_whitelist": "file", "codec_whitelist": "h264,hevc,aac", "enable_drefs": "0"}) as incoming, av.open(str(silent), "w") as outgoing:
+        validate_decoder_streams(incoming)
         stream = incoming.streams.video[0]
         rate = stream.average_rate or Fraction(24, 1)
         encoded = outgoing.add_stream("libx264", rate=rate)
@@ -69,6 +101,7 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
         encoded.codec_context.time_base = stream.time_base
         encoded.codec_context.thread_count = 2
         encoded.options = {"crf": "18", "preset": "fast", "bf": "0"}
+        converter = None
         pending = []
         durations = {}
         def mux(packet):
@@ -86,7 +119,7 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
             if len(marked) != len(pending):
                 raise AriadneError("Watermarker returned an incomplete frame batch")
             for image, (_, pts, time_base) in zip(marked, pending):
-                output = av.VideoFrame.from_image(image)
+                output = converter.frame(image)
                 output.pts, output.time_base = pts, time_base
                 for packet in encoded.encode(output):
                     mux(packet)
@@ -99,13 +132,41 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
             last_pts = frame.pts
             if frames >= 18000:
                 raise UnsupportedMedia("Video exceeds 18000-frame limit")
-            image = _orient(frame.to_image(), info["rotation"])
-            if visible:
-                image = apply_label(image, altered=altered)
+            if converter is None:
+                policy = ColorPolicy.from_frame(frame)
+                converter = ColorConverter(policy)
+                encoded.codec_context.colorspace = policy.matrix
+                encoded.codec_context.color_range = policy.range
+                encoded.codec_context.color_primaries = stream.codec_context.color_primaries
+                encoded.codec_context.color_trc = stream.codec_context.color_trc
+            converter.policy.check(frame)
+            selected, window = selector.select(frame.pts * frame.time_base)
             duration = frame.duration * frame.time_base
             decoded_end = max(decoded_end, frame.pts * frame.time_base + duration)
             durations[frame.pts * frame.time_base] = duration
-            pending.append((image, frame.pts, frame.time_base))
+            if selected:
+                image = _orient(converter.image(frame), info["rotation"])
+                if visible:
+                    image = apply_label(image, altered=altered)
+                pending.append((image, frame.pts, frame.time_base))
+                marked_frames += 1
+                if window is not None:
+                    windows[window] = windows.get(window, 0) + 1
+            else:
+                if pending:
+                    flush()
+                # Bypass PIL/RGBA/Node for unmarked frames; visible disclosure
+                # and display rotation still apply to the complete export.
+                if visible or info["rotation"] % 360:
+                    image = _orient(converter.image(frame), info["rotation"])
+                    if visible:
+                        image = apply_label(image, altered=altered)
+                    output = converter.frame(image)
+                    output.pts, output.time_base = frame.pts, frame.time_base
+                else:
+                    output = converter.encoder_frame(frame)
+                for packet in encoded.encode(output):
+                    mux(packet)
             frames += 1
             if len(pending) == getattr(marker, "batch_size", 1):
                 flush()
@@ -138,15 +199,50 @@ def encode_video(source: Path, destination: Path, marker, token: str, *, visible
             "rotation_normalized": info["rotation"], "width": final["width"], "height": final["height"],
             "watermark_algorithm": getattr(marker, "algorithm", "custom"),
             "batch_size": getattr(marker, "batch_size", 1), "h264_crf": 18,
+            "color_pipeline": {"matrix": converter.policy.matrix, "range": converter.policy.range,
+                               "rounding": "accurate_full_chroma", "version": 2,
+                               "bypass": "explicit_encoder_format_preserve_code_values"},
             "profile": getattr(marker, "profile", "legacy"),
+            "marked_frames": marked_frames,
+            "watermark_period_s": period_for(profile),
+            "watermark_window_ms": 125 if selector.period else None,
+            "watermark_windows": [{"index": i, "marked_frames": n} for i, n in windows.items()],
             "watermark_stats": getattr(watermark_session, "stats", {})}
+
+
+def selected_window_frames(path: Path, profile):
+    """Decode scheduled export positions for read-back; no token is supplied.
+
+    This is an export diagnostic for a known preset, not a blind detector.
+    """
+    import av
+    from ariadne_mark.video.policy import WindowSelector
+    selector = WindowSelector(profile)
+    info = probe(path)
+    with av.open(str(path), format="mp4", options={"protocol_whitelist": "file", "codec_whitelist": "h264,hevc,aac", "enable_drefs": "0"}) as container:
+        validate_decoder_streams(container)
+        last = None
+        for index, frame in enumerate(container.decode(video=0)):
+            if index >= 18000 or frame.pts is None or frame.time_base is None:
+                raise UnsupportedMedia("Invalid or excessive video timeline during read-back")
+            timestamp = frame.pts * frame.time_base
+            if last is not None and timestamp <= last:
+                raise UnsupportedMedia("Non-monotonic read-back timestamps")
+            last = timestamp
+            selected, window = selector.select(timestamp)
+            if selected:
+                # Defer the image conversion so callers can skip the rest of a
+                # window after one independently decoded ID.
+                yield frame, float(timestamp), window, info["rotation"]
 
 
 def sample_frames(path: Path, *, samples: int = 5):
     """Decode a bounded sample; never claim the sample verifies every frame."""
     import av
+    from ariadne_mark.video.color import frame_image
     info = probe(path)
     with av.open(str(path), format="mp4", options={"protocol_whitelist": "file", "codec_whitelist": "h264,hevc,aac", "enable_drefs": "0"}) as container:
+        validate_decoder_streams(container)
         stream = container.streams.video[0]
         seen = set()
         start = float((stream.start_time or 0) * stream.time_base)
@@ -160,4 +256,4 @@ def sample_frames(path: Path, *, samples: int = 5):
                     break
             if chosen is not None and chosen.pts not in seen:
                 seen.add(chosen.pts)
-                yield _orient(chosen.to_image(), info["rotation"]), chosen.time
+                yield _orient(frame_image(chosen), info["rotation"]), chosen.time

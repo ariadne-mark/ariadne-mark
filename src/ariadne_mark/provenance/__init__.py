@@ -5,7 +5,7 @@ bindings, or proof of compliance. No network access or account is required.
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 import json
 from uuid import UUID, uuid4
@@ -59,6 +59,18 @@ class ProvenanceRecord:
             raise ValueError("created_at must be a timezone-aware datetime")
         if not isinstance(self.asset_id, UUID) or self.asset_id.version != 4:
             raise ValueError("asset_id must be a UUIDv4, not a user identifier")
+
+    def validate_for_export(self, *, now: datetime | None = None) -> None:
+        """Reject future generation claims at issuance, without blocking parsing.
+
+        Five minutes is an SDK clock-skew allowance, not a legal threshold.
+        Verifiers must still be able to inspect externally supplied future dates.
+        """
+        now = datetime.now(timezone.utc) if now is None else now
+        if now.utcoffset() is None:
+            raise ValueError("Export validation time must be timezone-aware")
+        if self.created_at - now > timedelta(minutes=5):
+            raise ValueError("created_at is more than 5 minutes in the future; supply the actual generation time")
 
     @classmethod
     def create(

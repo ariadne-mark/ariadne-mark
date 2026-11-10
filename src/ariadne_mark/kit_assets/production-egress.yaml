@@ -1,0 +1,8 @@
+# Explicit production-only override: outbound TSA access for exporter.
+# Apply an operator egress policy/proxy for the intended TSA destination.
+# The verifier and registry reader remain on the internal network.
+services:
+  exporter:
+    networks: [private, signing]
+networks:
+  signing: {}

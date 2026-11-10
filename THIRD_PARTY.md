@@ -1,7 +1,8 @@
-# Third-party components — 0.5.2a0
+# Third-party components — 0.7.2a1
 
 The wheel contains Ariadne Mark's code and a model checksum manifest, not model
-weights or third-party source copies. Pip/Docker installation obtains upstream
+weights. It also contains the attributed Apache-2.0 vocabulary described below.
+Pip/Docker installation obtains upstream
 packages. The Docker build downloads TrustMark and VideoSeal weights explicitly and verifies
 their SHA-256 hashes; runtime processing can be offline.
 
@@ -9,7 +10,7 @@ their SHA-256 hashes; runtime processing can be offline.
 | --- | --- | --- | --- |
 | TrustMark | 0.9.2, Q/BCH-5 | https://github.com/adobe/trustmark | MIT; upstream README states it covers code and downloaded models |
 | VideoSeal | official 1.0 TorchScript y_256b_img.jit | https://github.com/facebookresearch/videoseal | MIT; model hash and official Meta download URL in src/ariadne_mark/videoseal/__init__.py |
-| C2PA Python | 0.38.3 / native 0.91.7 | https://github.com/contentauth/c2pa-python | MIT OR Apache-2.0; bundles native C2PA |
+| C2PA Python | 0.38.3 / native 0.91.11 | https://github.com/contentauth/c2pa-python | MIT OR Apache-2.0; bundles native C2PA |
 | PyTorch CPU | 2.14.1+cpu | https://pytorch.org/ | BSD-style; use the official CPU wheel index |
 | torchvision CPU | 0.29.1+cpu | https://github.com/pytorch/vision | BSD-3-Clause |
 | Pillow | 13.0.0 | https://python-pillow.org/ | MIT-CMU |
@@ -30,7 +31,7 @@ wraps the upstream libraries directly and does not copy a competitor's server
 or reuse a cloud credential. Runtime dependency inventory is captured with the
 release validation artifacts.
 
-## Fast/Resilient video runtime (0.5)
+## Economy/Resilient and legacy Fast video runtime
 
 - `@variax-ai/video-watermark` 0.3.2: MIT, copyright 2026 Variax. Upstream commit 2fa85425546e. The original license is packaged in `ariadne_mark/videoq/VARIAX-LICENSE.txt`. A one-line aliasing fix copies the cached scene signature; upstream/patched SHA-256 are pinned.
 - `onnxruntime-node` 1.23.2: MIT; CPU installation, CUDA download disabled. npm integrity lockfile packaged in the wheel.
@@ -38,6 +39,14 @@ release validation artifacts.
 - Node.js and npm retain their own licenses and are external dependencies; the Docker recipe copies Node from a pinned official image and uses npm only in its build stage. No Node executable or model weights are embedded in the Python wheel.
 
 ## Distribution boundary
+
+The optional deployment kit explicitly provisions an official nginx image,
+pinned by digest in `ariadne_mark/kit.py`; nginx uses its BSD-style license and
+the image contains separately licensed Alpine packages. No nginx binary is in
+the SDK wheel/source. Maintainer acceptance tests independently download
+Content Authenticity Initiative `c2patool` 0.28.6 (MIT OR Apache-2.0), pinned by
+archive SHA-256 in `scripts/fetch_external_validator.py`. That standalone binary
+is a test tool, not a new SDK dependency or part of the distributed artifacts.
 
 The Ariadne wheel/source contain original adapters, upstream attribution,
 lockfiles and hash manifests. They do not bundle FFmpeg, PyAV, Torch, Node or
@@ -57,3 +66,42 @@ code and the official downloaded models; verify alternative weights separately.
 SHA and rejects an older vulnerable runtime cache. Model/runtime requests never
 perform automatic dependency installation. See the release security evidence
 for scanner coverage and remaining native advisories.
+
+## PyAV and redistributed environments
+
+PyAV wheels carry separate FFmpeg/codec binaries, including GPL-bearing x264
+and x265 builds; the SDK's encoder uses PyAV's libx264 in-process. Inventory
+those binaries independently of Debian's CLI FFmpeg. Applicable obligations
+apply to redistribution of a bundled venv as well as a container. Ariadne's
+wheel does not contain those binaries; it includes this third-party notice.
+The exact bootstrap/media package graph is hash-locked for Linux x86-64 and
+Python 3.12. Apt package repositories remain an external mutable build input;
+these locks are not a claim that the entire OS image is bit-reproducible.
+
+## Trufo public C2PA vocabulary (Apache-2.0)
+
+`src/ariadne_mark/c2pa_types/source_types.py` derives from
+`trufo-ai/trufo-py/src/trufo/c2pa/source_types.py`, commit
+`24dd6478e2b5ce753e34abb2c557707c12dd8d40`.
+Copyright 2025-2026 Trufo, Inc. All rights reserved. SPDX: Apache-2.0.
+Its copyright/SPDX headers and a modification notice remain in the file;
+`LICENSE` contains the applicable Apache-2.0 text. The upstream repository has
+no root NOTICE at this revision; `trufo-local/NOTICE` describes a separate
+container that we do not copy or distribute.
+
+The enum is used by signing and passive C2PA declaration inspection. No Trufo
+API client, service credentials, proprietary provenance/PawPrint engine,
+model weights or container are included. This reuse introduces no dependency
+on Trufo's API or commercial Library License and grants no Trufo trademark.
+
+## Decoder acceptance hardening (0.7.1 candidate)
+
+The SDK wraps the pinned Python and Node BCH5 decoders with its own canonical
+re-encode/distance guard, motivated by upstream TrustMark canonical-validation
+fixes merged in November 2026. Upstream files/models and their hashes are not
+changed. The guard reuses each runtime's existing encoder and checks a received
+96-bit word is within its five-bit correction radius. It is not a claim to
+include every upstream fix or to calibrate detector false-positive rates.
+Color conversion uses existing libswscale flags and an explicitly documented
+PyAV 16 colorspace configuration workaround; no native dependency upgrade is
+introduced. Existing combined-binary redistribution qualifications still apply.

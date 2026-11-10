@@ -1,0 +1,960 @@
+{
+  "qualified_code_commit": "4933202",
+  "sdk": "0.7.1a0",
+  "environment": {
+    "host": "Oregon m6a.large",
+    "os": "Linux x86-64",
+    "cpus": 2,
+    "memory_limit_gib": 6,
+    "runtime_network": "none",
+    "runtime_uid": 10001,
+    "pyav": "16.0.1",
+    "models_payload_strength_cadence": "unchanged"
+  },
+  "tests": {
+    "final_media": {
+      "run": 165,
+      "seconds": 339.665,
+      "ok": true,
+      "skipped": 0
+    },
+    "focused_bch": {
+      "run": 2,
+      "seconds": 3.834,
+      "ok": true,
+      "skipped": 0
+    },
+    "core": {
+      "3.11": {
+        "run": 165,
+        "seconds": 10.53,
+        "ok": true,
+        "skipped": 56
+      },
+      "3.12": {
+        "run": 165,
+        "seconds": 10.925,
+        "ok": true,
+        "skipped": 56
+      },
+      "3.13": {
+        "run": 165,
+        "seconds": 11.033,
+        "ok": true,
+        "skipped": 56
+      },
+      "3.14": {
+        "run": 165,
+        "seconds": 11.178,
+        "ok": true,
+        "skipped": 56
+      }
+    }
+  },
+  "identity_color": [
+    {
+      "clip": "crowd_720p24.mp4",
+      "profile": "economy_5s",
+      "old_y_error": -0.9317925347222177,
+      "new_y_error": 0.08620713975694845,
+      "old_branch_bias": -0.9889594726562451,
+      "new_branch_bias": 0.02352549138145278,
+      "old_seconds": 6.983866415015655,
+      "new_seconds": 7.1807536729902495
+    },
+    {
+      "clip": "crowd_720p24.mp4",
+      "profile": "economy_2s",
+      "old_y_error": -0.9117765842013853,
+      "new_y_error": 0.09190006510416851,
+      "old_branch_bias": -0.9600191945593305,
+      "new_branch_bias": 0.029321006625308038,
+      "old_seconds": 7.062945169978775,
+      "new_seconds": 7.075046237005154
+    },
+    {
+      "clip": "crowd_720p24.mp4",
+      "profile": "resilient",
+      "old_y_error": -0.955545158212043,
+      "new_y_error": 0.08307348892931923,
+      "old_branch_bias": null,
+      "new_branch_bias": null,
+      "old_seconds": 7.669063272012863,
+      "new_seconds": 8.415257983986521
+    },
+    {
+      "clip": "face_720p24.mp4",
+      "profile": "economy_5s",
+      "old_y_error": -0.9572357855902768,
+      "new_y_error": 0.01900245949074038,
+      "old_branch_bias": -0.984465897817459,
+      "new_branch_bias": -0.009108891885747674,
+      "old_seconds": 5.687434152001515,
+      "new_seconds": 5.744980575982481
+    },
+    {
+      "clip": "face_720p24.mp4",
+      "profile": "economy_2s",
+      "old_y_error": -0.9418719618055562,
+      "new_y_error": 0.024488064236111738,
+      "old_branch_bias": -0.9687416002859485,
+      "new_branch_bias": -0.003724116306678033,
+      "old_seconds": 5.839345360989682,
+      "new_seconds": 6.208746593998512
+    },
+    {
+      "clip": "face_720p24.mp4",
+      "profile": "resilient",
+      "old_y_error": -0.9422560674705096,
+      "new_y_error": 0.028009811703291455,
+      "old_branch_bias": null,
+      "new_branch_bias": null,
+      "old_seconds": 6.458016435994068,
+      "new_seconds": 7.136111700005131
+    }
+  ],
+  "pre_guard_matrix": {
+    "complete": true,
+    "exports": 12,
+    "detections": {
+      "crf28": {
+        "total": 12,
+        "correct": 12,
+        "wrong_ids": 0
+      },
+      "crop90": {
+        "total": 12,
+        "correct": 12,
+        "wrong_ids": 0
+      },
+      "fresh": {
+        "total": 12,
+        "correct": 12,
+        "wrong_ids": 0
+      }
+    },
+    "negative": {
+      "total": 4,
+      "statuses": [
+        "not_found",
+        "not_found",
+        "not_found",
+        "not_found"
+      ],
+      "hypotheses": [
+        210,
+        273,
+        210,
+        273
+      ]
+    },
+    "timings": {
+      "economy_5s": {
+        "count": 4,
+        "min": 8.078389715985395,
+        "max": 10.046406164998189,
+        "mean": 9.120936405750399,
+        "mean_inference_s": 1.5417276877499861
+      },
+      "economy_2s": {
+        "count": 4,
+        "min": 9.230950808996568,
+        "max": 11.572215749998577,
+        "mean": 10.689956624250044,
+        "mean_inference_s": 2.363504763250034
+      },
+      "resilient": {
+        "count": 4,
+        "min": 54.43425498798024,
+        "max": 68.32634281399078,
+        "mean": 61.67523469524167,
+        "mean_inference_s": 35.95942273824996
+      }
+    }
+  },
+  "final_matrix": {
+    "complete": true,
+    "exports": 12,
+    "detections": {
+      "360p_crf32": {
+        "total": 12,
+        "correct": 3,
+        "wrong_ids": 0
+      },
+      "crf28": {
+        "total": 12,
+        "correct": 12,
+        "wrong_ids": 0
+      },
+      "crop90": {
+        "total": 12,
+        "correct": 12,
+        "wrong_ids": 0
+      },
+      "fresh": {
+        "total": 12,
+        "correct": 12,
+        "wrong_ids": 0
+      }
+    },
+    "negative": {
+      "total": 4,
+      "statuses": [
+        "not_found",
+        "not_found",
+        "not_found",
+        "not_found"
+      ],
+      "hypotheses": [
+        210,
+        273,
+        210,
+        273
+      ]
+    },
+    "timings": {
+      "economy_5s": {
+        "count": 4,
+        "min": 7.960963020013878,
+        "max": 10.293194672005484,
+        "mean": 9.16676221650414,
+        "mean_inference_s": 1.5617872500000085
+      },
+      "economy_2s": {
+        "count": 4,
+        "min": 9.286702603014419,
+        "max": 11.754982417012798,
+        "mean": 10.743234840003424,
+        "mean_inference_s": 2.347312855250041
+      },
+      "resilient": {
+        "count": 4,
+        "min": 54.24143742900924,
+        "max": 67.7093646049907,
+        "mean": 61.981057488497754,
+        "mean_inference_s": 36.36979718350022
+      }
+    }
+  },
+  "spatial_540": {
+    "complete": true,
+    "results": [
+      {
+        "kind": "raw",
+        "clip": "crowd_720p24-30000-economy_2s.mp4",
+        "mode": "economy_2s",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "roi",
+        "clip": "crowd_720p24-30000-economy_2s.mp4",
+        "mode": "economy_2s",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "raw",
+        "clip": "crowd_720p24-30000-economy_2s.mp4",
+        "mode": "economy_2s",
+        "transform": "crop9x16",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "raw",
+        "clip": "crowd_720p24-30000-economy_5s.mp4",
+        "mode": "economy_5s",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "roi",
+        "clip": "crowd_720p24-30000-economy_5s.mp4",
+        "mode": "economy_5s",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "raw",
+        "clip": "crowd_720p24-30000-economy_5s.mp4",
+        "mode": "economy_5s",
+        "transform": "crop9x16",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "raw",
+        "clip": "crowd_720p24-30000-resilient.mp4",
+        "mode": "resilient",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "roi",
+        "clip": "crowd_720p24-30000-resilient.mp4",
+        "mode": "resilient",
+        "transform": "letterbox",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "kind": "raw",
+        "clip": "crowd_720p24-30000-resilient.mp4",
+        "mode": "resilient",
+        "transform": "crop9x16",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "raw",
+        "clip": "face_720p24-30000-economy_2s.mp4",
+        "mode": "economy_2s",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "roi",
+        "clip": "face_720p24-30000-economy_2s.mp4",
+        "mode": "economy_2s",
+        "transform": "letterbox",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "kind": "raw",
+        "clip": "face_720p24-30000-economy_2s.mp4",
+        "mode": "economy_2s",
+        "transform": "crop9x16",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "raw",
+        "clip": "face_720p24-30000-economy_5s.mp4",
+        "mode": "economy_5s",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "roi",
+        "clip": "face_720p24-30000-economy_5s.mp4",
+        "mode": "economy_5s",
+        "transform": "letterbox",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "kind": "raw",
+        "clip": "face_720p24-30000-economy_5s.mp4",
+        "mode": "economy_5s",
+        "transform": "crop9x16",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "raw",
+        "clip": "face_720p24-30000-resilient.mp4",
+        "mode": "resilient",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "roi",
+        "clip": "face_720p24-30000-resilient.mp4",
+        "mode": "resilient",
+        "transform": "letterbox",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "kind": "raw",
+        "clip": "face_720p24-30000-resilient.mp4",
+        "mode": "resilient",
+        "transform": "crop9x16",
+        "status": "not_found",
+        "correct": false
+      }
+    ]
+  },
+  "spatial_720": {
+    "complete": true,
+    "results": [
+      {
+        "kind": "raw",
+        "clip": "crowd_720p24-30000-economy_2s.mp4",
+        "mode": "economy_2s",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "roi",
+        "clip": "crowd_720p24-30000-economy_2s.mp4",
+        "mode": "economy_2s",
+        "transform": "letterbox",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "kind": "raw",
+        "clip": "crowd_720p24-30000-economy_5s.mp4",
+        "mode": "economy_5s",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "roi",
+        "clip": "crowd_720p24-30000-economy_5s.mp4",
+        "mode": "economy_5s",
+        "transform": "letterbox",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "kind": "raw",
+        "clip": "crowd_720p24-30000-resilient.mp4",
+        "mode": "resilient",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "roi",
+        "clip": "crowd_720p24-30000-resilient.mp4",
+        "mode": "resilient",
+        "transform": "letterbox",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "kind": "raw",
+        "clip": "face_720p24-30000-economy_2s.mp4",
+        "mode": "economy_2s",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "roi",
+        "clip": "face_720p24-30000-economy_2s.mp4",
+        "mode": "economy_2s",
+        "transform": "letterbox",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "kind": "raw",
+        "clip": "face_720p24-30000-economy_5s.mp4",
+        "mode": "economy_5s",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "roi",
+        "clip": "face_720p24-30000-economy_5s.mp4",
+        "mode": "economy_5s",
+        "transform": "letterbox",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "kind": "raw",
+        "clip": "face_720p24-30000-resilient.mp4",
+        "mode": "resilient",
+        "transform": "letterbox",
+        "status": "not_found",
+        "correct": false
+      },
+      {
+        "kind": "roi",
+        "clip": "face_720p24-30000-resilient.mp4",
+        "mode": "resilient",
+        "transform": "letterbox",
+        "status": "recovered_claim",
+        "correct": true
+      }
+    ]
+  },
+  "ntsc_negative_old": {
+    "complete": true,
+    "results": [
+      {
+        "clip": "crowd_720p24.mp4",
+        "fps": "24000/1001",
+        "status": "not_checked",
+        "frames": 240,
+        "hypotheses": 512,
+        "hypotheses_complete": false,
+        "seconds": 34.90538892798941
+      },
+      {
+        "clip": "crowd_720p24.mp4",
+        "fps": "30000/1001",
+        "status": "not_checked",
+        "frames": 300,
+        "hypotheses": 512,
+        "hypotheses_complete": false,
+        "seconds": 41.5949051080097
+      }
+    ]
+  },
+  "ntsc_negative_final": {
+    "complete": true,
+    "results": [
+      {
+        "clip": "crowd_720p24.mp4",
+        "fps": "24000/1001",
+        "status": "not_found",
+        "frames": 240,
+        "hypotheses": 254,
+        "hypotheses_complete": true,
+        "seconds": 35.53689237101935
+      },
+      {
+        "clip": "crowd_720p24.mp4",
+        "fps": "30000/1001",
+        "status": "not_found",
+        "frames": 300,
+        "hypotheses": 334,
+        "hypotheses_complete": true,
+        "seconds": 40.681304344994714
+      },
+      {
+        "clip": "face_720p24.mp4",
+        "fps": "24000/1001",
+        "status": "not_found",
+        "frames": 240,
+        "hypotheses": 254,
+        "hypotheses_complete": true,
+        "seconds": 32.03575922601158
+      },
+      {
+        "clip": "face_720p24.mp4",
+        "fps": "30000/1001",
+        "status": "not_found",
+        "frames": 300,
+        "hypotheses": 334,
+        "hypotheses_complete": true,
+        "seconds": 39.633786113001406
+      }
+    ]
+  },
+  "native_renditions": {
+    "complete": true,
+    "exports": 6,
+    "export_failures": [],
+    "detections": [
+      {
+        "clip": "crowd_720p24.mp4",
+        "mode": "economy_5s",
+        "transform": "fresh",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "clip": "crowd_720p24.mp4",
+        "mode": "economy_5s",
+        "transform": "540x960_crf28",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "clip": "crowd_720p24.mp4",
+        "mode": "economy_2s",
+        "transform": "fresh",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "clip": "crowd_720p24.mp4",
+        "mode": "economy_2s",
+        "transform": "540x960_crf28",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "clip": "crowd_720p24.mp4",
+        "mode": "resilient",
+        "transform": "fresh",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "clip": "crowd_720p24.mp4",
+        "mode": "resilient",
+        "transform": "540x960_crf28",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "clip": "face_720p24.mp4",
+        "mode": "economy_5s",
+        "transform": "fresh",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "clip": "face_720p24.mp4",
+        "mode": "economy_5s",
+        "transform": "540x960_crf28",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "clip": "face_720p24.mp4",
+        "mode": "economy_2s",
+        "transform": "fresh",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "clip": "face_720p24.mp4",
+        "mode": "economy_2s",
+        "transform": "540x960_crf28",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "clip": "face_720p24.mp4",
+        "mode": "resilient",
+        "transform": "fresh",
+        "status": "recovered_claim",
+        "correct": true
+      },
+      {
+        "clip": "face_720p24.mp4",
+        "mode": "resilient",
+        "transform": "540x960_crf28",
+        "status": "recovered_claim",
+        "correct": true
+      }
+    ],
+    "input_normalization": [
+      {
+        "kind": "initial_input_rejected",
+        "clip": "crowd_720p24.mp4",
+        "error": "UnsupportedMedia",
+        "message": "Anamorphic pixels require explicit square-pixel conversion",
+        "at_utc": "2026-11-06T16:26:48.798484+00:00"
+      },
+      {
+        "kind": "initial_input_rejected",
+        "clip": "face_720p24.mp4",
+        "error": "UnsupportedMedia",
+        "message": "Anamorphic pixels require explicit square-pixel conversion",
+        "at_utc": "2026-11-06T16:28:44.742788+00:00"
+      }
+    ]
+  },
+  "video_only": {
+    "complete": true,
+    "results": [
+      {
+        "kind": "smoke",
+        "mode": "economy_5s",
+        "correct": true,
+        "seconds": 5.272962786024436,
+        "c2pa": "verified_claim"
+      },
+      {
+        "kind": "smoke",
+        "mode": "economy_2s",
+        "correct": true,
+        "seconds": 5.140229287993861,
+        "c2pa": "verified_claim"
+      },
+      {
+        "kind": "smoke",
+        "mode": "resilient",
+        "correct": true,
+        "seconds": 21.1909351600043,
+        "c2pa": "verified_claim"
+      }
+    ],
+    "environment": {
+      "kind": "environment",
+      "python": "3.12.16 (main, Oct 28 2026, 02:01:20) [GCC 14.2.0]",
+      "sdk": "0.7.1a0",
+      "packages": {
+        "packaging": "26.3",
+        "idna": "3.20",
+        "wheel": "0.48.0",
+        "cffi": "2.1.1",
+        "requests": "2.34.2",
+        "charset-normalizer": "3.5.2",
+        "setuptools": "84.2.1",
+        "c2pa-python": "0.38.3",
+        "urllib3": "2.8.0",
+        "pycparser": "3.12",
+        "cryptography": "50.0.2",
+        "pip": "26.3",
+        "av": "16.0.1",
+        "ariadne-mark": "0.7.1a0",
+        "toml": "0.10.2",
+        "pillow": "13.0.0",
+        "certifi": "2026.10.23"
+      },
+      "unavailable": [
+        "torch",
+        "numpy",
+        "trustmark"
+      ],
+      "models": "shared preprovisioned checksum-verified Node/ONNX cache"
+    }
+  },
+  "sampled_container_resources": {
+    "samples": 263,
+    "peak_observed_memory_gib": 1.928,
+    "peak_observed_cpu_percent": 200.55,
+    "scope": "whole sequential final media process, sampled approx every 2-3sec, not per-operation peaks or a minimum RAM guarantee"
+  },
+  "final_image": "sha256:990509364dc4113349b70940836992f52439f229ab24ccfcf92baf76b04af535",
+  "artifact_inspection": {
+    "qualified_code_commit": "4933202",
+    "installed_root": "/usr/local/lib/python3.12/site-packages/ariadne_mark",
+    "payload_files_matched": 55,
+    "payload": [
+      {
+        "path": "ariadne_mark/__init__.py",
+        "sha256": "6b432a3254c2a8dbf4fcc354485f554e89db33df1dae09fec2e063484fd7db76"
+      },
+      {
+        "path": "ariadne_mark/bootstrap-linux-py312.lock",
+        "sha256": "efe0528faf124212c4b57e4efa839ddcebdbd7b483d8d1af900efcc9d0caf7ca"
+      },
+      {
+        "path": "ariadne_mark/bootstrap_c2pa.py",
+        "sha256": "148c10e9b516bde58a247e9ba4108dac905334c50c60e6501852075534217153"
+      },
+      {
+        "path": "ariadne_mark/c2pa-bootstrap.json",
+        "sha256": "997ca179a72aef25e139d82787060db38b6a58711c9bea419164648af13df527"
+      },
+      {
+        "path": "ariadne_mark/cli.py",
+        "sha256": "6c64b167cf7db58862c0259e6b0b43956ecaa43f47d92bf58bd3bb28850fb7aa"
+      },
+      {
+        "path": "ariadne_mark/errors.py",
+        "sha256": "e862b17b3674b5556fb637539cf0bf3bc84a79063bb4bdccd46501807bb51a06"
+      },
+      {
+        "path": "ariadne_mark/isolated_verifier.py",
+        "sha256": "5dc083e5385ae6139e90e6e5397707191df26d624fb1abb70fc16bf6539a2cae"
+      },
+      {
+        "path": "ariadne_mark/public_verifier.py",
+        "sha256": "1361f57f24f9a30d33ab1afb5d61459b373da294423ea4d0ffd38a68e33350d4"
+      },
+      {
+        "path": "ariadne_mark/py.typed",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "ariadne_mark/reports.py",
+        "sha256": "f128fd9169bdd7eb98be95d9c1db1fe3a296daafb85bc111bbf975c57cd4277d"
+      },
+      {
+        "path": "ariadne_mark/server.py",
+        "sha256": "0edbe750dc2d551148907c49d2723fd3471525dfdddd159e95c7adee7535dc4f"
+      },
+      {
+        "path": "ariadne_mark/softbinding.py",
+        "sha256": "3e3f1dbf36730f36b2b88a37edb0bba9b6a622efaa1c0edd142606d17e05f9b5"
+      },
+      {
+        "path": "ariadne_mark/verifier_worker.py",
+        "sha256": "25c8353591f21db751de67a7c4f7ec6034beb856501a595b08740de6df4a9578"
+      },
+      {
+        "path": "ariadne_mark/version.py",
+        "sha256": "34c156c370ac3099a26d9a71901f6d31d5450146d14ea87b70a558b195fdd44e"
+      },
+      {
+        "path": "ariadne_mark/c2pa_types/__init__.py",
+        "sha256": "d703d78fa4dd4907445c9552200f6785edd8e8a47a7ed0bbf60a3317e05f97b5"
+      },
+      {
+        "path": "ariadne_mark/c2pa_types/source_types.py",
+        "sha256": "dce58edbf1e79cd3702557591603d35830287ce94f9c0e6c3a8a97cb7d723311"
+      },
+      {
+        "path": "ariadne_mark/disclosure/README.md",
+        "sha256": "12db79934cf70426613ff56a9f12965321ad7dfdc735d0ddef7f631f25005c3c"
+      },
+      {
+        "path": "ariadne_mark/disclosure/__init__.py",
+        "sha256": "1eb5e2cd84c461f4c48b426313e93892e83d4fc0159102286356d56db7705fd4"
+      },
+      {
+        "path": "ariadne_mark/pipeline/README.md",
+        "sha256": "75e17f90ed4ec473b9178da281da84279ef70a82e2406d6dd48269eb4b362fa4"
+      },
+      {
+        "path": "ariadne_mark/pipeline/__init__.py",
+        "sha256": "954ffc1a9ff0bd4604604b51c2ae6711abe7e90278970884b43be9c46f98c720"
+      },
+      {
+        "path": "ariadne_mark/profiles/__init__.py",
+        "sha256": "3ffabf4dee7ae3e1a67f819a5f89a23261a49fc8e90cac143cab5a934282fdbd"
+      },
+      {
+        "path": "ariadne_mark/profiles/catalog.json",
+        "sha256": "d1d1b33afd36d3ed05c40ef90bc3ab06d4b0e15a84519a73729ca8406eda939e"
+      },
+      {
+        "path": "ariadne_mark/provenance/README.md",
+        "sha256": "9e7da6cd6794d9f3d13bd4d1b062caa77d5a9e97d66f8180abae190b4430f474"
+      },
+      {
+        "path": "ariadne_mark/provenance/__init__.py",
+        "sha256": "6010d2e04f6b245c15ae56be28eca457a686bcf06643914aab272722d21b943c"
+      },
+      {
+        "path": "ariadne_mark/registry/README.md",
+        "sha256": "4e4c5950eee2ef59e05d96bc1c5168e1f6bfe5d80f45a1bd46f20266a0b2647c"
+      },
+      {
+        "path": "ariadne_mark/registry/__init__.py",
+        "sha256": "0b2f7168c879103298d0c89c80b2b6a26d66f50c9d47caac32bad2a7cd04fb5e"
+      },
+      {
+        "path": "ariadne_mark/signing/README.md",
+        "sha256": "1868e35ebf38f2b3c0689d4883eab85b47fb2bd5a85b178d8ad84f73dc81e7aa"
+      },
+      {
+        "path": "ariadne_mark/signing/__init__.py",
+        "sha256": "ba08733ebfd8cd9d90e6bfffa54bfa3bfafbc7170bfeb6dfb5ddeb0892c130fd"
+      },
+      {
+        "path": "ariadne_mark/verification/README.md",
+        "sha256": "a6e7209790a2b7885a049794a2c679fea8395c4f90370cc8de32fa8051df2f1d"
+      },
+      {
+        "path": "ariadne_mark/verification/__init__.py",
+        "sha256": "c0c60b94777292adcfac0dedf7d60d4618ed3bdf68659fef08071b001d56b262"
+      },
+      {
+        "path": "ariadne_mark/verification/media.py",
+        "sha256": "cdc8157be0966da9d80f55da4ce5542ed23366b390f57fbf498ad6b0c33ca944"
+      },
+      {
+        "path": "ariadne_mark/verifier_assets/app.js",
+        "sha256": "25e38780f08c369c6a0f34d32cba4905493cce7a17c742e1eb9655c9d00e36b2"
+      },
+      {
+        "path": "ariadne_mark/verifier_assets/feedback.html",
+        "sha256": "25a078c572916a64e20fb45887c6220a5490d83623f1ecdf406e50af0b209bba"
+      },
+      {
+        "path": "ariadne_mark/verifier_assets/feedback.js",
+        "sha256": "ccea1b7b3ee11550390a19041b5c8c8a61cd7127fdef5212754fccc0a9c12913"
+      },
+      {
+        "path": "ariadne_mark/verifier_assets/index.html",
+        "sha256": "74fc39cabf6ce35013fd41860f72be12416eeadc677091690def596f41bccea8"
+      },
+      {
+        "path": "ariadne_mark/verifier_assets/openapi.json",
+        "sha256": "064ef10f0a7a5dbb21d00959580eb8d69df4d97da0393572f45d7af37ba41c0e"
+      },
+      {
+        "path": "ariadne_mark/verifier_assets/privacy.html",
+        "sha256": "7beb8dacbbbea5b2ff64c32745e07770497cfba383bbee48409208a9741a7c48"
+      },
+      {
+        "path": "ariadne_mark/verifier_assets/style.css",
+        "sha256": "dea91e4375839948af5f36fb8599f6142302a3d843bef4142223cb18becb21aa"
+      },
+      {
+        "path": "ariadne_mark/video/README.md",
+        "sha256": "951c40bca64aa0563cbc0b88390e76d82a3931e049e283b2ee6c2382850046b2"
+      },
+      {
+        "path": "ariadne_mark/video/__init__.py",
+        "sha256": "ae46c029017ea5a6bfe2680fa084ba0b83a06aa9627e5e0760be7d0b3532c8d7"
+      },
+      {
+        "path": "ariadne_mark/video/color.py",
+        "sha256": "c1a49c27124ef44ee8b5f7e3dfa18094e85ece5d625b225d7e1960beb9114138"
+      },
+      {
+        "path": "ariadne_mark/video/detection.py",
+        "sha256": "86802282ebb590633ced75fbb266200dcf7fc75872abc8ecf35fcd1330582e05"
+      },
+      {
+        "path": "ariadne_mark/video/policy.py",
+        "sha256": "df0f625391ae955a250659de53ae4068de5fbbc04e2fd68bcce4e2323b1b1d51"
+      },
+      {
+        "path": "ariadne_mark/videoq/VARIAX-LICENSE.txt",
+        "sha256": "4a968a5c091a78d02486e78296cb874b931531d8fa49699b243c177f4841b59b"
+      },
+      {
+        "path": "ariadne_mark/videoq/__init__.py",
+        "sha256": "42d7ad1a89dd7b3b1b3b869cd9af42b75cdc9887fe4bf95fbf06d36a7defaf46"
+      },
+      {
+        "path": "ariadne_mark/videoq/canonical.mjs",
+        "sha256": "fe046a0a14dd430c4c528f44efe93fb4fa70d609c48438300f2936ae0eb7d00d"
+      },
+      {
+        "path": "ariadne_mark/videoq/package-lock.json",
+        "sha256": "bc1d8f8346d9e548bcb53949bfd3cb77452c9912414e3ab2bc1b79994dcceea1"
+      },
+      {
+        "path": "ariadne_mark/videoq/package.json",
+        "sha256": "3982a500e6736908efb164ea0825c19c7565ad3d87afe076e2186c2d79e92887"
+      },
+      {
+        "path": "ariadne_mark/videoq/worker.mjs",
+        "sha256": "c6c184a8c018529c3e40b3f6f7bd70a41b36843d37f0bf764f189117905a79e6"
+      },
+      {
+        "path": "ariadne_mark/videoseal/__init__.py",
+        "sha256": "45669c7497b3ed9fe113aba55a8acd2a9402a3e6093096c6cf9bf668ef46acce"
+      },
+      {
+        "path": "ariadne_mark/videoseal/payload.py",
+        "sha256": "8109e2fd8adfefdf0437f6d6ed2e2e8eff3fed06a551aeaa5168081076287762"
+      },
+      {
+        "path": "ariadne_mark/watermark/README.md",
+        "sha256": "e86343bd8171bccc6c5c49f671bfbc0af1cf81353f8d8a50fa41f648b9efa657"
+      },
+      {
+        "path": "ariadne_mark/watermark/__init__.py",
+        "sha256": "dd7e1de0d83206f449a2f0230764a3aebe85edf0b32607f3d80854857d3a6b4e"
+      },
+      {
+        "path": "ariadne_mark/watermark/canonical.py",
+        "sha256": "d08eafe955560af36c71a366a17e90c2ff21ce8d948aeb9d4a7b6ae27c35849c"
+      },
+      {
+        "path": "ariadne_mark/watermark/models.json",
+        "sha256": "b616bd3e14d3e911fe5942dda80495a05e36981e2ec1d2621078eb786bc88b1b"
+      }
+    ],
+    "artifacts": [
+      {
+        "file": "ariadne_mark-0.7.1a0-py3-none-any.whl",
+        "bytes": 114084,
+        "sha256": "7b0a4d577f82cac479a750457f0561f9c1f234b567efbc627b1351b4c5325ee5",
+        "members": 62
+      }
+    ]
+  },
+  "final_runner_exit": 0,
+  "artifact_scope": "Wheel hash is stable; final source archive hash is in the external release bundle to avoid self-reference."
+}

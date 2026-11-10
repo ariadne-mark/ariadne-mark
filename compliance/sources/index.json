@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-04",
+  "updated_at": "2026-11-10",
   "note": "Versioned executable planner shipped in 0.4.0a0. Technical mapping is not a final legal determination; see packaged profile catalog for retrieval details and open review items.",
   "sources": [
     {
@@ -8,15 +8,17 @@
       "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50",
       "type": "binding-law",
       "status": "official_commission_reproduction_reviewed_2026-11-04",
-      "mapping_status": "partial_executable_mapping"
+      "mapping_status": "partial_executable_mapping",
+      "last_documentation_review": "2026-11-10"
     },
     {
       "id": "EU-CODE",
       "title": "Code of Practice on Transparency of AI-generated Content",
       "url": "https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content",
       "type": "voluntary-code",
-      "status": "official_overview_reviewed_2026-11-04",
-      "mapping_status": "full_code_adherence_not_evaluated"
+      "status": "official_pdf_provider_measures_rechecked_2026-11-10",
+      "mapping_status": "full_code_adherence_not_evaluated",
+      "last_documentation_review": "2026-11-10"
     },
     {
       "id": "CA-22757",
@@ -24,16 +26,31 @@
       "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=8.&chapter=25.&part=&lawCode=BPC",
       "amendment_url": "https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB1000",
       "type": "binding-law",
-      "status": "official_consolidated_and_chaptered_text_reviewed_2026-11-04",
-      "mapping_status": "partial_executable_provider_mapping"
+      "status": "official_consolidated_text_rechecked_in_browser_2026-11-10",
+      "mapping_status": "partial_executable_provider_mapping",
+      "last_documentation_review": "2026-11-10"
     },
     {
       "id": "EU-TIMING",
-      "title": "Commission Article 50 FAQ and transition guidance",
-      "url": "https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act",
+      "title": "AI Act Article 111(4) transition rule",
+      "url": "https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-111",
+      "type": "binding-law",
+      "status": "official_commission_reproduction_reviewed_2026-11-05",
+      "mapping_status": "partial_executable_mapping",
+      "last_documentation_review": "2026-11-10"
+    },
+    {
+      "id": "EU-GUIDANCE",
+      "title": "Commission Article 50 Guidelines, C(2026) 7702 final, 5 November 2026",
+      "url": "https://digital-strategy.ec.europa.eu/en/policies/guidelines-ai-transparency-obligations",
       "type": "official-guidance",
-      "status": "reviewed_2026-11-03",
-      "mapping_status": "partial_executable_mapping"
+      "status": "official_pdf_sections_4_2_rechecked_2026-11-10",
+      "mapping_status": "partial_guidance_mapping_not_binding_law",
+      "document_url": "https://ec.europa.eu/newsroom/dae/redirection/document/131215",
+      "last_documentation_review": "2026-11-10",
+      "website_publication_date": "2026-07-20",
+      "pdf_edition_date": "2026-11-05"
     }
-  ]
+  ],
+  "latest_review": "compliance/sources/review-2026-11-10.json"
 }

@@ -1,0 +1,241 @@
+{
+  "schema_version": 1,
+  "docs_edition": "2026-11-11",
+  "sdk_version": "0.7.2a1",
+  "tested_sdk_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
+  "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/42738430001",
+  "canonical_origin": null,
+  "scope": "Public developer-alpha documentation; qualified SDK bytes unchanged",
+  "pages": [
+    {
+      "route": "/docs/",
+      "source": "docs/index.md",
+      "section": "Documentation"
+    },
+    {
+      "route": "/docs/quickstart/",
+      "source": "docs/start-here.md",
+      "section": "Install and integrate"
+    },
+    {
+      "route": "/docs/integration/",
+      "source": "docs/implementation/integration.md",
+      "section": "Install and integrate"
+    },
+    {
+      "route": "/docs/reference/",
+      "source": "docs/reference/api-cli.md",
+      "section": "Install and integrate"
+    },
+    {
+      "route": "/docs/video-profiles/",
+      "source": "docs/implementation/video-profiles.md",
+      "section": "Modes and media"
+    },
+    {
+      "route": "/docs/formats/",
+      "source": "docs/operations/support.md",
+      "section": "Modes and media"
+    },
+    {
+      "route": "/docs/final-renditions/",
+      "source": "docs/implementation/final-renditions.md",
+      "section": "Modes and media"
+    },
+    {
+      "route": "/docs/deployment-kit/",
+      "source": "docs/operations/deployment-kit.md",
+      "section": "Verify and operate"
+    },
+    {
+      "route": "/docs/production/",
+      "source": "docs/operations/production-onboarding.md",
+      "section": "Verify and operate"
+    },
+    {
+      "route": "/docs/verifier-registry/",
+      "source": "docs/operations/verifier.md",
+      "section": "Verify and operate"
+    },
+    {
+      "route": "/docs/signed-reports/",
+      "source": "docs/operations/signed-reports.md",
+      "section": "Verify and operate"
+    },
+    {
+      "route": "/docs/c2pa-recovery/",
+      "source": "docs/operations/c2pa-recovery.md",
+      "section": "Verify and operate"
+    },
+    {
+      "route": "/docs/data-handling/",
+      "source": "docs/operations/privacy.md",
+      "section": "Verify and operate"
+    },
+    {
+      "route": "/docs/runtime/",
+      "source": "docs/operations/c2pa-runtime.md",
+      "section": "Verify and operate"
+    },
+    {
+      "route": "/docs/keys-trust/",
+      "source": "docs/operations/keys-and-trust.md",
+      "section": "Verify and operate"
+    },
+    {
+      "route": "/docs/cpu/",
+      "source": "docs/operations/cpu-deployment.md",
+      "section": "Verify and operate"
+    },
+    {
+      "route": "/docs/glossary/",
+      "source": "docs/reference/glossary.md",
+      "section": "Reference"
+    },
+    {
+      "route": "/docs/verification-results/",
+      "source": "docs/implementation/verification-results.md",
+      "section": "Reference"
+    },
+    {
+      "route": "/docs/disclosure/",
+      "source": "docs/implementation/disclosure.md",
+      "section": "Reference"
+    },
+    {
+      "route": "/compliance/",
+      "source": "docs/compliance/index.md",
+      "section": "Requirements"
+    },
+    {
+      "route": "/compliance/eu-ai-act/",
+      "source": "docs/compliance/eu-ai-act.md",
+      "section": "Requirements"
+    },
+    {
+      "route": "/compliance/california-ai-transparency-act/",
+      "source": "docs/compliance/california.md",
+      "section": "Requirements"
+    },
+    {
+      "route": "/compliance/matrix/",
+      "source": "docs/compliance/requirements-matrix.md",
+      "section": "Requirements"
+    },
+    {
+      "route": "/compliance/sources/",
+      "source": "docs/compliance/source-excerpts.md",
+      "section": "Requirements"
+    },
+    {
+      "route": "/compliance/code-of-practice/",
+      "source": "docs/compliance/eu-code-map.md",
+      "section": "Requirements"
+    },
+    {
+      "route": "/compliance/operator-checklist/",
+      "source": "docs/compliance/operator-evidence-template.md",
+      "section": "Requirements"
+    },
+    {
+      "route": "/evidence/",
+      "source": "docs/benchmarks/evidence-index.md",
+      "section": "Evidence"
+    },
+    {
+      "route": "/evidence/protocols/",
+      "source": "docs/benchmarks/protocols.md",
+      "section": "Evidence"
+    },
+    {
+      "route": "/evidence/releases/0-7-2a1/",
+      "source": "docs/validation/0.7.2a1-results.md",
+      "section": "Evidence"
+    },
+    {
+      "route": "/docs/licenses/",
+      "source": "docs/operations/licensing.md",
+      "section": "Reference"
+    },
+    {
+      "route": "/docs/troubleshooting/",
+      "source": "docs/operations/troubleshooting.md",
+      "section": "Practical guides"
+    },
+    {
+      "route": "/guides/nodejs-nextjs-integration/",
+      "source": "docs/guides/nodejs-nextjs.md",
+      "section": "Practical guides"
+    },
+    {
+      "route": "/guides/cost-of-ai-labeling/",
+      "source": "docs/guides/cost.md",
+      "section": "Practical guides"
+    },
+    {
+      "route": "/guides/ai-labeling-for-startups/",
+      "source": "docs/guides/startups.md",
+      "section": "Practical guides"
+    },
+    {
+      "route": "/guides/visible-labels-vs-watermarks/",
+      "source": "docs/guides/labels.md",
+      "section": "Practical guides"
+    },
+    {
+      "route": "/comparisons/",
+      "source": "docs/guides/alternatives.md",
+      "section": "Practical guides"
+    },
+    {
+      "route": "/evidence/samples/",
+      "source": "docs/benchmarks/samples.md",
+      "section": "Evidence"
+    }
+  ],
+  "assets": [
+    {
+      "route": "/documentation-assets/requirements-matrix.csv",
+      "source": "docs/compliance/requirements-matrix.csv"
+    },
+    {
+      "route": "/documentation-assets/requirements-matrix.json",
+      "source": "docs/compliance/requirements-matrix.json"
+    },
+    {
+      "route": "/documentation-assets/test-observation.schema.json",
+      "source": "docs/benchmarks/results.schema.json"
+    },
+    {
+      "route": "/documentation-assets/0.7.2a1-summary.json",
+      "source": "docs/validation/results/0.7.2a1-summary.json"
+    },
+    {
+      "route": "/documentation-assets/0.7.2a1-artifacts.json",
+      "source": "docs/validation/results/0.7.2a1-artifacts.json"
+    },
+    {
+      "route": "/documentation-assets/source-review-2026-11-10.json",
+      "source": "compliance/sources/review-2026-11-10.json"
+    },
+    {
+      "route": "/documentation-assets/LICENSE.txt",
+      "source": "LICENSE"
+    },
+    {
+      "route": "/documentation-assets/THIRD_PARTY.md",
+      "source": "THIRD_PARTY.md"
+    },
+    {
+      "route": "/documentation-assets/SECURITY.md",
+      "source": "SECURITY.md"
+    }
+  ],
+  "rules": [
+    "Canonical Markdown remains in SDK repository",
+    "Preserve historical benchmark versions and qualification SHA",
+    "No private source PDF/media/key/database in website bundle",
+    "Source PDFs remain in maintainer evidence; short excerpts link to original",
+    "Website downloads/operator contact/domain remain configured separately"
+  ]
+}

@@ -94,6 +94,8 @@ class Watermarker:
         self._engine = TrustMark(verbose=False, model_type="Q", device="cpu",
                                  encoding_type=TrustMark.Encoding.BCH_5,
                                  loadRemover=False, loadBBoxDetector=False)
+        from ariadne_mark.watermark.canonical import CanonicalBCH5
+        self._engine.ecc = CanonicalBCH5(self._engine.ecc)
         if self._engine.schemaCapacity() != BITS:
             raise MissingModel("Unsupported TrustMark payload capacity")
         self._lock = threading.Lock()

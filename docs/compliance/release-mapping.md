@@ -1,6 +1,6 @@
 # Technical coverage, not a jurisdictional certification
 
-Review date: 2026-11-04. This release implements measures and records evidence;
+Source review updated: 2026-11-10. This release implements measures and records evidence;
 it does not decide a product's legal role, territorial scope or exceptions.
 The executable planner maps declared product facts to technical
 settings and remaining actions. It never returns `compliant=true`.
@@ -21,10 +21,10 @@ Source: [European Commission Article 50 text](https://ai-act-service-desk.ec.eur
 The page identifies the consolidated version on which it is based. Check the
 operative legal text and transitional rules before deploying a legal profile.
 
-Provider marking starts on 2 August 2026; Commission guidance gives systems
+Provider marking starts on 2 August 2026; Article 111(4) gives systems
 first placed on the market before that date until 2 December 2026 for that
 marking obligation. This does not defer deployer disclosure. See the
-[official timing FAQ](https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act).
+[official Article 111 text](https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-111), introduced by Regulation (EU) 2026/1744. The Commission FAQ is supporting guidance.
 Full adherence to the separate voluntary Code of Practice is not evaluated.
 
 ## California
@@ -57,3 +57,13 @@ See [source-review record](../../compliance/sources/review-2026-11-04.json).
    independently watermark its track.
 7. Record remaining obligations and your release evidence. China, Korea and
    India are not advertised as supported legal profiles in this release.
+
+The final voluntary [Code of Practice](https://ec.europa.eu/newsroom/dae/redirection/document/129555)
+is separate from the statute. If relying on it, signatories must assess its
+Measure 3.4(c) interoperability solution by 2 February 2027. The planner flags
+this route-dependent work; a universal resolver/signpost is not implemented.
+The complete Code and Article 50 Guidelines have not been assessed for adherence.
+
+For current measure-level coverage use the [EU Code map](eu-code-map.md) and
+[requirements matrix](requirements-matrix.md). Applicable sections have been
+reviewed; full adherence remains unestablished.
