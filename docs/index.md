@@ -44,3 +44,13 @@ The qualified SDK commit is `8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa`. Document
 a new docs commit does not imply that a rebuilt wheel has been qualified. The
 existing wheel/source hashes remain in the [qualification record](validation/0.7.2a1-results.md).
 Historical validation pages describe their original versions, datasets and machines.
+
+## Practical adoption guides
+
+- [Startups: role, market and publication checklist](guides/startups.md)
+- [Node.js, Next.js and mobile backends](guides/nodejs-nextjs.md)
+- [Cost of labeling](guides/cost.md)
+- [Visible labels versus watermarks](guides/labels.md)
+- [Components, kits and managed alternatives](guides/alternatives.md)
+- [Troubleshooting](operations/troubleshooting.md)
+- [Downloadable SDK sample exports](benchmarks/samples.md)

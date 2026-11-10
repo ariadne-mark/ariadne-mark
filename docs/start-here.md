@@ -7,6 +7,23 @@ The supported media runtime is Linux x86-64/Python 3.12 on CPU. The record/profi
 core also supports Python 3.11–3.14. Synthetic audio and text marking are outside
 this visual kit; AAC may be preserved as original audio.
 
+## Get one complete result first
+
+[Download Release 0.7.2a1](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1).
+On Linux x86-64 with Docker Engine, curl, tar and sha256sum:
+
+```sh
+curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.2a1/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
+# Inspect before executing. Run where ariadne-first-run does not already exist.
+bash FIRST_EXPORT.sh
+```
+
+The script checks the frozen wheel/source hashes and sample archive, builds
+the Docker recipe, then exports and verifies a PNG and all three video profiles.
+Results stay under `ariadne-first-run/`. It uses development credentials and
+public synthetic test fixtures. Allow time/disk/network for explicit setup;
+this is not a browser-only install. [Inspect the sample reports](benchmarks/samples.md).
+
 ## Choose an installation
 
 The [source README](../README.md#quick-start-with-docker) contains the Docker

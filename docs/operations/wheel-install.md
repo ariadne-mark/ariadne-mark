@@ -2,6 +2,7 @@
 
 Qualified environment: Linux x86-64, Python 3.12, FFmpeg/ffprobe and Node.js/npm.
 Use a new virtualenv. The Docker recipe provisions the system prerequisites.
+Download the exact wheel and SHA256SUMS from [Release 0.7.2a1](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1); verify the downloaded wheel hash before installation.
 
 ```sh
 python3.12 -m venv .venv

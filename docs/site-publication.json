@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "docs_edition": "2026-11-10",
+  "docs_edition": "2026-11-11",
   "sdk_version": "0.7.2a1",
   "tested_sdk_commit": "8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa",
   "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/42738430001",
   "canonical_origin": null,
-  "scope": "Website content preparation; no deployment or binary rebuild",
+  "scope": "Public developer-alpha documentation; qualified SDK bytes unchanged",
   "pages": [
     {
       "route": "/docs/",
@@ -156,6 +156,41 @@
       "route": "/docs/licenses/",
       "source": "docs/operations/licensing.md",
       "section": "Reference"
+    },
+    {
+      "route": "/docs/troubleshooting/",
+      "source": "docs/operations/troubleshooting.md",
+      "section": "Practical guides"
+    },
+    {
+      "route": "/guides/nodejs-nextjs-integration/",
+      "source": "docs/guides/nodejs-nextjs.md",
+      "section": "Practical guides"
+    },
+    {
+      "route": "/guides/cost-of-ai-labeling/",
+      "source": "docs/guides/cost.md",
+      "section": "Practical guides"
+    },
+    {
+      "route": "/guides/ai-labeling-for-startups/",
+      "source": "docs/guides/startups.md",
+      "section": "Practical guides"
+    },
+    {
+      "route": "/guides/visible-labels-vs-watermarks/",
+      "source": "docs/guides/labels.md",
+      "section": "Practical guides"
+    },
+    {
+      "route": "/comparisons/",
+      "source": "docs/guides/alternatives.md",
+      "section": "Practical guides"
+    },
+    {
+      "route": "/evidence/samples/",
+      "source": "docs/benchmarks/samples.md",
+      "section": "Evidence"
     }
   ],
   "assets": [

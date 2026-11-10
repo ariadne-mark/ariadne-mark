@@ -4,15 +4,34 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer preview · 0.7.2a1 candidate.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Public developer alpha · 0.7.2a1.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 [Documentation hub](docs/index.md) · [EU guide](docs/compliance/eu-ai-act.md) ·
 [California guide](docs/compliance/california.md) · [Test protocols and evidence](docs/benchmarks/protocols.md)
 
+## Download the qualified release
+
+[Release 0.7.2a1](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1)
+contains the wheel/source, SHA-256 hashes, runtime inventory and real sample
+exports with signed verification reports. This is a GitHub release; no PyPI
+publication is claimed. Qualified runtime source: `8c6fda8`; documentation can evolve separately.
+
+For a complete image + three-video-mode walkthrough on Linux x86-64 with Docker:
+
+```sh
+curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.2a1/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
+# Read the script before running it. It creates a new ariadne-first-run directory.
+bash FIRST_EXPORT.sh
+```
+
+[Production identity and timestamps](docs/operations/production-onboarding.md) ·
+[Node.js / Next.js / mobile backend](docs/guides/nodejs-nextjs.md) ·
+[Commercial use](docs/operations/licensing.md) · [Troubleshooting](docs/operations/troubleshooting.md)
+
 ## Quick start with Docker
 
 ```sh
-# Use the source archive shipped with this exact release/candidate.
+# Download the source and SHA256SUMS from Release 0.7.2a1; check hashes first.
 tar -xzf ariadne_mark-0.7.2a1.tar.gz
 cd ariadne_mark-0.7.2a1
 docker build --platform linux/amd64 -t ariadne-mark:local -t ariadne-mark:0.7.2a1 .

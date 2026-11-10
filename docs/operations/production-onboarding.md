@@ -76,3 +76,40 @@ revocation and backward detection of earlier formats.
 Record the results in the [operator evidence template](../compliance/operator-evidence-template.md).
 [Release qualification](../validation/0.7.2a1-results.md) used development credentials;
 no real production identity/TSA deployment or long-running public load test is claimed.
+
+## A concrete certificate route
+
+Reviewed 11 November 2026. Start by identifying your actual operator and product.
+The [CAI implementer guide](https://opensource.contentauthenticity.org/docs/conformance/conformance-impl-guide/)
+describes product conformance followed by CA certificate issuance. Generator
+and validator are separate roles; backend is a supported implementation class.
+The process asks for registered organization details and authorized agreements.
+Ariadne has not enrolled your product, obtained conformance or issued its credentials.
+
+[SSL.com's C2PA offer](https://www.ssl.com/products/content-authenticity/content-credentials/c2pa/)
+currently lists a no-cost one-year Level 1 certificate plus 2,500 timestamps/year,
+subject to eligibility and a valid conformance record. Above-quota pricing needs
+a quote. Confirm ES256/P-256 key handling, certificate chain/EKU, HTTPS TSA
+endpoint, root distribution, quotas and renewal directly before choosing it.
+We have not obtained or interoperability-tested a real certificate from that CA.
+
+The public [C2PA issuer and TSA trust lists](https://opensource.contentauthenticity.org/docs/conformance/trust-lists/)
+serve different purposes. A locally accepted root or generic RFC3161 response
+alone does not prove public C2PA enrollment or the final product's conformance.
+
+### Before paying for or announcing production
+
+1. Complete the operator/product identity and conformance decisions.
+2. Confirm the CA can provide the key/signing interface this SDK supports.
+   The current identity loader requires local PEM ES256 keys; hardware-backed
+   signing is not automatically supplied by this adapter.
+3. Obtain the actual chain and separate TSA roots; validate their provenance.
+4. Run a real export with the configured HTTPS TSA and qualified runtime.
+5. Inspect the exact downloaded output in an independent C2PA validator,
+   distinguishing signature, asset match, timestamp and issuer trust.
+6. Repeat through your real CDN, with renewal/failure/restore tests and a budget.
+
+These steps depend on your operator identity and vendor arrangements. They
+cannot be completed by changing a development identity flag. The SDK/sample
+qualification is available now; production public trust remains an explicit
+operator onboarding step. See [cost planning](../guides/cost.md).

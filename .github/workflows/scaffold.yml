@@ -10,6 +10,14 @@ on:
         description: Reviewed full commit SHA to qualify on the temporary EC2 runner
         required: true
         type: string
+      qualification_mode:
+        description: Source rebuild or unchanged published-package documentation qualification
+        required: true
+        default: source-build
+        type: choice
+        options:
+          - source-build
+          - published-package
 
 permissions:
   contents: read
@@ -27,7 +35,7 @@ jobs:
       - run: echo 'SDK/runtime tests execute only on the trusted EC2 runner. A maintainer must dispatch qualification for the reviewed commit before release.'
   qualify:
     if: github.event_name == 'workflow_dispatch' && github.actor == 'Genesius001' && github.repository == 'ariadne-mark/ariadne-mark'
-    name: EC2 release qualification
+    name: Requirements traceability
     runs-on: ariadne-manual-qualified
     timeout-minutes: 90
     steps:
@@ -41,8 +49,12 @@ jobs:
         run: |
           test "$GITHUB_SHA" = "$EXPECTED_SHA"
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
-      - name: Qualify installed SDK and clean media installs on EC2
+      - name: Qualify source build on EC2
+        if: inputs.qualification_mode == 'source-build'
         run: bash scripts/ci_server.sh
+      - name: Qualify unchanged published package on EC2
+        if: inputs.qualification_mode == 'published-package'
+        run: bash scripts/ci_published_package.sh
       - name: Retain evidence from this revision
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

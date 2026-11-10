@@ -49,3 +49,26 @@ attaching private keys or real user media. The self-hosted application privacy
 page describes application defaults; operators must supply their own actual
 hosting/contact/retention information as applicable. No response-time SLA or
 public trust endorsement is created by publishing this documentation.
+
+## Can a commercial app use this?
+
+Yes: the original Apache-2.0 SDK does not require your app to be open source,
+charge per export or prohibit commercial use. Keep the licence/notices when
+redistributing the SDK. This permission does not replace the terms of the
+dependencies, downloaded weights or bundled codecs in your actual distribution.
+
+| Component in the qualified setup | Licence boundary to inspect |
+| --- | --- |
+| Ariadne original code | Apache-2.0; preserve attributed third-party portions |
+| Adobe TrustMark code and supplied models | Upstream MIT terms; retain notice |
+| Meta VideoSeal legacy code/model | Exact pinned upstream terms in THIRD_PARTY.md |
+| C2PA wrapper/native | MIT or Apache-2.0 according to upstream component |
+| Node/ONNX runtime | Their included notices and third-party terms |
+| FFmpeg, libx264 and PyAV bundled codecs | Component/build-specific terms, including GPL-bearing codecs |
+
+Running your own service and shipping a combined binary/container to customers
+are different distribution scenarios. Do not label an entire generated image
+Apache-only. A prebuilt combined image remains outside this release until its
+corresponding-source and native-dependency distribution review is complete.
+The exact [runtime inventory](../validation/results/0.7.2a1-artifacts.json) and
+THIRD_PARTY.md are the starting point for that review.
