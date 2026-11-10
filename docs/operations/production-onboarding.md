@@ -113,3 +113,26 @@ These steps depend on your operator identity and vendor arrangements. They
 cannot be completed by changing a development identity flag. The SDK/sample
 qualification is available now; production public trust remains an explicit
 operator onboarding step. See [cost planning](../guides/cost.md).
+
+## Provider compatibility checked during launch preparation
+
+| Candidate route | What is established | What is not established |
+| --- | --- | --- |
+| SSL.com C2PA certificate/TSA | Published eligibility, quota and HTTPS TSA endpoint | No enrollment/key; API-key authentication is not directly exposed by this SDK adapter |
+| Generic DigiCert RFC3161 endpoint | Official documentation publishes an HTTP endpoint | The kit requires HTTPS; a single EC2 HTTPS probe failed to connect. No C2PA-TSA compatibility is claimed |
+| Operator-owned compatible HTTPS TSA route | SDK accepts an HTTPS URL and separately configured TSA roots | The actual service, authentication and end-to-end production export need qualification |
+
+[SSL.com's timestamp documentation](https://www.ssl.com/products/content-authenticity/timestamping/)
+specifies `https://ts-c2pa.ssl.com` with an API key. Current kit configuration
+accepts a plain HTTPS URL, rejecting URL credentials/query secrets; the C2PA
+signer adapter supplies no configurable TSA authorization header. Do not put a
+secret into a public URL or imply that this vendor works out of the box.
+Confirm a supported authenticated signing interface or separately qualify a
+restricted operator-owned egress adapter before selecting that route. This
+documentation does not provide or qualify such an adapter.
+
+The DigiCert probe sent only a synthetic random-hash request; its failed HTTPS
+connection is an observation from one host, not a finding that the vendor's
+service is generally unavailable. Do not downgrade the kit's HTTPS policy to
+make that example pass. A real CA/TSA export remains pending actual operator
+identity, credentials and endpoint arrangements.
