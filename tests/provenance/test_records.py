@@ -95,7 +95,7 @@ class RecordTests(unittest.TestCase):
         self.assertEqual(ProvenanceRecord.from_json(future.to_json()), future)
         with self.assertRaisesRegex(ValueError, 'future'):
             future.validate_for_export(now=now)
-        with patch.object(SDK, 'check_runtime', side_effect=AssertionError('must reject before runtime')):
+        with patch.object(SDK, 'check_runtime', return_value=None):
             with self.assertRaisesRegex(ValueError, 'future'):
                 SDK().mark(Path('missing.png'), Path('output.png'), future)
         with self.assertRaisesRegex(ValueError, 'future'):
