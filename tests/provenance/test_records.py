@@ -85,6 +85,31 @@ class RecordTests(unittest.TestCase):
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 example_record(**changes)
 
+    def test_future_claim_is_readable_but_cannot_be_exported(self):
+        from pathlib import Path
+        from unittest.mock import patch
+        from ariadne_mark.pipeline import SDK
+        from ariadne_mark.signing import sign_file
+        now = datetime.now(timezone.utc)
+        future = example_record(created_at=now + timedelta(days=365))
+        self.assertEqual(ProvenanceRecord.from_json(future.to_json()), future)
+        with self.assertRaisesRegex(ValueError, 'future'):
+            future.validate_for_export(now=now)
+        with patch.object(SDK, 'check_runtime', side_effect=AssertionError('must reject before runtime')):
+            with self.assertRaisesRegex(ValueError, 'future'):
+                SDK().mark(Path('missing.png'), Path('output.png'), future)
+        with self.assertRaisesRegex(ValueError, 'future'):
+            sign_file(Path('missing.png'), Path('output.png'), future, 'unused', None)
+
+    def test_clock_skew_allowance_and_timezone_are_export_only_policy(self):
+        now = datetime(2026, 11, 10, tzinfo=timezone.utc)
+        for seconds in [-86400, 0, 300]:
+            example_record(created_at=now + timedelta(seconds=seconds)).validate_for_export(now=now)
+        with self.assertRaisesRegex(ValueError, 'future'):
+            example_record(created_at=now + timedelta(seconds=301)).validate_for_export(now=now)
+        with self.assertRaisesRegex(ValueError, 'timezone'):
+            example_record().validate_for_export(now=now.replace(tzinfo=None))
+
 
 if __name__ == "__main__":
     unittest.main()

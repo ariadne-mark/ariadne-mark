@@ -1,4 +1,4 @@
-# Public alpha checklist — 0.7.2a0 candidate
+# Public alpha checklist — 0.7.2a1 candidate
 
 Release target: local CPU SDK for JPEG/PNG and supported SDR MP4, with
 Economy5s/2s and Resilient video, signed provenance, self-hosted verification and partial
@@ -24,7 +24,7 @@ endpoint, configure trust/privacy/feedback, and assess its own duties. Public
 hosting of an Ariadne-operated verifier is not a prerequisite for this local
 alpha.
 
-See [current qualification protocol](../validation/0.7.2a0.md),
+See [current qualification protocol](../validation/0.7.2a1.md),
 [prior video qualification](../validation/0.7.1a0.md) and
 [qualification rules](releases.md) for publication gates.
 
@@ -49,3 +49,5 @@ Mac environments. Automatic PR notices do not satisfy the runtime gate.
 checks installed kit resources, real Compose/TLS deployment, persistent state,
 key isolation, signed reports, detached recovery and the independent official
 c2patool. Development credentials are local fixtures, not production enrollment.
+
+0.7.2a1 closes external-review timestamp, local issuer-chain/EKU and incomplete-label gaps, preflights audio declarations, separates California dates and checks distinct six-second video cadences. One system/version per kit and metadata-only acceptance recovery are explicit. Retained 4:4:4 color and durability limits are not declared fixed.

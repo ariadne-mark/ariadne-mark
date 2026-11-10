@@ -122,6 +122,7 @@ class SDK:
         return {'manifest': recovered, 'saved_to': str(destination), 'verification': report}
 
     def mark(self, source: Path, destination: Path, record: ProvenanceRecord, *, visible=False, audio_kind="unknown", profile=None, video_profile=None, publish_manifest=False) -> dict:
+        record.validate_for_export()
         self.check_runtime()
         if type(publish_manifest) is not bool:
             raise ValueError('publish_manifest must be a boolean')

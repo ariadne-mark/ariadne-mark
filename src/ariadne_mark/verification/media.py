@@ -295,6 +295,10 @@ def _verification_result(path, c2pa, watermark, *, registry, video, trust_anchor
         label = "Watermark ID recovered; source unverified"
     else:
         label = "Provenance unavailable"
+    # Keep positive evidence visible, but never headline an incomplete negative
+    # scan as an absence. API clients may read only the human-readable label.
+    if label == "Provenance unavailable" and (c2pa['status'] == 'not_checked' or watermark['status'] == 'not_checked'):
+        label = "Check incomplete"
     if c2pa.get("reason") == "c2pa_runtime_unqualified":
         label = (label + "; signature check unavailable") if token else "Signature check unavailable; C2PA runtime not qualified"
     if video and token and c2pa["status"] != "verified_claim":

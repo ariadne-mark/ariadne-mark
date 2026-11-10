@@ -222,6 +222,8 @@ def check(root, *, runtime=False):
             if config['mode'] == 'production':
                 validate_trust_roots(root / 'config/issuer-roots.pem')
                 validate_trust_roots(root / 'config/tsa-roots.pem')
+                from ariadne_mark.signing import validate_provider_chain
+                validate_provider_chain(identity.certificate, root / 'config/issuer-roots.pem')
             import ssl
             tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             tls.load_cert_chain(root / 'private/tls/cert.pem', root / 'private/tls/key.pem')
@@ -250,7 +252,9 @@ def check(root, *, runtime=False):
     return {'status': 'configuration_required' if errors else 'ready_for_development' if config['mode'] == 'development' else 'local_configuration_checked',
             'errors': errors, 'mode': config['mode'], 'profile': evaluate(profile),
             'legal_determination': 'not_performed', 'public_reachability': 'not_checked',
-            'certificate_enrollment': 'not_checked', 'default_video_profile': profile['sdk']['video_profile']}
+            'certificate_enrollment': 'not_checked',
+            'issuer_chain': 'checked_against_configured_roots' if not errors and config['mode'] == 'production' else 'not_checked',
+            'default_video_profile': profile['sdk']['video_profile']}
 
 
 def _inside(root, value):
@@ -297,6 +301,11 @@ def export_batch(root, batch):
         record = ProvenanceRecord.create(publisher=profile['publisher'], system=GenerativeSystem(**profile['system']),
             media_kind=MediaKind.VIDEO if source.suffix.lower() == '.mp4' else MediaKind.IMAGE,
             action=Action.CREATED, created_at=datetime.fromisoformat(row['created_at'].replace('Z', '+00:00')))
+        record.validate_for_export()
+        if source.suffix.lower() == '.mp4':
+            from ariadne_mark.video import probe
+            if probe(source)['audio'] and row.get('audio_kind', 'none') == 'none':
+                raise ValueError('Input contains audio; select audio_kind=original for non-synthetic audio')
         selected = deepcopy(profile); selected['sdk'].update(video_profile=mode, audio_kind=row.get('audio_kind', 'none'))
         jobs.append((source, destination, record, selected, publish))
     from ariadne_mark.signing import SigningIdentity

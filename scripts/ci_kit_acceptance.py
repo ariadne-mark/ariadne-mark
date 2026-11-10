@@ -116,6 +116,14 @@ try:
         assert receipt['registry_recorded'] and receipt['manifest_recovery']['stored']
         if output.suffix == '.mp4':
             assert receipt['video']['profile'] == job['video_profile']
+            expected_windows = {'economy_5s': [0, 1], 'economy_2s': [0, 1, 2]}
+            if job['video_profile'] in expected_windows:
+                actual_windows = [row['index'] for row in receipt['video']['watermark_windows']]
+                assert actual_windows == expected_windows[job['video_profile']], (job['video_profile'], actual_windows)
+                emit('cadence_verified', profile=job['video_profile'], windows=actual_windows,
+                     marked_frames=receipt['video']['marked_frames'])
+            else:
+                assert receipt['video']['marked_frames'] == receipt['video']['frames_encoded']
         receipts[job['destination']] = receipt
     emit('batch_exports', count=len(receipts), video_modes=[j['video_profile'] for j in jobs if 'video_profile' in j])
     command([*compose, 'up', '-d', '--wait', '--wait-timeout', '120'], 'compose-up')

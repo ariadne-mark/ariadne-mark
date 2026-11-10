@@ -1,4 +1,4 @@
-# Supported scope — 0.7.2a0 candidate
+# Supported scope — 0.7.2a1 candidate
 
 | Area | Supported | Boundary |
 | --- | --- | --- |
@@ -81,3 +81,10 @@ rejected before processing and checked again on decoded frames.
 Upstream-C2PA pure marking relay remains unimplemented: existing credentials
 currently require altered/composite semantics. Public provenance disclosure
 requires reviewed sources/trust configuration; default redaction is intentional.
+
+## Retained color-conversion limitation
+
+Full-range 8-bit 4:4:4 input can show a chroma offset through the explicit
+RGB conversion (external review R-03 / P3-5). This release does not change that
+pipeline. Prepare final 4:2:0 SDR renditions before marking and evaluate visual
+quality in your delivery chain; this preparation is not a universal color fix.

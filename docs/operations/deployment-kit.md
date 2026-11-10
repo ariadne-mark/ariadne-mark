@@ -13,12 +13,12 @@ Use the source archive and wheel from the same release manifest. The source
 archive includes Dockerfile, dependency locks, kit assets and test scripts.
 
 ```sh
-tar -xzf ariadne_mark-0.7.2a0.tar.gz
-cd ariadne_mark-0.7.2a0
-docker build --platform linux/amd64 -t ariadne-mark:0.7.2a0 .
+tar -xzf ariadne_mark-0.7.2a1.tar.gz
+cd ariadne_mark-0.7.2a1
+docker build --platform linux/amd64 -t ariadne-mark:0.7.2a1 .
 mkdir -p deployments
 docker run --rm --network none --user "$(id -u):$(id -g)" \
-  -v "$PWD/deployments:/data" ariadne-mark:0.7.2a0 \
+  -v "$PWD/deployments:/data" ariadne-mark:0.7.2a1 \
   kit init /data/demo --development --publisher 'Your Public Studio' \
   --system 'Your Generator' --system-version '1.0'
 ```
@@ -124,5 +124,29 @@ internal review prompts or server access instructions. The SDK's Apache-2.0
 AS-IS terms remain unchanged; they do not establish a provider's legal compliance.
 
 See [supported formats](support.md), [legal mapping](../compliance/launch-mapping.md)
-and [qualification protocol](../validation/0.7.2a0.md). All presets and known
+and [qualification protocol](../validation/0.7.2a1.md). All presets and known
 crop/temporal/remover limits remain unchanged.
+
+## System/version and local validation boundary
+
+One kit serves one publisher and one generative system/version pair, taken from
+config/product.json and matched to config/public-sources.json. Batch jobs cannot
+override the system/version. For another model version, initialize a separate
+kit with its own matching configuration; do not mix v1 and v2 outputs in one batch.
+The operator supplies the actual generation time. Exports reject times more
+than five minutes in the future (SDK clock-skew policy, not a legal threshold).
+Batch preflight probes every MP4 and rejects undeclared audio before any export;
+it does not fully decode media or predict all later runtime failures.
+
+Production kit check validates the provider certificate path against configured
+issuer roots, its current validity, key match and supported C2PA signer EKU
+(emailProtection, documentSigning or c2pa-kp-claimSigning). Timestamp/OCSP and
+any-purpose leaf credentials are rejected. This offline local check does not
+check revocation, external enrollment, public TLS/hostname, live TSA availability,
+service uptime or product-wide legal compliance. It is not production readiness.
+
+The kit acceptance recovery evidence covers metadata removal without media
+re-encoding (PNG re-save and MP4 remux). Recovery after recompression, crop,
+letterboxing or temporal extraction is not guaranteed. A recovered watermark ID
+alone does not authenticate an edited copy. Earlier transformation experiments
+retain their own version, corpus and limitations.

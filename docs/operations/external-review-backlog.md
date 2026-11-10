@@ -84,3 +84,20 @@ reference-decoder numerical equivalence remains an investigation.
 A unified ONNX stack, public FPR evaluation command, soft-binding registration
 and broader held-out calibration remain separate work; no new performance or
 anti-removal claim is made. Final CI logs/manifests determine qualification.
+
+## Independent 0.7.2a0 review follow-up (0.7.2a1)
+
+| Review ID | Disposition | Verification |
+| --- | --- | --- |
+| P2-1 future generation time | Reject over +5 minutes at preflight/export/signing; preserve external-claim parsing | provenance/kit issuance regressions |
+| P2-2 unrelated issuer chain | Offline path validation to configured roots with C2PA-purpose EKU policy | real certificate paths and production kit positive/negative checks |
+| P2-3 one system/version | Explicit kit/README scope; reject batch overrides | kit schema/preflight regression |
+| P3-1 two-second cadence fixture | Six-second fixture; assert distinct Economy windows and Resilient frame counts | installed kit acceptance |
+| P3-2 late audio failure | Probe all MP4 jobs during batch preflight | mock isolation plus real AAC media regression |
+| P3-3 incomplete label | `Check incomplete` for incomplete negative checks, retaining positive/invalid evidence | result semantics regression |
+| P3-4 California dates | Chapter commencement separate from supported profile revision | date-boundary regression |
+| P3-5 full-range 4:4:4 chroma | Retained known limitation, no conversion/model changes | supported-scope documentation; not claimed fixed |
+
+Metadata-only recovery and local configuration checks are described within their
+measured scope. Exact-SHA CI and release hashes are stored in the final artifact
+manifest; this backlog is not a prediction of test success or a legal approval.

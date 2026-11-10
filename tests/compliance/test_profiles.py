@@ -44,6 +44,13 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(self.requirements(r)['eu_disclosure']['state'], 'action_required')
         self.assertEqual(self.report(c, '2026-12-02')['applicability']['EU']['provider_marking']['state'], 'applies_to_declared_scenario')
 
+    def test_california_chapter_date_is_distinct_from_supported_amendment(self):
+        report = self.report(self.config(['US-CA']))['applicability']['US-CA']
+        self.assertEqual(report['effective_on'], '2026-08-02')
+        self.assertEqual(report['profile_revision_effective_on'], '2026-09-30')
+        historical = self.report(self.config(['US-CA']), '2026-08-15')['applicability']['US-CA']
+        self.assertEqual(historical['provider_duties'], 'historical_version_not_supported')
+
     def test_eu_date_boundaries_and_unknown_date(self):
         c = self.config(['EU']); c['context']['eu_first_placed_on_market'] = '2026-08-02'
         self.assertEqual(self.report(c, '2026-08-01')['applicability']['EU']['provider_marking']['state'], 'not_yet_applicable')

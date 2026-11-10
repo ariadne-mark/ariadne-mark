@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from ariadne_mark import kit
 
@@ -97,3 +98,53 @@ class KitTests(unittest.TestCase):
         kit.render(self.root)
         self.assertIn('client_max_body_size 10m;', (self.root / 'nginx.conf').read_text())
         self.assertIn('proxy_read_timeout 250s;', (self.root / 'nginx.conf').read_text())
+
+    def test_future_second_job_fails_before_any_export(self):
+        from datetime import datetime, timedelta, timezone
+        (self.root / 'inputs/image.png').write_bytes(b'preflight only')
+        job = {'source': 'image.png', 'destination': 'first.png',
+               'created_at': datetime.now(timezone.utc).isoformat()}
+        bad = {**job, 'destination': 'second.png',
+               'created_at': (datetime.now(timezone.utc) + timedelta(days=365)).isoformat()}
+        self.write('batch.json', {'schema_version': 1, 'jobs': [job, bad]})
+        with patch('ariadne_mark.pipeline.SDK', side_effect=AssertionError('no exports expected')):
+            with self.assertRaisesRegex(ValueError, 'future'):
+                kit.export_batch(self.root, self.root / 'batch.json')
+        self.assertEqual(list((self.root / 'outputs').iterdir()), [])
+
+    def test_version_override_is_refused_before_publication(self):
+        (self.root / 'inputs/image.png').write_bytes(b'preflight only')
+        self.write('batch.json', {'schema_version': 1, 'jobs': [
+            {'source': 'image.png', 'destination': 'marked.png', 'created_at': '2026-11-09T00:00:00Z',
+             'system': {'name': 'Other Model', 'version': '2'}}]})
+        with self.assertRaisesRegex(ValueError, 'batch job fields'):
+            kit.export_batch(self.root, self.root / 'batch.json')
+
+    def test_audio_mismatch_in_later_job_fails_before_any_export(self):
+        (self.root / 'inputs/image.png').write_bytes(b'preflight only')
+        (self.root / 'inputs/video.mp4').write_bytes(b'probe is isolated in this test')
+        self.write('batch.json', {'schema_version': 1, 'jobs': [
+            {'source': 'image.png', 'destination': 'image.png', 'created_at': '2026-11-09T00:00:00Z'},
+            {'source': 'video.mp4', 'destination': 'video.mp4', 'created_at': '2026-11-09T00:00:00Z'}]})
+        with patch('ariadne_mark.video.probe', return_value={'audio': True}), \
+                patch('ariadne_mark.pipeline.SDK', side_effect=AssertionError('no export before media preflight')):
+            with self.assertRaisesRegex(ValueError, 'contains audio'):
+                kit.export_batch(self.root, self.root / 'batch.json')
+        self.assertEqual(list((self.root / 'outputs').iterdir()), [])
+
+    @unittest.skipUnless(__import__('os').environ.get('ARIADNE_MEDIA_TESTS') == '1', 'requires FFmpeg/PyAV media runtime')
+    def test_real_audio_mismatch_is_preflighted_before_any_export(self):
+        import subprocess
+        (self.root / 'inputs/image.png').write_bytes(b'earlier image must never be processed')
+        source = self.root / 'inputs/with-audio.mp4'
+        subprocess.run(['ffmpeg', '-v', 'error', '-nostdin', '-y', '-f', 'lavfi', '-i',
+            'testsrc2=size=320x256:rate=12:duration=1', '-f', 'lavfi', '-i',
+            'sine=frequency=440:duration=1', '-c:v', 'libx264', '-threads', '2',
+            '-pix_fmt', 'yuv420p', '-c:a', 'aac', str(source)], check=True, capture_output=True, timeout=30)
+        self.write('batch.json', {'schema_version': 1, 'jobs': [
+            {'source': 'image.png', 'destination': 'image.png', 'created_at': '2026-11-09T00:00:00Z'},
+            {'source': 'with-audio.mp4', 'destination': 'video.mp4', 'created_at': '2026-11-09T00:00:00Z', 'audio_kind':'none'}]})
+        with patch('ariadne_mark.pipeline.SDK', side_effect=AssertionError('preflight must precede SDK construction')):
+            with self.assertRaisesRegex(ValueError, 'contains audio'):
+                kit.export_batch(self.root, self.root / 'batch.json')
+        self.assertEqual(list((self.root / 'outputs').iterdir()), [])

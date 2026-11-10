@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.2a1 — external-review follow-up
+
+- Reject generation timestamps over five minutes in the future at batch/export/signing boundaries; parsing external claims remains possible.
+- Check production issuer chains against configured roots with C2PA signer EKUs; local checks remain distinct from enrollment and production readiness.
+- Preflight MP4 audio declarations across the batch before any export; explicitly document one system/version per kit.
+- Headline incomplete negative checks as `Check incomplete`, preserving invalid/positive evidence.
+- Separate California chapter commencement and supported-amendment dates.
+- Extend acceptance fixtures to six seconds and assert distinct Economy schedules and full-frame Resilient coverage.
+- Clarify tested metadata-only recovery and retain the full-range 4:4:4 chroma, crop, short-excerpt and remover limitations.
+- Preserve all three profiles, default Economy5s, cadence, payload, models, strength and native-runtime pins.
+
 ## 0.7.2a0 — SDK / verifier / registry deployment kit
 
 - Add explicit kit init/check/render/export/serve commands, batch SDK reuse and operator-owned Compose deployment.

@@ -78,3 +78,27 @@ cloud firewalls, certificate issuance or DNS.
 Software is Apache-2.0, including its AS-IS terms. Third-party components retain
 their licenses. The nginx image is an independently fetched deployment tool,
 not a binary redistributed inside the SDK wheel/source.
+
+## System/version and local validation boundary
+
+One kit serves one publisher and one generative system/version pair, taken from
+config/product.json and matched to config/public-sources.json. Batch jobs cannot
+override the system/version. For another model version, initialize a separate
+kit with its own matching configuration; do not mix v1 and v2 outputs in one batch.
+The operator supplies the actual generation time. Exports reject times more
+than five minutes in the future (SDK clock-skew policy, not a legal threshold).
+Batch preflight probes every MP4 and rejects undeclared audio before any export;
+it does not fully decode media or predict all later runtime failures.
+
+Production kit check validates the provider certificate path against configured
+issuer roots, its current validity, key match and supported C2PA signer EKU
+(emailProtection, documentSigning or c2pa-kp-claimSigning). Timestamp/OCSP and
+any-purpose leaf credentials are rejected. This offline local check does not
+check revocation, external enrollment, public TLS/hostname, live TSA availability,
+service uptime or product-wide legal compliance. It is not production readiness.
+
+The kit acceptance recovery evidence covers metadata removal without media
+re-encoding (PNG re-save and MP4 remux). Recovery after recompression, crop,
+letterboxing or temporal extraction is not guaranteed. A recovered watermark ID
+alone does not authenticate an edited copy. Earlier transformation experiments
+retain their own version, corpus and limitations.

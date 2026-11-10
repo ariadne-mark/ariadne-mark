@@ -4,15 +4,15 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer preview · 0.7.2a0 candidate.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer preview · 0.7.2a1 candidate.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 ## Quick start with Docker
 
 ```sh
 # Use the source archive shipped with this exact release/candidate.
-tar -xzf ariadne_mark-0.7.2a0.tar.gz
-cd ariadne_mark-0.7.2a0
-docker build --platform linux/amd64 -t ariadne-mark:local -t ariadne-mark:0.7.2a0 .
+tar -xzf ariadne_mark-0.7.2a1.tar.gz
+cd ariadne_mark-0.7.2a1
+docker build --platform linux/amd64 -t ariadne-mark:local -t ariadne-mark:0.7.2a1 .
 ```
 
 The build downloads CPU dependencies and verifies pinned model files. Processing can then run without a network connection:
@@ -59,7 +59,7 @@ The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free
 python3.12 -m venv .venv
 . .venv/bin/activate
 # Use the downloaded wheel, or use: python -m pip install --no-deps .
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.2a0-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.2a1-py3-none-any.whl
 # Explicit setup installs the pinned C2PA pair and CPU dependencies, then models.
 # FFmpeg/ffprobe and Node.js/npm must already be installed.
 ariadne setup media --fetch-models
@@ -169,7 +169,7 @@ docker run --rm --network none --cpus 2 --memory 6g \
   ariadne-mark:local -m unittest discover -s tests -t . -v
 ```
 
-The ordinary core suite skips media tests unless explicitly enabled. Release qualification runs the Python matrix and real-engine Docker suite in a maintainer-dispatched EC2 job for an exact commit. Automatic PR/push checks are notices and do not run SDK tests. [Reproducible benchmark](benchmarks/durability/README.md) · [0.7.2a0 qualification](docs/validation/0.7.2a0.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+The ordinary core suite skips media tests unless explicitly enabled. Release qualification runs the Python matrix and real-engine Docker suite in a maintainer-dispatched EC2 job for an exact commit. Automatic PR/push checks are notices and do not run SDK tests. [Reproducible benchmark](benchmarks/durability/README.md) · [0.7.2a1 qualification](docs/validation/0.7.2a1.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
 
 [Public alpha checklist](docs/operations/public-alpha-checklist.md).
 
@@ -198,7 +198,7 @@ Native C2PA 0.91.11 is pinned for correct CBOR byte-string assertions; rerun
 bootstrap when upgrading an existing 0.6 environment. Algorithm-list enrollment,
 production trust and mode-specific durability assessment remain separate work.
 
-### C2PA media preflight (0.7.2a0)
+### C2PA media preflight (0.7.2a1)
 
 `ariadne runtime check` reports the loaded native version and SHA-256 alongside
 Python-package pins. The qualified media pair is c2pa-python0.38.3/native0.91.11
@@ -223,3 +223,16 @@ The [requirements map](docs/compliance/launch-mapping.md) distinguishes binding 
 voluntary guidance, technical measures and operator duties. Economy's adequacy for
 an actual EU/California product remains an assessment question, particularly the
 California removal-resistance criterion. This SDK does not supply a compliance certificate.
+
+### Developer-alpha boundaries
+
+One deployment kit serves one publisher/system/version pair; use separate kits
+for other model versions. Generation timestamps more than five minutes ahead
+of the export clock are rejected. Production `kit check` validates the local
+issuer chain/EKU against configured roots, but does not establish production
+readiness, certificate enrollment, endpoint availability or legal compliance.
+Kit recovery acceptance covers metadata removal without re-encoding (PNG
+re-save and MP4 remux); recompression/crop recovery is not guaranteed. The
+six-second acceptance fixture distinguishes Economy5s and Economy2s cadence.
+See [0.7.2a1 qualification](docs/validation/0.7.2a1.md) and
+[deployment scope](docs/operations/deployment-kit.md).

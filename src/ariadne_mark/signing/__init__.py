@@ -102,6 +102,53 @@ def validate_trust_roots(path: Path):
     return len(roots)
 
 
+def validate_provider_chain(certificate: Path, trust_roots: Path) -> None:
+    """Offline path validation to operator roots, with a C2PA signer EKU policy.
+
+    Uses cryptography's path builder (signatures, constraints, validity, depth),
+    not a hand-written issuer-name/signature walk. Override its TLS-specific
+    SAN/EKU requirements: this is a document/claim signer, not a TLS client.
+    Does not establish C2PA enrollment, revocation status or public trust.
+    """
+    from cryptography import x509
+    from cryptography.x509.verification import (
+        PolicyBuilder, Store, ExtensionPolicy, Criticality, VerificationError,
+    )
+    from cryptography.x509.oid import ExtendedKeyUsageOID, ObjectIdentifier
+    accepted = {ExtendedKeyUsageOID.EMAIL_PROTECTION, ObjectIdentifier('1.3.6.1.5.5.7.3.36'),
+                ObjectIdentifier('1.3.6.1.4.1.62558.2.1')}
+    forbidden = {ExtendedKeyUsageOID.TIME_STAMPING, ExtendedKeyUsageOID.OCSP_SIGNING,
+                 ExtendedKeyUsageOID.ANY_EXTENDED_KEY_USAGE}
+
+    def signer_eku(policy, cert, extension):
+        values = set(extension)
+        if not values.intersection(accepted) or values.intersection(forbidden):
+            raise ValueError('Provider certificate requires a C2PA signing EKU without timestamp/OCSP/any-purpose use')
+
+    def ca_eku(policy, cert, extension):
+        if extension is not None:
+            values = set(extension)
+            if not values.intersection(accepted | {ExtendedKeyUsageOID.ANY_EXTENDED_KEY_USAGE}):
+                raise ValueError('CA EKU does not permit C2PA signing')
+
+    chain = x509.load_pem_x509_certificates(Path(certificate).read_bytes())
+    roots = x509.load_pem_x509_certificates(Path(trust_roots).read_bytes())
+    if not chain or not roots:
+        raise ValueError('Provider certificate chain and configured issuer roots are required')
+    ee = (ExtensionPolicy.webpki_defaults_ee()
+          .may_be_present(x509.SubjectAlternativeName, Criticality.AGNOSTIC, None)
+          .require_present(x509.ExtendedKeyUsage, Criticality.AGNOSTIC, signer_eku))
+    ca = (ExtensionPolicy.webpki_defaults_ca()
+          .may_be_present(x509.ExtendedKeyUsage, Criticality.AGNOSTIC, ca_eku))
+    try:
+        verifier = (PolicyBuilder().store(Store(roots)).time(datetime.now(timezone.utc))
+                    .max_chain_depth(8).extension_policies(ca_policy=ca, ee_policy=ee)
+                    .build_client_verifier())
+        verifier.verify(chain[0], chain[1:])
+    except (VerificationError, ValueError) as exc:
+        raise ValueError('Provider certificate chain/EKU is not valid against configured issuer roots: ' + str(exc)) from exc
+
+
 def context(trust_anchors: Path | None = None, *, tsa_trust_anchors: Path | None = None):
     from ariadne_mark.c2pa_runtime import require_runtime
     require_runtime()
@@ -129,6 +176,7 @@ def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: 
               identity: SigningIdentity, *, parent: Path | None = None, disclosure: bool = False,
               audio: str = "none", algorithm: str = "adobe.trustmark.Q.bch5",
               payload_format: str = "ariadne-v1", watermark_profile: str | None = None, tsa_trust_anchors: Path | None = None) -> bytes:
+    record.validate_for_export()
     from ariadne_mark.c2pa_runtime import require_runtime
     require_runtime()
     import c2pa

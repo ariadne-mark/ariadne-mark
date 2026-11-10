@@ -36,6 +36,21 @@ class C2paPolicyTests(unittest.TestCase):
         report = _verification_result(Path('fixture.png'), claim, {'status': 'not_checked'}, registry=None, video=False)
         self.assertEqual(report['label'], 'C2PA signature valid; no supported AI-origin claim')
 
+    def test_incomplete_negative_checks_are_not_headlined_as_absence(self):
+        from ariadne_mark.verification.media import _verification_result
+        for c2pa, watermark in [('not_found', 'not_checked'), ('not_checked', 'not_found'),
+                                ('not_checked', 'not_checked')]:
+            report = _verification_result(Path('fixture.mp4'), {'status': c2pa},
+                {'status': watermark}, registry=None, video=True)
+            self.assertEqual(report['label'], 'Check incomplete')
+        report = _verification_result(Path('fixture.mp4'), {'status': 'not_found'},
+            {'status': 'not_found'}, registry=None, video=True)
+        self.assertEqual(report['label'], 'Provenance unavailable')
+        for c2pa, watermark in [('invalid', 'not_checked'), ('not_checked', 'invalid')]:
+            report = _verification_result(Path('fixture.mp4'), {'status': c2pa},
+                {'status': watermark}, registry=None, video=True)
+            self.assertEqual(report['label'], 'Invalid or conflicting provenance')
+
 
 if __name__ == "__main__":
     unittest.main()
