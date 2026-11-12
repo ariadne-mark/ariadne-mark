@@ -2,6 +2,17 @@
 set -euo pipefail
 # Trusted maintainer dispatch only. All SDK tests execute inside bounded EC2
 # containers. Never register this runner for automatic public-fork execution.
+# Serialize heavy qualification on this small host. External experiments use
+# the same host lock; it is not a model/runtime dependency.
+exec 9>"${ARIADNE_CI_LOCK_FILE:-$HOME/.ariadne-qualification.lock}"
+flock 9
+mkdir -p release-dist/logs
+ariadne_free_bytes=$(df -PB1 . | awk 'NR==2 {print $4}')
+printf 'free_bytes=%s\nminimum_before_source_build_bytes=%s\n' "$ariadne_free_bytes" "$((15 * 1024 * 1024 * 1024))" > release-dist/logs/resource-preflight.txt
+if (( ariadne_free_bytes < 15 * 1024 * 1024 * 1024 )); then
+  echo "Source qualification needs 15 GiB free including reserve; available bytes: $ariadne_free_bytes" >&2
+  exit 2
+fi
 root=$(pwd)
 out="$root/release-dist"
 work="$root/.ci-work"
@@ -9,7 +20,14 @@ mkdir -p "$out/logs" "$work/fixtures" "$work/install"
 run_id="${GITHUB_RUN_ID:-manual}-$(git rev-parse --short HEAD)"
 image="ariadne-mark:ci-$run_id"
 build_image="$image-build"
-stage() { echo "$1" | tee "$out/current-stage.txt"; date -u +%FT%TZ >> "$out/current-stage.txt"; }
+stage() {
+  echo "$1" | tee "$out/current-stage.txt"; date -u +%FT%TZ >> "$out/current-stage.txt"
+  ariadne_free_bytes=$(df -PB1 . | awk 'NR==2 {print $4}')
+  if (( ariadne_free_bytes < 3 * 1024 * 1024 * 1024 )); then
+    echo "Disk reserve reached before $1; stopping without deleting evidence" >&2
+    exit 2
+  fi
+}
 # Cache-free source qualification is an explicit maintainer choice, recorded
 # in the log. A required download failure never becomes a cached success.
 build_flags=()
@@ -30,7 +48,7 @@ container=$(docker create "$image" --help)
 docker cp "$container":/opt/dist/. "$out/"
 docker rm "$container" >/dev/null
 stage full-installed-media
-docker run --rm --network none --cpus 2 --memory 6g --read-only --tmpfs /tmp:rw,noexec,nosuid,size=512m \
+docker run --rm --network none --cpus 2 --memory 4g --read-only --tmpfs /tmp:rw,noexec,nosuid,size=512m \
   -e ARIADNE_MEDIA_TESTS=1 "${legacy_args[@]}" -w /app --entrypoint python "$image" \
   -m unittest discover -s tests -t . -v > "$out/logs/full-media.log" 2>&1
 python3 - "$out/logs/full-media.log" <<'CHECK'
@@ -55,11 +73,11 @@ docker run --rm --network none --cpus 2 --memory 1g --user 10001:10001 -v "$work
   -v "$root/scripts:/scripts:ro" --entrypoint python "$build_image" /scripts/ci_prepare_fixtures.py /fixtures > "$out/logs/fixture-preparation.log" 2>&1
 for engine in video media; do
   # Explicit setup is online; later processing smoke is repeated offline below.
-  docker run --name "ariadne-ci-install-$run_id-$engine" --cpus 2 --memory 6g --user 10001:10001 \
+  docker run --name "ariadne-ci-install-$run_id-$engine" --cpus 2 --memory 4g --user 10001:10001 \
     -v "$out:/artifacts:ro" -v "$root/scripts:/scripts:ro" -v "$work/fixtures:/fixtures:ro" -v "$work/install:/work" \
     -w /work --entrypoint bash "$build_image" /scripts/ci_clean_install.sh "$engine" \
     > "$out/logs/clean-wheel-$engine.log" 2>&1
-  docker run --rm --network none --cpus 2 --memory 6g --user 10001:10001 \
+  docker run --rm --network none --cpus 2 --memory 4g --user 10001:10001 \
     -v "$root/scripts:/scripts:ro" -v "$work/fixtures:/fixtures:ro" -v "$work/install:/work" \
     -e "ARIADNE_VIDEO_DATA=/work/$engine-video-runtime" -w /work --entrypoint "/work/$engine-venv/bin/python" "$build_image" \
     /scripts/ci_install_smoke.py "$engine" "/work/$engine-offline-smoke" /fixtures > "$out/logs/offline-wheel-$engine.jsonl" 2>&1

@@ -57,3 +57,9 @@ fixture via `ARIADNE_CI_LEGACY_MODEL` (default `$HOME/.cache/ariadne-ci/y_256b_i
 it is mounted read-only only during backward-compatibility tests, never copied
 into the public runtime or needed by clean installation. Missing fixture fails
 qualification rather than silently skipping legacy tests.
+
+Heavy qualification is serialized with `ARIADNE_CI_LOCK_FILE` (default
+`$HOME/.ariadne-qualification.lock`); external experiments must acquire the same
+lock. Source qualification needs 15 GiB free before starting and retains a 3 GiB
+reserve between stages. Containers are limited to 4 GiB on the 8 GiB host. A
+resource stop is an infrastructure failure, not a passing SDK qualification.

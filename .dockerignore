@@ -16,3 +16,11 @@ examples/stateless_product
 **/*.egg-info
 **/._*
 **/.DS_Store
+
+# Operator secrets are mounted at runtime, never copied into an image.
+.env
+.env.*
+*.key
+*.pem
+**/*.key
+**/*.pem
