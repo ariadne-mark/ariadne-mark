@@ -89,6 +89,8 @@ sudo chown "$(id -u):$(id -g)" "$work/kit" "$work/tools"
 python3 scripts/fetch_external_validator.py "$work/tools" > "$out/logs/external-validator.json"
 docker pull nginx@sha256:583b7f2fce1cdb8da5ad5c39ebd3c33b98b87d493190e548bdee1fa8c619c311 > "$out/logs/edge-provisioning.log" 2>&1
 python3 scripts/ci_kit_acceptance.py "$image" "$work/kit" "$work/fixtures" "$out/kit-acceptance" "$work/tools/c2patool" > "$out/logs/kit-acceptance.jsonl" 2>&1
+stage source-archive-resources
+docker run --rm --network none --cpus 2 --memory 512m --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m -v "$out:/artifacts:ro" -w /app --entrypoint python "$image" scripts/check_sdist_documentation.py /artifacts > "$out/logs/sdist-documentation.json"
 stage traceability-and-inventory
 python3 scripts/check_requirements.py > "$out/logs/requirements.log"
 python3 scripts/check_runtime_locks.py > "$out/logs/runtime-locks.log"

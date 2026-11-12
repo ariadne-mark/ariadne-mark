@@ -1,5 +1,5 @@
 include Dockerfile compose.yaml .dockerignore THIRD_PARTY.md CHANGELOG.md CONTRIBUTING.md SECURITY.md CODE_OF_CONDUCT.md
-recursive-include docs *.md *.txt *.json
+recursive-include docs *.md *.txt *.json *.csv
 recursive-include compliance *.md *.json
 recursive-include scripts *.py *.sh *.mjs
 recursive-include benchmarks *.md *.txt *.py *.json *.jsonl

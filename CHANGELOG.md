@@ -9,6 +9,8 @@
 - Missing video-mode choice blocks profiled video export; optional selection rationale is recorded. Direct SDK default remains Economy5s; all three modes/cadence/strength are preserved.
 - [Migration, known issues and evidence boundaries](docs/operations/release-0.7.3a0.md).
 
+- Include the legal requirement matrix CSV in source distributions; verify documentation/UI from the extracted sdist.
+
 ### Schema-2 verifier block
 
 - Verification report `schema_version` 2: several distinct watermark IDs give `watermark.status=multiple_ids` with every ID in `watermark.ids` (scheme, basis, observed positions) instead of a general `invalid`. No ID is preferred; a genuinely invalid C2PA signature is still `invalid`.
