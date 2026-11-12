@@ -11,6 +11,7 @@ FORMAT = 'ariadne-vq1'
 MODELS = {'encoder_Q.onnx': '19b3d1b25836130ffd78775a8f61539f993375d1823ef0e59ba5b8dffb4f892d', 'decoder_Q.onnx': 'ee3268f057c9dabef680e169302f5973d0589feea86189ed229a896cc3aa88df'}
 ORIGINAL = '1de62f33353525b11cb38f89c56f8b07fd8ca241092d67ce5a74bdfb5c8db3d3'
 PATCHED = 'b9a1c7035bed4c35a5a0e61ff423b4fae34781634a565b56d14dfc92e2927b31'
+STDERR_TAIL = 4096  # bytes of worker stderr kept in memory for last_error
 
 def data_dir():
     return Path(os.environ.get('ARIADNE_VIDEO_DATA', str(Path.home() / '.cache/ariadne-mark/video-v1')))
@@ -147,9 +148,9 @@ class VideoWatermarker:
             self.close()
         check_models()
         d = data_dir().resolve()
-        self._errors = tempfile.TemporaryFile()
         self._responses = queue.Queue()
-        self._process = subprocess.Popen(['node', str(ROOT / 'worker.mjs'), str(d / 'runtime'), str(d / 'models'), str(self.threads)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        self._process = subprocess.Popen(['node', str(ROOT / 'worker.mjs'), str(d / 'runtime'), str(d / 'models'), str(self.threads)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self._start_stderr_drain(self._process)
         self._owner = os.getpid()
         if not self._cleanup_registered:
             atexit.register(self.close)
@@ -183,18 +184,51 @@ class VideoWatermarker:
         threading.Thread(target=reader, daemon=True).start()
         self._receive()
 
+    def _start_stderr_drain(self, process):
+        """Keep only the last STDERR_TAIL bytes; the pipe is always drained.
+
+        Diagnostics stay on this object (last_error). They are never added to
+        exception messages, verifier IPC or public output, and cannot grow a
+        file or memory without bound over a long-lived worker.
+        """
+        tail, lock = bytearray(), threading.Lock()
+        self._stderr_tail, self._stderr_lock = tail, lock
+
+        def drain():
+            try:
+                while True:
+                    data = process.stderr.read1(STDERR_TAIL)
+                    if not data:
+                        return
+                    with lock:
+                        tail.extend(data)
+                        del tail[:-STDERR_TAIL]
+            except (OSError, ValueError):
+                return
+        self._stderr_thread = threading.Thread(target=drain, daemon=True)
+        self._stderr_thread.start()
+
+    def _capture_stderr(self):
+        lock = getattr(self, '_stderr_lock', None)
+        if lock is None:
+            return
+        with lock:
+            text = bytes(self._stderr_tail).decode(errors='replace').strip()
+        if text:
+            self.last_error = text
+
+    def _fail(self, message, cause=None):
+        self.close()
+        self._capture_stderr()
+        raise AriadneError(message) from cause
+
     def _receive(self):
         try:
             r = self._responses.get(timeout=self.timeout)
         except queue.Empty:
-            self.close()
-            raise AriadneError('Video worker timed out')
+            self._fail('Video worker timed out')
         if isinstance(r, Exception):
-            if hasattr(self, '_errors') and not self._errors.closed:
-                self._errors.seek(0)
-                self.last_error = self._errors.read()[-4096:].decode(errors='replace')
-            self.close()
-            raise AriadneError('Video worker failed: ' + str(r))
+            self._fail('Video worker failed: ' + str(r), r)
         if r[0].get('error'):
             raise AriadneError(r[0]['error'])
         return r
@@ -208,9 +242,8 @@ class VideoWatermarker:
             p.stdin.write(struct.pack('>I', len(head)) + head)
             p.stdin.write(body)
             p.stdin.flush()
-        except (BrokenPipeError, OSError):
-            self.close()
-            raise AriadneError('Video worker pipe failed')
+        except (BrokenPipeError, OSError) as exc:
+            self._fail('Video worker pipe failed', exc)
         return self._receive()
 
     @contextlib.contextmanager
@@ -294,9 +327,13 @@ class VideoWatermarker:
             except subprocess.TimeoutExpired:
                 p.kill()
                 p.wait()
-            for f in [p.stdin, p.stdout]:
+            # The pipe reaches EOF once the worker has exited; join briefly so
+            # its final diagnostic lines are kept before the stream is closed.
+            thread = getattr(self, '_stderr_thread', None)
+            if thread is not None:
+                thread.join(timeout=1)
+            for f in [p.stdin, p.stdout, p.stderr]:
                 if f:
                     f.close()
-            self._errors.close()
         self._process = None
         self._token = None

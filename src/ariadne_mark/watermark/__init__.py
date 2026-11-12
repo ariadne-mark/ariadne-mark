@@ -10,6 +10,18 @@ from ariadne_mark.errors import MissingModel, UnsupportedMedia
 
 BITS = 61
 PREFIX = 0x14D
+IMAGE_RUNTIME_MISSING = ("Image watermarking needs the media runtime (PyTorch/TrustMark), which a video-only "
+                         "install omits; run `ariadne setup media --fetch-models` in this environment")
+
+
+def _image_runtime():
+    """Import the image stack, naming the missing setup instead of a raw module."""
+    try:
+        import torch
+        from trustmark import TrustMark
+    except ImportError as exc:
+        raise MissingModel(IMAGE_RUNTIME_MISSING) from exc
+    return torch, TrustMark
 
 
 def new_token() -> str:
@@ -23,7 +35,10 @@ def valid_token(token: str) -> bool:
 
 
 def model_inventory() -> dict:
-    import trustmark
+    try:
+        import trustmark
+    except ImportError as exc:
+        raise MissingModel(IMAGE_RUNTIME_MISSING) from exc
     folder = Path(trustmark.__file__).parent / "models"
     result = {}
     for name in ("trustmark_Q.yaml", "encoder_Q.ckpt", "decoder_Q.ckpt"):
@@ -51,7 +66,10 @@ def fetch_models() -> dict:
     import os
     import tempfile
     import urllib.request
-    import trustmark
+    try:
+        import trustmark
+    except ImportError as exc:
+        raise MissingModel(IMAGE_RUNTIME_MISSING) from exc
     folder = Path(trustmark.__file__).parent / "models"
     folder.mkdir(parents=True, exist_ok=True)
     expected = json.loads((Path(__file__).parent / "models.json").read_text())
@@ -86,8 +104,7 @@ class Watermarker:
     implementation = "python-torch-trustmark"
 
     def __init__(self, *, threads: int = 2):
-        import torch
-        from trustmark import TrustMark
+        torch, TrustMark = _image_runtime()
         if not 1 <= threads <= 64:
             raise ValueError("threads must be between 1 and 64")
         check_models()
