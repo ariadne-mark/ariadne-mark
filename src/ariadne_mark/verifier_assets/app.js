@@ -34,7 +34,7 @@ function render(report) {
   $('provenance').replaceChildren();
   const record = c.record && c.record.publisher ? c.record : r.record || c.record || {};
   addField('Watermark ID', w.token);
-  if (w.status === 'multiple_ids') (w.ids || []).forEach(e => addField(e.status === 'confirmed' ? 'Watermark ID (confirmed)' : 'Watermark ID (single read)',
+  if (w.status === 'multiple_ids') (w.ids || []).forEach(e => addField(e.status === 'confirmed' ? 'Watermark ID (confirmed)' : 'Watermark ID (unconfirmed)',
     `${e.token}${typeof e.first_time_s === 'number' ? ` · seen ${e.first_time_s.toFixed(2)}–${e.last_time_s.toFixed(2)} s` : ''}`));
   addField('Provider', record.publisher);
   addField('System', record.system ? `${record.system.name} · ${record.system.version}` : null);

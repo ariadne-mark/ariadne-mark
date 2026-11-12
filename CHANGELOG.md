@@ -5,6 +5,7 @@
 - Verification report `schema_version` 2: several distinct watermark IDs give `watermark.status=multiple_ids` with every ID in `watermark.ids` (scheme, basis, observed positions) instead of a general `invalid`. No ID is preferred; a genuinely invalid C2PA signature is still `invalid`.
 - Observations record integer PTS/time base, scheme and pass; one decoded frame read twice never counts as two confirmations. `watermark.evidence_scope` states what each pass examined. Search order, frequency and budgets are unchanged.
 - Registry recovery and `/matches/byContent` work per confirmed ID; `recover --id` selects one ID after detection. CLI `verify` exits 0 only for `recovered_claim`/`not_found`.
+- Apply `/matches/byContent` result limits after public/scheme filtering; label unconfirmed ID evidence without implying a single-frame read.
 - Export gate unchanged: Economy known-window and Resilient/legacy sample read-back, ID/record checks and no publication on failure.
 
 ## 0.7.2a1 — external-review follow-up

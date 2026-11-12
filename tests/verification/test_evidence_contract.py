@@ -242,7 +242,8 @@ class CryptoContextTests(unittest.TestCase):
         corrupt = {'status': 'invalid', 'signature': 'invalid', 'issuer_trust': 'not_checked',
                    'reason': 'malformed_c2pa'}
         with_scan = run(corrupt, QScanner([A, A] + [None] * 238))
-        self.assertEqual(with_scan['label'], 'Invalid or conflicting provenance')
+        self.assertEqual(with_scan['label'], 'Invalid or conflicting provenance; sampled video evidence only')
+        self.assertEqual(with_scan['c2pa']['status'], 'invalid')
         self.assertEqual(with_scan['watermark']['token'], A)
         # Adding or removing watermark engines never changes the C2PA block
         # evaluated on the same bytes and validation context.

@@ -349,12 +349,15 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
                         tokens = [e['token'] for e in watermark.get('ids', []) if e.get('status') == 'confirmed']
                     else:
                         tokens = [watermark['token']] if watermark.get('token') else []
+                    from ariadne_mark.verification.media import MAX_IDS
                     matches = []
-                    for token in tokens[:int(maximum)]:
+                    for token in tokens[:MAX_IDS]:
                         bundle = registry.get_manifest(token=token, public_only=True) if registry else None
                         if (bundle and bundle['algorithm'] in observed_algorithms(watermark, token)
                                 and (requested_algorithm is None or bundle['algorithm'] == requested_algorithm)):
                             matches.append({'manifestId': bundle['id']})
+                            if len(matches) >= int(maximum):
+                                break
                     self.respond(200, {'matches': matches})
                     return
                 result = public_report(report, sources)

@@ -135,17 +135,14 @@ class CliExitTests(unittest.TestCase):
 
 
 class ContentQueryTests(unittest.TestCase):
-    def test_by_content_returns_one_candidate_per_confirmed_id(self):
-        bundles = {A: {'id': 'urn:a', 'algorithm': 'org.ariadne-mark.trustmark-q.video-bch5.v1'},
-                   B: {'id': 'urn:b', 'algorithm': 'org.ariadne-mark.trustmark-q.bch5.v1'}}
-        report = multi_report()
-        report['watermark']['samples'] = [{'token': A, 'algorithm': Q}, {'token': B, 'algorithm': LEGACY}]
+    def query(self, report, bundles, query=''):
         asked = []
 
         class Registry:
             def get_manifest(self, token, public_only=False):
-                asked.append(token)
-                return bundles.get(token)
+                asked.append((token, public_only))
+                bundle = bundles.get(token)
+                return None if bundle and public_only and bundle.get('private') else bundle
 
         class SDK:
             registry = Registry()
@@ -155,13 +152,64 @@ class ContentQueryTests(unittest.TestCase):
         thread.start()
         try:
             connection = http.client.HTTPConnection(*server.server_address, timeout=5)
-            connection.request('POST', '/matches/byContent', b'asset', {'Content-Type': 'video/mp4'})
+            connection.request('POST', '/matches/byContent' + query, b'asset', {'Content-Type': 'video/mp4'})
             response = connection.getresponse()
             status, body = response.status, json.loads(response.read())
             connection.close()
         finally:
             server.shutdown(); server.server_close(); thread.join()
         self.assertEqual(status, 200)
-        # B is a single unconfirmed read: never resolved to a manifest.
+        self.assertTrue(all(public_only for _, public_only in asked))
+        return body, [token for token, _ in asked]
+
+    def report(self, *, both_confirmed=True):
+        report = multi_report()
+        report['watermark']['samples'] = [{'token': A, 'algorithm': Q}, {'token': B, 'algorithm': LEGACY}]
+        if both_confirmed:
+            report['watermark']['ids'][1]['status'] = 'confirmed'
+        return report
+
+    def test_by_content_returns_one_candidate_per_confirmed_id(self):
+        bundles = {A: {'id': 'urn:a', 'algorithm': 'org.ariadne-mark.trustmark-q.video-bch5.v1'},
+                   B: {'id': 'urn:b', 'algorithm': 'org.ariadne-mark.trustmark-q.bch5.v1'}}
+        body, asked = self.query(self.report(both_confirmed=False), bundles)
+        self.assertEqual(body, {'matches': [{'manifestId': 'urn:a'}]})
+        self.assertEqual(asked, [A])  # observed-only B is not looked up
+
+    def test_result_limit_follows_missing_or_private_manifest_filter(self):
+        valid = {'id': 'urn:b', 'algorithm': 'org.ariadne-mark.trustmark-q.bch5.v1'}
+        for first in (None, {'id': 'urn:private', 'algorithm': 'org.ariadne-mark.trustmark-q.video-bch5.v1', 'private': True}):
+            with self.subTest(first=first):
+                body, asked = self.query(self.report(), {A: first, B: valid}, '?maxResults=1')
+                self.assertEqual(body, {'matches': [{'manifestId': 'urn:b'}]})
+                self.assertEqual(asked, [A, B])
+
+    def test_result_limit_follows_requested_algorithm_filter(self):
+        legacy_binding = 'org.ariadne-mark.trustmark-q.bch5.v1'
+        bundles = {A: {'id': 'urn:a', 'algorithm': 'org.ariadne-mark.trustmark-q.video-bch5.v1'},
+                   B: {'id': 'urn:b', 'algorithm': legacy_binding}}
+        body, asked = self.query(self.report(), bundles, '?maxResults=1&alg=' + legacy_binding)
+        self.assertEqual(body, {'matches': [{'manifestId': 'urn:b'}]})
+        self.assertEqual(asked, [A, B])
+
+    def test_result_limit_follows_observed_scheme_filter(self):
+        legacy_binding = 'org.ariadne-mark.trustmark-q.bch5.v1'
+        # A was read by Q, not the legacy scheme named by its stored bundle.
+        bundles = {A: {'id': 'urn:a', 'algorithm': legacy_binding}, B: {'id': 'urn:b', 'algorithm': legacy_binding}}
+        body, asked = self.query(self.report(), bundles, '?maxResults=1')
+        self.assertEqual(body, {'matches': [{'manifestId': 'urn:b'}]})
+        self.assertEqual(asked, [A, B])
+
+    def test_result_limit_caps_actual_matches_and_stops_lookup(self):
+        bundles = {A: {'id': 'urn:a', 'algorithm': 'org.ariadne-mark.trustmark-q.video-bch5.v1'},
+                   B: {'id': 'urn:b', 'algorithm': 'org.ariadne-mark.trustmark-q.bch5.v1'}}
+        body, asked = self.query(self.report(), bundles, '?maxResults=1')
         self.assertEqual(body, {'matches': [{'manifestId': 'urn:a'}]})
         self.assertEqual(asked, [A])
+
+    def test_candidate_lookup_count_remains_bounded(self):
+        report = self.report()
+        report['watermark']['ids'] = [{'token': f'014d{i:012x}', 'status': 'confirmed'} for i in range(40)]
+        body, asked = self.query(report, {}, '?maxResults=100')
+        self.assertEqual(body, {'matches': []})
+        self.assertEqual(len(asked), 16)

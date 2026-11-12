@@ -44,7 +44,9 @@ gets its own registry result in `recovery.per_id`, checked only against a scheme
 that actually read that ID; a single unconfirmed read is not looked up. Choose
 one with `ariadne recover ... --id ID` (SDK `token=`) after reviewing the
 verification result. `POST /matches/byContent` returns one candidate per
-confirmed ID, up to `maxResults`.
+confirmed ID, up to `maxResults`. The limit applies to returned public matches
+after filtering, so a missing, private or algorithm-mismatched earlier ID does
+not hide a later eligible match. The candidate ID list remains bounded.
 
 ## Explicit publication
 
