@@ -47,3 +47,13 @@ Release requires the successful **EC2 release qualification** job for the exact
 revision plus clean artifact manifests. Branch-protection contexts must match
 the adopted workflow when this candidate is merged; this documentation does not
 change repository branch protections or authorize deployment/publication.
+
+## 0.7.3a0 source qualification
+
+Maintainer dispatch can set `no_cache=true` to rebuild/download from pinned source
+without Docker layer cache. Default public provisioning fetches current models
+only. Full regression additionally requires a local, hash-checked legacy model
+fixture via `ARIADNE_CI_LEGACY_MODEL` (default `$HOME/.cache/ariadne-ci/y_256b_img.jit`);
+it is mounted read-only only during backward-compatibility tests, never copied
+into the public runtime or needed by clean installation. Missing fixture fails
+qualification rather than silently skipping legacy tests.

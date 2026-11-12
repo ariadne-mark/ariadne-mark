@@ -7,7 +7,11 @@ errors=[];warnings=[];checked_links=0;python_blocks=0;shell_blocks=0
 manifest=json.loads((root/'docs/site-publication.json').read_text())
 version=tomllib.loads((root/'pyproject.toml').read_text())['project']['version']
 summary=json.loads((root/'docs/validation/results/0.7.2a1-summary.json').read_text())
-assert manifest['sdk_version']==summary['sdk_version']==version
+# The website publication snapshot is immutable evidence for the prior release,
+# not qualification of a new SDK candidate.
+assert manifest['sdk_version']==summary['sdk_version']=='0.7.2a1'
+assert version == '0.7.3a0'
+assert (root/'docs/operations/release-0.7.3a0.md').is_file()
 assert manifest['tested_sdk_commit']==summary['commit']=='8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa'
 assert summary['ci_conclusion']=='success' and summary['full_media']=={'tests':217,'wall_s':357.287,'skipped':0}
 assert summary['video_profiles']==['economy_5s','economy_2s','resilient']
@@ -78,7 +82,7 @@ for line in (root/'docs/compliance/source-excerpts.md').read_text().splitlines()
  m=re.search(r'\[.+?\]\((https?://[^)]+)\).*?“([^”]+)”',line)
  if m:quote_words[m[1]]=quote_words.get(m[1],0)+len(m[2].split())
 if any(n>25 for n in quote_words.values()):errors.append('Excerpt quota exceeded')
-result={'ok':not errors,'sdk_version':version,'qualified_sdk_commit':summary['commit'],
+result={'ok':not errors,'sdk_version':version,'published_snapshot_qualified_commit':summary['commit'],
  'active_markdown_files':len(paths),'local_links_checked':checked_links,'python_blocks_syntax_checked':python_blocks,
  'shell_blocks_syntax_checked':shell_blocks,'publication_pages':len(manifest['pages']),'publication_assets':len(manifest['assets']),
  'legal_matrix_rows':len(legal['rows']),'excerpt_words_by_source':quote_words,'errors':errors,'warnings':warnings,

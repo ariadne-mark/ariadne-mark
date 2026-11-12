@@ -10,16 +10,38 @@ run_id="${GITHUB_RUN_ID:-manual}-$(git rev-parse --short HEAD)"
 image="ariadne-mark:ci-$run_id"
 build_image="$image-build"
 stage() { echo "$1" | tee "$out/current-stage.txt"; date -u +%FT%TZ >> "$out/current-stage.txt"; }
+# Cache-free source qualification is an explicit maintainer choice, recorded
+# in the log. A required download failure never becomes a cached success.
+build_flags=()
+if [[ "${ARIADNE_CI_NO_CACHE:-0}" == 1 ]]; then build_flags+=(--no-cache --pull); fi
+legacy_file="${ARIADNE_CI_LEGACY_MODEL:-$HOME/.cache/ariadne-ci/y_256b_img.jit}"
+legacy_args=()
+if [[ -f "$legacy_file" ]]; then
+  printf '%s  %s\n' 5c7a4581c36fc6090aafdcfb3999123bae5172a4847f22e2da4e7fd1a39d1e1b "$legacy_file" | sha256sum -c - > "$out/logs/legacy-fixture-check.log"
+  legacy_args=(-v "$legacy_file:/legacy/y_256b_img.jit:ro" -e ARIADNE_VIDEOSEAL_MODEL=/legacy/y_256b_img.jit)
+else
+  echo 'Full legacy regression requires the qualified model fixture; public source build does not.' >&2
+  exit 2
+fi
 stage build-clean-source
-docker build -t "$image" . > "$out/logs/docker-build.log" 2>&1
+docker build "${build_flags[@]}" -t "$image" . > "$out/logs/docker-build.log" 2>&1
 docker build --target build -t "$build_image" . > "$out/logs/docker-build-stage.log" 2>&1
 container=$(docker create "$image" --help)
 docker cp "$container":/opt/dist/. "$out/"
 docker rm "$container" >/dev/null
 stage full-installed-media
 docker run --rm --network none --cpus 2 --memory 6g --read-only --tmpfs /tmp:rw,noexec,nosuid,size=512m \
-  -e ARIADNE_MEDIA_TESTS=1 -w /app --entrypoint python "$image" \
+  -e ARIADNE_MEDIA_TESTS=1 "${legacy_args[@]}" -w /app --entrypoint python "$image" \
   -m unittest discover -s tests -t . -v > "$out/logs/full-media.log" 2>&1
+python3 - "$out/logs/full-media.log" <<'CHECK'
+import pathlib,re,sys
+s=pathlib.Path(sys.argv[1]).read_text()
+assert re.search(r'^OK$',s,re.M) and 'skipped=' not in s, s[-2000:]
+CHECK
+stage verifier-ui
+docker run --rm --network none --cpus 2 --memory 512m --read-only -w /app --entrypoint node "$image" scripts/check_verifier_ui.mjs > "$out/logs/verifier-ui.json"
+stage documentation
+docker run --rm --network none --cpus 2 --memory 512m --read-only -w /app --entrypoint python "$image" scripts/check_documentation.py > "$out/logs/documentation.json"
 stage core-matrix
 for py in 3.11 3.12 3.13 3.14; do
   docker run --rm --network none --cpus 2 --memory 1g --user 65534:65534 --read-only --tmpfs /tmp:rw,nosuid,size=512m \

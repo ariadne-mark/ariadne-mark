@@ -46,9 +46,12 @@ class SDK:
     video_marker: object | None = None
     video_profile: str = DEFAULT_PROFILE
     tsa_trust_anchors: Path | None = None
+    verification_scope: str | tuple = "all"
 
     def __post_init__(self):
         validate_profile(self.video_profile)
+        from ariadne_mark.verification.scope import normalize_scope
+        normalize_scope(self.verification_scope)
         from ariadne_mark.c2pa_runtime import check_if_installed
         # Pure core construction must not be broken by another application's
         # optional C2PA installation. Export/verification and HTTP preflight
@@ -100,7 +103,7 @@ class SDK:
         if isinstance(engine, VideoWatermarker) and engine._process is None:
             with self._video_markers_lock:
                 engine = next((m for m in self._video_markers.values() if m._process is not None), engine)
-        return verify_file(path, marker=self.marker, video_marker=engine, legacy_video_marker=self._legacy_video_marker, registry=self.registry, trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors)
+        return verify_file(path, marker=self.marker, video_marker=engine, legacy_video_marker=self._legacy_video_marker, registry=self.registry, trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors, verification_scope=self.verification_scope)
 
     def recover_manifest(self, path: Path, destination: Path, *, token: str | None = None) -> dict:
         """Blindly recover an ID, match its signed manifest and save exact bytes.

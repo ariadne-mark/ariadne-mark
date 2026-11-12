@@ -4,12 +4,20 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Public developer alpha · 0.7.2a1.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer-alpha candidate · 0.7.3a0 (not yet published).** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 [Documentation hub](docs/index.md) · [EU guide](docs/compliance/eu-ai-act.md) ·
 [California guide](docs/compliance/california.md) · [Test protocols and evidence](docs/benchmarks/protocols.md)
 
-## Download the qualified release
+## Candidate and previous published release
+
+This checkout contains the schema-2 candidate, **0.7.3a0**. Its installation and
+verification-scope changes are described in [migration and known issues](docs/operations/release-0.7.3a0.md).
+Use the wheel built from this checkout for candidate review. Do not overwrite
+the older published artifact. The release link below is the previous 0.7.2a1
+baseline, not this candidate.
+
+### Previous published baseline
 
 [Release 0.7.2a1](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1)
 contains the wheel/source, SHA-256 hashes, runtime inventory and real sample
@@ -31,10 +39,8 @@ bash FIRST_EXPORT.sh
 ## Quick start with Docker
 
 ```sh
-# Download the source and SHA256SUMS from Release 0.7.2a1; check hashes first.
-tar -xzf ariadne_mark-0.7.2a1.tar.gz
-cd ariadne_mark-0.7.2a1
-docker build --platform linux/amd64 -t ariadne-mark:local -t ariadne-mark:0.7.2a1 .
+# From this reviewed 0.7.3a0 source checkout; candidate is not published yet.
+docker build --platform linux/amd64 -t ariadne-mark:local -t ariadne-mark:0.7.3a0 .
 ```
 
 The build downloads CPU dependencies and verifies pinned model files. Processing can then run without a network connection:
@@ -58,7 +64,7 @@ docker run --rm --network none --user "$(id -u):$(id -g)" \
 
 Video uses TrustMark Q on CPU. The default `economy_5s` marks 125 ms windows every 5 seconds; `economy_2s` uses 2 seconds. Each selected frame receives a fresh signal. `resilient` processes every frame. All three presets are in the same SDK/wheel and need the same video runtime. Select with `SDK(video_profile="economy_2s")`, a per-export `sdk.mark(..., video_profile="resilient")`, `--video-profile`, or `sdk.video_profile` in a product JSON configuration.
 
-Economy export checks require an independently decoded matching ID in every occupied watermark window; Resilient retains its five-sample read-back gate. Independent verification does not need the export profile: it scans for IDs and can recover weak signals from cached logits without a second CNN pass. Search budgets and incomplete/conflicting results are explicit. A recovered ID does not establish whole-video coverage or legal compliance. Legacy Fast, VideoSeal and older TrustMark IDs remain readable; `fast` is an explicit compatibility encoder, no longer the default.
+Economy export checks require an independently decoded matching ID in every occupied watermark window; Resilient retains its five-sample read-back gate. For a new operator that has never issued VideoSeal marks, set `SDK(verification_scope="current")` or CLI `--verification-scope current`; new kits write this scope explicitly. Existing SDK/CLI defaults remain `all` for compatibility. A negative applies only to declared schemes; a signed out-of-scope technique remains `not_checked`. Independent verification does not need the export profile: it scans for IDs and can recover weak signals from cached logits without a second CNN pass. Search budgets and incomplete/conflicting results are explicit. A recovered ID does not establish whole-video coverage or legal compliance. Legacy Fast and older TrustMark IDs remain readable; VideoSeal requires its explicit optional model setup; `fast` is an explicit compatibility encoder, no longer the default.
 
 ```sh
 ariadne mark input.mp4 output.mp4 --video-profile resilient \
@@ -81,7 +87,7 @@ The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free
 python3.12 -m venv .venv
 . .venv/bin/activate
 # Use the downloaded wheel, or use: python -m pip install --no-deps .
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.2a1-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a0-py3-none-any.whl
 # Explicit setup installs the pinned C2PA pair and CPU dependencies, then models.
 # FFmpeg/ffprobe and Node.js/npm must already be installed.
 ariadne setup media --fetch-models
@@ -98,7 +104,7 @@ The explicit C2PA bootstrap builds the official tagged Python wrapper with the
 SHA-256-pinned upstream native library 0.91.11. It is qualified on Linux x86-64;
 use the Docker recipe for the supported media environment.
 
-`models fetch` provisions image, new video and legacy VideoSeal engines. Use `--engine trustmark` for images, `--engine video` for Economy/Resilient, or `--engine videoseal` for legacy compatibility. `ARIADNE_VIDEOSEAL_MODEL` can point to a shared, checksum-verified model file.
+`models fetch` defaults to the current image and video engines (`--engine media`). Legacy VideoSeal is not on the normal setup/build path. Use `models fetch --engine all` to request all engines explicitly; a requested engine download failure remains an error. Use `--engine trustmark` for images, `--engine video` for Economy/Resilient, or `--engine videoseal` for legacy compatibility. `ARIADNE_VIDEOSEAL_MODEL` can point to a shared, checksum-verified model file.
 
 `models fetch` is an explicit setup step. Later requests fail clearly if models are missing or have incorrect checksums. They do not silently download models.
 

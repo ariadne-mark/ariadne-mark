@@ -55,7 +55,12 @@ def load(root):
     from ariadne_mark.profiles import load as load_profile
     root = Path(root).resolve()
     value = _json(root / 'config/kit.json')
-    expected = {'schema_version', 'mode', 'verifier_url', 'timestamp_url',
+    if not isinstance(value, dict):
+        raise ValueError('Invalid kit schema')
+    value.setdefault('verification_scope', 'all')  # Preserve scope of existing deployments.
+    if not isinstance(value['verification_scope'], str) or value['verification_scope'] not in {'all', 'current'}:
+        raise ValueError('Invalid kit verification_scope')
+    expected = {'verification_scope', 'schema_version', 'mode', 'verifier_url', 'timestamp_url',
                 'public_manifests', 'threads', 'max_upload_mb', 'verification_timeout'}
     if not isinstance(value, dict) or set(value) != expected or type(value['schema_version']) is not int or value['schema_version'] != 1:
         raise ValueError('Invalid kit schema')
@@ -156,7 +161,8 @@ def initialize(directory, *, publisher, system, system_version, development=Fals
         _dev_tls(root)
     kit = {'schema_version': 1, 'mode': 'development' if development else 'production',
            'verifier_url': verifier_url, 'timestamp_url': None, 'public_manifests': public_manifests,
-           'threads': 2, 'max_upload_mb': 128, 'verification_timeout': 180}
+           'threads': 2, 'max_upload_mb': 128, 'verification_timeout': 180,
+           'verification_scope': 'current'}
     profile = template()
     profile.update(publisher=publisher, system={'name': system, 'version': system_version}, role='provider')
     profile['sdk'].update(audio_kind='none')
@@ -339,7 +345,8 @@ def serve(root):
     from ariadne_mark.server import serve as run_server
     with IsolatedVerifier(registry=root / 'registry/assets.sqlite3', trust_anchors=root / 'config/issuer-roots.pem',
             tsa_trust_anchors=(root / 'config/tsa-roots.pem') if config['mode'] == 'production' else None,
-            threads=config['threads'], timeout=config['verification_timeout']) as verifier:
+            threads=config['threads'], timeout=config['verification_timeout'],
+            verification_scope=config['verification_scope']) as verifier:
         run_server(verifier, host='0.0.0.0', port=8080, production=config['mode'] == 'production',
             max_upload_mb=config['max_upload_mb'], public_sources=root / 'config/public-sources.json',
             feedback_url=config['verifier_url'] + '/feedback',

@@ -353,7 +353,7 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
                     matches = []
                     for token in tokens[:MAX_IDS]:
                         bundle = registry.get_manifest(token=token, public_only=True) if registry else None
-                        if (bundle and bundle['algorithm'] in observed_algorithms(watermark, token)
+                        if (bundle and bundle['algorithm'] in observed_algorithms(watermark, token, video=path.suffix.lower() == ".mp4")
                                 and (requested_algorithm is None or bundle['algorithm'] == requested_algorithm)):
                             matches.append({'manifestId': bundle['id']})
                             if len(matches) >= int(maximum):

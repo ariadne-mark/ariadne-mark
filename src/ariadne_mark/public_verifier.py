@@ -86,7 +86,7 @@ def _public_id(entry):
 
 def _public_scope(scope):
     result = {k: deepcopy(scope[k]) for k in ('whole_file_examined', 'full_decode_schemes', 'unavailable_schemes',
-                                              'positions_scope', 'unexamined_content') if k in scope}
+                                              'positions_scope', 'unexamined_content', 'declared_schemes', 'out_of_operator_scope') if k in scope}
     if isinstance(scope.get('passes'), list):
         result['passes'] = [{k: deepcopy(p[k]) for k in ('algorithm', 'selection', 'coverage', 'requested_positions',
                                                          'unique_frames', 'time_range_s', 'stop_reason', 'complete')
@@ -111,7 +111,7 @@ def _public_recovery(recovery, sources, redacted, prefix):
 
 def public_report(report, sources=()):
     """Return a compact public API report, keeping private debug data local."""
-    result = {k: deepcopy(report[k]) for k in ['schema_version', 'label', 'token_mismatch'] if k in report}
+    result = {k: deepcopy(report[k]) for k in ['schema_version', 'label', 'token_mismatch', 'signed_id_observed'] if k in report}
     redacted = []
     c2pa = report.get('c2pa', {})
     if c2pa:
@@ -136,7 +136,7 @@ def public_report(report, sources=()):
     watermark = report.get('watermark', {})
     if watermark:
         allowed = ['status', 'reason', 'token', 'algorithm_scope', 'engines_checked',
-                   'coverage', 'scope', 'sample_coverage', 'checked_frames']
+                   'coverage', 'scope', 'sample_coverage', 'checked_frames', 'declared_schemes', 'out_of_operator_scope', 'unavailable_auxiliary_engines']
         result['watermark'] = {k: deepcopy(watermark[k]) for k in allowed if k in watermark}
         searches = [a['search'] for a in watermark.get('attempts', []) if 'search' in a]
         if searches:

@@ -37,7 +37,8 @@ class EconomyPolicyTests(unittest.TestCase):
         config = template()
         del config['sdk']['video_profile']
         default = validate(config)
-        self.assertEqual(default['sdk']['video_profile'], 'economy_5s')
+        self.assertIsNone(default['sdk']['video_profile'])
+        self.assertFalse(evaluate(default)['export_supported'])
         self.assertNotIn('video_profile', config['sdk'])
         base_hash = evaluate(default)['configuration_sha256']
         default['sdk']['video_profile'] = 'economy_2s'

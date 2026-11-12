@@ -38,7 +38,7 @@ def main():
     initialized = False
     try:
         config = read_message(sys.stdin.buffer)
-        if set(config) != {'threads', 'registry', 'trust_anchors', 'tsa_trust_anchors'}:
+        if set(config) != {'threads', 'registry', 'trust_anchors', 'tsa_trust_anchors', 'verification_schemes'}:
             raise ValueError('worker_config')
         from pathlib import Path
         from ariadne_mark.pipeline import SDK
@@ -49,7 +49,8 @@ def main():
                   registry=Registry(Path(config['registry']), read_only=True) if config['registry'] else None,
                   trust_anchors=Path(config['trust_anchors']) if config['trust_anchors'] else None,
                   tsa_trust_anchors=Path(config['tsa_trust_anchors']) if config['tsa_trust_anchors'] else None,
-                  video_marker=VideoWatermarker(threads=config['threads']))
+                  video_marker=VideoWatermarker(threads=config['threads']),
+                  verification_scope=config['verification_schemes'])
         sdk.check_runtime()
         send_message(channel, {'ready': True})
         initialized = True

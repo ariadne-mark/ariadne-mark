@@ -20,7 +20,7 @@ from ariadne_mark.verifier_worker import MAX_MESSAGE, read_message, send_message
 class IsolatedVerifier:
     identity = None
 
-    def __init__(self, *, registry=None, trust_anchors=None, threads=2, timeout=180, tsa_trust_anchors=None, _command=None):
+    def __init__(self, *, registry=None, trust_anchors=None, threads=2, timeout=180, tsa_trust_anchors=None, verification_scope="all", _command=None):
         if type(threads) is not int or not 1 <= threads <= 64:
             raise ValueError('threads must be1–64')
         if type(timeout) not in (float, int) or not math.isfinite(timeout) or not 0 < timeout <= 3600:
@@ -30,7 +30,9 @@ class IsolatedVerifier:
         self.trust_anchors = Path(trust_anchors) if trust_anchors else None
         self.tsa_trust_anchors = Path(tsa_trust_anchors) if tsa_trust_anchors else None
         self.timeout = timeout
-        self._config = {'threads': threads, 'registry': str(Path(registry).resolve()) if registry else None,
+        from ariadne_mark.verification.scope import normalize_scope
+        schemes = normalize_scope(verification_scope)
+        self._config = {'verification_schemes': list(schemes), 'threads': threads, 'registry': str(Path(registry).resolve()) if registry else None,
                         'trust_anchors': str(self.trust_anchors.resolve()) if self.trust_anchors else None,
                         'tsa_trust_anchors': str(self.tsa_trust_anchors.resolve()) if self.tsa_trust_anchors else None}
         self._builtin_worker = _command is None

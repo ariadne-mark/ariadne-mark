@@ -1,6 +1,15 @@
 # Changelog
 
-## Unreleased — verifier evidence (not released or qualified)
+## 0.7.3a0 — candidate, not published
+
+- Default model provisioning and source Docker build use current image/video models only; legacy VideoSeal remains explicit.
+- Add declared operator scope (`all` / `current`) through SDK, CLI, isolated worker and kit; preserve incomplete results for unavailable required techniques.
+- Add finite directional Python-Q video decoder compatibility for signed-manifest recovery; crypto and token checks remain mandatory.
+- Show single-ID positions/scope and independent `signed_id_observed`; development signatures retain incomplete watermark wording.
+- Missing video-mode choice blocks profiled video export; optional selection rationale is recorded. Direct SDK default remains Economy5s; all three modes/cadence/strength are preserved.
+- [Migration, known issues and evidence boundaries](docs/operations/release-0.7.3a0.md).
+
+### Schema-2 verifier block
 
 - Verification report `schema_version` 2: several distinct watermark IDs give `watermark.status=multiple_ids` with every ID in `watermark.ids` (scheme, basis, observed positions) instead of a general `invalid`. No ID is preferred; a genuinely invalid C2PA signature is still `invalid`.
 - Observations record integer PTS/time base, scheme and pass; one decoded frame read twice never counts as two confirmations. `watermark.evidence_scope` states what each pass examined. Search order, frequency and budgets are unchanged.

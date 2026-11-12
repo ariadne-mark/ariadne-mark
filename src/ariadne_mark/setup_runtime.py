@@ -50,7 +50,7 @@ def install(engine='media', *, allow_system=False, cache=None, wheelhouse=None, 
         if missing:
             raise ValueError('Install system prerequisites before setup: ' + ', '.join(missing))
         commands.append([sys.executable, '-m', 'ariadne_mark.cli', 'models', 'fetch',
-                         '--engine', 'all' if engine == 'media' else 'video'])
+                         '--engine', 'media' if engine == 'media' else 'video'])
     for command in commands:
         try:
             # Keep final stdout JSON parseable; installer output goes to stderr.
@@ -60,4 +60,6 @@ def install(engine='media', *, allow_system=False, cache=None, wheelhouse=None, 
     return {'status': 'installed', 'engine': engine, 'models_provisioned': fetch_models,
             'dependency_lock_sha256': pins['sha256'], 'native_qualification': 'checked_in_fresh_process',
             'legacy_decoders_included': engine == 'media',
+            'legacy_models_provisioned': False,
+            'model_scope': 'current_image_and_video' if engine == 'media' else 'current_video',
             'note': 'Start/restart media processes after explicit installation'}

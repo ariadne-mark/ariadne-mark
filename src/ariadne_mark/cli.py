@@ -58,7 +58,7 @@ def main(argv=None) -> int:
     profile_check.add_argument("--as-of", help="Evaluate a YYYY-MM-DD scenario (does not update source knowledge)")
     models = commands.add_parser("models", help="Provision or check pinned watermark models")
     models.add_argument("action", choices=["fetch", "check"])
-    models.add_argument("--engine", choices=["all", "trustmark", "videoseal", "video"], default="all")
+    models.add_argument("--engine", choices=["media", "all", "trustmark", "videoseal", "video"], default="media")
     dev = commands.add_parser("init-dev", help="Generate a DEVELOPMENT signing identity")
     dev.add_argument("directory", type=Path)
     mark = commands.add_parser("mark", help="Watermark, sign and verify a JPEG, PNG or MP4")
@@ -105,6 +105,9 @@ def main(argv=None) -> int:
         sub.add_argument("--trust-anchors", type=Path, help="PEM trust roots supplied by the operator")
         sub.add_argument("--tsa-trust-anchors", type=Path, help="Optional separate PEM roots for private timestamp authorities")
         sub.add_argument("--threads", type=int, default=2)
+    for sub in (verify, serve, recover):
+        sub.add_argument("--verification-scope", choices=["all", "current"], default="all",
+                         help="current: operator uses TrustMark image/video only; all: include legacy VideoSeal")
     args = parser.parse_args(argv)
     try:
         if args.command == 'kit':
@@ -175,7 +178,7 @@ def main(argv=None) -> int:
             from ariadne_mark import watermark, videoseal, videoq
             result = {}
             for name, engine in (("trustmark", watermark), ("videoseal", videoseal), ("video", videoq)):
-                if args.engine in {"all", name}:
+                if args.engine in {"all", name} or (args.engine == "media" and name in {"trustmark", "video"}):
                     import importlib.util
                     dependency = {"trustmark": "trustmark", "videoseal": "torch"}.get(name)
                     if args.engine == "all" and dependency and importlib.util.find_spec(dependency) is None:
@@ -210,6 +213,7 @@ def main(argv=None) -> int:
             from ariadne_mark.videoq import VideoWatermarker
             from ariadne_mark.video.policy import DEFAULT_PROFILE
             sdk = SDK(marker, registry=registry, trust_anchors=args.trust_anchors, tsa_trust_anchors=args.tsa_trust_anchors,
+                      verification_scope=getattr(args, "verification_scope", "all"),
                       video_marker=VideoWatermarker(threads=args.threads,
                           profile=getattr(args, "video_profile", None) or DEFAULT_PROFILE))
             sdk.check_runtime()
@@ -218,7 +222,8 @@ def main(argv=None) -> int:
                 from ariadne_mark.isolated_verifier import IsolatedVerifier
                 sdk.close()
                 isolated = IsolatedVerifier(registry=args.registry, trust_anchors=args.trust_anchors,
-                                            threads=args.threads, timeout=args.verification_timeout, tsa_trust_anchors=args.tsa_trust_anchors)
+                                            threads=args.threads, timeout=args.verification_timeout, tsa_trust_anchors=args.tsa_trust_anchors,
+                                            verification_scope=args.verification_scope)
                 serve(isolated, host=args.host, port=args.port, max_upload_mb=args.max_upload_mb,
                       feedback_url=args.feedback_url, production=args.production,
                       public_sources=args.public_sources, feedback_db=args.feedback_db, report_signer=report_signer,

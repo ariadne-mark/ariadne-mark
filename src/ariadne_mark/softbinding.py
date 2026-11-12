@@ -13,6 +13,22 @@ ALGORITHMS = {
     'adobe.trustmark.Q.variax-bch5': 'org.ariadne-mark.trustmark-q.video-bch5.v1',
     'meta.videoseal.1.0.bch20': 'org.ariadne-mark.videoseal.bch20.v1',
 }
+
+# TrustMark-Q/BCH-5 payload interoperability. Qualified against independent
+# decoded frames and signed stores in release R3; does not authenticate a copy.
+# Directional: Python Q reads video-Q marks. No VideoSeal or image aliasing.
+VIDEO_DECODER_COMPATIBILITY = {
+    'adobe.trustmark.Q.bch5': {'org.ariadne-mark.trustmark-q.video-bch5.v1'},
+}
+
+
+def compatible_manifest_algorithms(schemes, *, video=False):
+    result = {ALGORITHMS[s] for s in schemes if s in ALGORITHMS}
+    if video:
+        for scheme in schemes:
+            result.update(VIDEO_DECODER_COMPATIBILITY.get(scheme, ()))
+    return result
+
 MAX_MANIFEST_BYTES = 16 * 1024 * 1024
 
 
@@ -95,13 +111,14 @@ def validate_match(raw_manifest, algorithm, token):
     return manifest_id
 
 
-def observed_algorithms(watermark, token=None):
+def observed_algorithms(watermark, token=None, *, video=False):
     """Identify engines that actually recovered the returned (or given) ID."""
     token = watermark.get('token') if token is None else token
     if token is None:
         return set()
-    return {ALGORITHMS[row['algorithm']] for row in [*watermark.get('samples', []), *watermark.get('aggregates', [])]
-            if row.get('token') == token and row.get('algorithm') in ALGORITHMS}
+    schemes = {row['algorithm'] for row in [*watermark.get('samples', []), *watermark.get('aggregates', [])]
+               if row.get('token') == token and row.get('algorithm') in ALGORITHMS}
+    return compatible_manifest_algorithms(schemes, video=video)
 
 
 def inspect_recovered(store, asset, algorithm, token, *, trust_anchors=None, tsa_trust_anchors=None):

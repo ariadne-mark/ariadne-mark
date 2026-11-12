@@ -34,8 +34,15 @@ function render(report) {
   $('provenance').replaceChildren();
   const record = c.record && c.record.publisher ? c.record : r.record || c.record || {};
   addField('Watermark ID', w.token);
-  if (w.status === 'multiple_ids') (w.ids || []).forEach(e => addField(e.status === 'confirmed' ? 'Watermark ID (confirmed)' : 'Watermark ID (unconfirmed)',
+  (w.ids || []).forEach(e => addField(e.status === 'confirmed' ? 'Watermark ID (confirmed)' : 'Watermark ID (unconfirmed)',
     `${e.token}${typeof e.first_time_s === 'number' ? ` · seen ${e.first_time_s.toFixed(2)}–${e.last_time_s.toFixed(2)} s` : ''}`));
+  const scope = w.evidence_scope || {};
+  if (Array.isArray(scope.passes) && scope.passes.length) {
+    addField('Evidence scope', scope.whole_file_examined ? 'At least one scheme examined the full file; see each pass.' : 'Sampled positions only; the rest of the file is not established.');
+    scope.passes.forEach(p => addField('Detection pass', `${p.algorithm}: ${p.selection || p.coverage}${p.stop_reason ? `; stop: ${p.stop_reason}` : ''}`));
+  }
+  if (w.out_of_operator_scope && w.out_of_operator_scope.length) addField('Outside operator scope', w.out_of_operator_scope.join(', '));
+  if (report.signed_id_observed === false) addField('Signed ID observation', 'The signed watermark ID was not observed in this scan.');
   addField('Provider', record.publisher);
   addField('System', record.system ? `${record.system.name} · ${record.system.version}` : null);
   addField('Operation', record.action); addField('Created / altered', record.created_at); addField('Public asset UUID', record.asset_id);

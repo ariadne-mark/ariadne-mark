@@ -47,6 +47,12 @@ class SetupTests(unittest.TestCase):
             self.assertTrue(all(c.kwargs['env']['PIP_NO_INDEX']=='1' for c in calls))
             self.assertFalse(report['legacy_decoders_included'])
 
+    def test_media_fetch_omits_legacy_host_but_preserves_current_models(self):
+        with self.contexts(), patch.object(setup.shutil, 'which', return_value='/bin/tool'), patch.object(setup.subprocess, 'run') as run:
+            report = setup.install('media', fetch_models=True)
+        self.assertEqual(run.call_args_list[-1].args[0][-2:], ['--engine', 'media'])
+        self.assertFalse(report['legacy_models_provisioned'])
+
     def test_tampered_lock_rejected_before_network_or_install(self):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder);pins=json.loads((setup.ROOT/'runtime-locks.json').read_text())
