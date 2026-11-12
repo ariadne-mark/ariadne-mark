@@ -85,8 +85,8 @@ def _public_id(entry):
 
 
 def _public_scope(scope):
-    result = {k: deepcopy(scope[k]) for k in ('whole_file_examined', 'unavailable_schemes', 'positions_scope',
-                                              'unexamined_content') if k in scope}
+    result = {k: deepcopy(scope[k]) for k in ('whole_file_examined', 'full_decode_schemes', 'unavailable_schemes',
+                                              'positions_scope', 'unexamined_content') if k in scope}
     if isinstance(scope.get('passes'), list):
         result['passes'] = [{k: deepcopy(p[k]) for k in ('algorithm', 'selection', 'coverage', 'requested_positions',
                                                          'unique_frames', 'time_range_s', 'stop_reason', 'complete')

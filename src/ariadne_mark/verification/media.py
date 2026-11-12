@@ -156,12 +156,21 @@ def _pass_summary(pass_index, engine, name, rows, *, selection, preprocessing, c
 
 
 def _evidence_scope(passes, unavailable, *, video):
-    whole = (not video and bool(passes)) or any(p["coverage"] == "full_decode" for p in passes)
+    """What was actually examined. Nothing is inferred about the rest.
+
+    ``whole_file_examined`` means at least one scheme decoded every frame (or
+    the input is a single image); ``full_decode_schemes`` names them. Content
+    counts as fully examined only when every pass was exhaustive and every
+    configured scheme ran.
+    """
+    full = {"full_decode", "whole_image"}
+    exhaustive = sorted({p["algorithm"] for p in passes if p["coverage"] in full})
+    every = bool(passes) and all(p["coverage"] in full for p in passes) and not unavailable
     return {"passes": [{k: v for k, v in p.items() if k != "samples"} for p in passes][:8],
-            "whole_file_examined": whole,
+            "whole_file_examined": bool(exhaustive), "full_decode_schemes": exhaustive,
             "unavailable_schemes": [u["algorithm"] for u in unavailable],
             "positions_scope": "observed_positions_only",
-            "unexamined_content": "none" if whole and not unavailable else "not_established"}
+            "unexamined_content": "none" if every else "not_established"}
 
 
 def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_marker=None, registry=None, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None) -> dict:
@@ -201,6 +210,10 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                 candidates.append(marker)
             observations, aggregates, engines, unavailable, attempts = [], [], [], [], []
             search_results, confirmed_engines = [], []
+            if not candidates:
+                # A signed legacy scheme whose decoder is not loaded is not
+                # checked; another bit layout never stands in for it.
+                raise _NoDecoder("no_decoder_for_signed_scheme" if algorithm else "watermark_engine_not_loaded")
             for engine in candidates:
                 name = getattr(engine, "algorithm", "custom")
                 try:
@@ -275,9 +288,18 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                 watermark.update(status="not_checked", reason="incomplete_engine_coverage")
             elif unavailable:
                 watermark["coverage"] = "partial"
+        except _NoDecoder as exc:
+            watermark = {"status": "not_checked", "reason": exc.reason,
+                         **({"signed_algorithm": algorithm} if algorithm else {})}
         except (AriadneError, OSError, ValueError, ImportError) as exc:
             watermark = {"status": "not_checked", "reason": type(exc).__name__}
     return _verification_result(path, c2pa, watermark, registry=registry, video=video, trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
+
+
+class _NoDecoder(Exception):
+    def __init__(self, reason):
+        super().__init__(reason)
+        self.reason = reason
 
 
 def verify_video_export(path, engine, expected_windows, *, trust_anchors=None, tsa_trust_anchors=None):
