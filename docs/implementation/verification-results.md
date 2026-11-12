@@ -65,7 +65,10 @@ to which watermark IDs can be recovered across a video's timeline.
   carry `frame` = `{stream, pts, time_base}` when the decoder reports them;
   otherwise only float time is known and that is what is compared. A frame read
   by two passes or views stays as two rows but is one unique frame. Different
-  payload schemes are never merged.
+  payload schemes are never merged. Unique means a distinct decoded frame
+  identity, not independent content: pictures repeated by frame-rate conversion
+  have different PTS and count separately, so two concordant reads are not
+  claimed to be statistically independent.
 - `watermark.evidence_scope` lists each pass: scheme, implementation,
   selection (`sequential_from_start`, `uniform_positions`,
   `known_schedule_windows`, `whole_image`), unique frames, time range and stop
