@@ -66,7 +66,8 @@ conflict or a budget. For weak IDs it tests unknown-phase 1/2/5 s window groups
 using at most 20 cached logits per upstream BCH aggregate. Period 1 is retained
 only as a recovery hypothesis for experimental assets, not as a new encoder
 preset. Logits are computed at most once per scanned frame. Different recovered
-IDs remain conflicting; the signed token and registry never select the answer.
+IDs are reported together as `multiple_ids` (every ID with its positions); the
+signed token and registry never select the answer.
 
 Default search budgets: 2000 frames, 120 seconds, 512 aggregate hypotheses.
 Budget exhaustion gives incomplete/not_checked, never a negative. A lone ID
