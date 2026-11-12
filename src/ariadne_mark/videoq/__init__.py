@@ -119,6 +119,7 @@ def fetch_models():
 class VideoWatermarker:
     algorithm = ALGORITHM
     payload_format = FORMAT
+    implementation = 'node-onnxruntime-variax-video-watermark'
     batch_size = 1
 
     def __init__(self, *, profile=DEFAULT_PROFILE, threads=2, timeout=120):

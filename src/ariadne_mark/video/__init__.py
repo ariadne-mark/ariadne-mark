@@ -236,8 +236,45 @@ def selected_window_frames(path: Path, profile):
                 yield frame, float(timestamp), window, info["rotation"]
 
 
+class SampledFrame(tuple):
+    """An ``(image, time)`` pair that also carries the decoded frame identity.
+
+    Unpacks exactly like the historical 2-tuple. ``identity`` is
+    ``{"stream", "pts", "time_base"}`` from the actual decoded frame, so a
+    caller can tell repeated decodes of one encoded frame apart from distinct
+    frames without relying on float seconds.
+    """
+    identity = None
+
+    def __new__(cls, image, time, identity=None):
+        item = super().__new__(cls, (image, time))
+        item.identity = identity
+        return item
+
+
+def frame_identity(frame, stream_index=0):
+    """Integer PTS + rational time base, or None when the decoder has none.
+
+    ``stream`` is the ordinal among video streams (inputs are limited to one),
+    so every pass over one file uses the same key for the same frame.
+    """
+    pts, time_base = getattr(frame, "pts", None), getattr(frame, "time_base", None)
+    if type(pts) is not int or time_base is None:
+        return None
+    try:
+        rational = Fraction(time_base)
+    except (TypeError, ValueError):
+        return None
+    return {"stream": stream_index, "pts": pts,
+            "time_base": f"{rational.numerator}/{rational.denominator}"}
+
+
 def sample_frames(path: Path, *, samples: int = 5):
-    """Decode a bounded sample; never claim the sample verifies every frame."""
+    """Decode a bounded sample; never claim the sample verifies every frame.
+
+    ``samples`` uniformly spaced positions are requested. Repeated decodes of
+    one frame are dropped, so fewer frames may be yielded than requested.
+    """
     import av
     from ariadne_mark.video.color import frame_image
     info = probe(path)
@@ -256,4 +293,5 @@ def sample_frames(path: Path, *, samples: int = 5):
                     break
             if chosen is not None and chosen.pts not in seen:
                 seen.add(chosen.pts)
-                yield _orient(frame_image(chosen), info["rotation"]), chosen.time
+                yield SampledFrame(_orient(frame_image(chosen), info["rotation"]), chosen.time,
+                                   frame_identity(chosen))

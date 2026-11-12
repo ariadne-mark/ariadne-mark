@@ -52,7 +52,7 @@ def phase_groups(times, *, max_hypotheses=512):
 
 def scan_video(path, marker, *, max_frames=2000, max_seconds=120, max_hypotheses=512):
     import av
-    from ariadne_mark.video import probe, validate_decoder_streams, _orient
+    from ariadne_mark.video import probe, validate_decoder_streams, _orient, frame_identity
     from ariadne_mark.video.color import frame_image
     if type(max_frames) is not int or not 1 <= max_frames <= 18000:
         raise ValueError("max_frames must be1–18000")
@@ -83,7 +83,11 @@ def scan_video(path, marker, *, max_frames=2000, max_seconds=120, max_hypotheses
             token, values = marker.decode_logits(_orient(frame_image(frame), info["rotation"]))
             if len(values) != 100 or not all(math.isfinite(x) for x in values):
                 raise ValueError("Invalid decoder logits")
-            observations.append({"time": timestamp, "token": token})
+            row = {"time": timestamp, "token": token}
+            identity = frame_identity(frame)
+            if identity:
+                row["frame"] = identity
+            observations.append(row)
             timestamps.append(timestamp)
             logits.append(values)
             if token:
@@ -118,8 +122,10 @@ def scan_video(path, marker, *, max_frames=2000, max_seconds=120, max_hypotheses
         aggregates = [{"token": t} for t in sorted(aggregate_candidates)]
     # A single individual observation is retained, not promoted to confirmation.
     # An exhausted search is only a bounded negative for this one scheme.
+    # Several IDs are several observed claims, not invalid evidence; no ID is
+    # preferred. search.reason keeps its historical value.
     if len(candidates) > 1:
-        status, token = "invalid", None
+        status, token = "multiple_ids", None
         reason = "conflicting_ids"
     elif direct or aggregate_candidates and hypotheses_complete:
         status, token = "recovered_claim", next(iter(candidates))
@@ -131,6 +137,7 @@ def scan_video(path, marker, *, max_frames=2000, max_seconds=120, max_hypotheses
     else:
         status, token = "not_found", None
     return {"status": status, "token": token, "samples": observations, "aggregates": aggregates,
+            **({"reason": "multiple_ids_observed"} if status == "multiple_ids" else {}),
             "search": {"reason": reason, "frames_decoded": len(observations),
                        "file_exhausted": complete, "hypotheses_complete": hypotheses_complete,
                        "max_frames": max_frames, "max_seconds": max_seconds,
@@ -139,4 +146,6 @@ def scan_video(path, marker, *, max_frames=2000, max_seconds=120, max_hypotheses
                        "observed_ids": sorted(candidates), "expected_id_supplied": False,
                        "signed_profile_or_registry_used": False, "cnn_passes": 1,
                        "whole_video_coverage": "not_established",
+                       "selection": "sequential_from_start",
+                       "time_range_s": [timestamps[0], timestamps[-1]],
                        "detector_calibration": "exploratory_not_population_calibrated"}}

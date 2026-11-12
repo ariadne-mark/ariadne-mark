@@ -83,6 +83,7 @@ def fetch_models() -> dict:
 class Watermarker:
     algorithm = "adobe.trustmark.Q.bch5"
     payload_format = "ariadne-v1"
+    implementation = "python-torch-trustmark"
 
     def __init__(self, *, threads: int = 2):
         import torch
@@ -132,6 +133,7 @@ class LazyWatermarker:
     """Load legacy image/PyTorch models only when an image decoder is needed."""
     algorithm = Watermarker.algorithm
     payload_format = Watermarker.payload_format
+    implementation = Watermarker.implementation
 
     def __init__(self, *, threads=2):
         self.threads = threads

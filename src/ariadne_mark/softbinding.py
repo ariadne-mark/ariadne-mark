@@ -95,9 +95,11 @@ def validate_match(raw_manifest, algorithm, token):
     return manifest_id
 
 
-def observed_algorithms(watermark):
-    """Identify engines that actually recovered the returned ID."""
-    token = watermark.get('token')
+def observed_algorithms(watermark, token=None):
+    """Identify engines that actually recovered the returned (or given) ID."""
+    token = watermark.get('token') if token is None else token
+    if token is None:
+        return set()
     return {ALGORITHMS[row['algorithm']] for row in [*watermark.get('samples', []), *watermark.get('aggregates', [])]
             if row.get('token') == token and row.get('algorithm') in ALGORITHMS}
 

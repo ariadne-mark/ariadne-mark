@@ -23,8 +23,10 @@ class VideoSealPolicyTests(unittest.TestCase):
     def test_aggregate_cannot_hide_conflicting_frame_id(self):
         rows = [{"token": "014d000000000001"}, {"token": None}]
         report = summarize_watermarks(rows, [{"token": "014d000000000002"}], video=True)
-        self.assertEqual(report["status"], "invalid")
+        # B06: reported as several claims, never one preferred ID.
+        self.assertEqual(report["status"], "multiple_ids")
         self.assertNotIn("token", report)
+        self.assertEqual({e["token"] for e in report["ids"]}, {"014d000000000001", "014d000000000002"})
 
     def test_aggregate_recovers_when_individual_frames_do_not(self):
         report = summarize_watermarks([{"token": None}], [{"token": "014d000000000001"}], video=True)

@@ -103,6 +103,67 @@ def open_image(path: Path):
         raise UnsupportedMedia("Cannot decode image") from exc
 
 
+REPORT_SCHEMA_VERSION = 2
+MAX_IDS = 16
+MAX_POSITIONS = 32
+MAX_REGISTRY_LOOKUPS = 8
+VIDEO_VIEW = "decoded_rgb_display_orientation"
+IMAGE_VIEW = "exif_transposed_rgb"
+
+
+def _implementation(engine):
+    return getattr(engine, "implementation", type(engine).__name__)
+
+
+def _annotate(rows, frames, pass_index, algorithm):
+    """Attach scheme, pass and decoded-frame identity to one pass's rows.
+
+    Identity is copied only when the adapter returned one row per frame;
+    otherwise it is left unknown rather than guessed.
+    """
+    identities = [getattr(item, "identity", None) for item in frames] if len(rows) == len(frames) else []
+    result = []
+    for index, row in enumerate(rows):
+        row = {**row, "algorithm": algorithm, "pass": pass_index}
+        if identities and identities[index] and "frame" not in row:
+            row["frame"] = identities[index]
+        result.append(row)
+    return result
+
+
+def _frame_key(row, index):
+    """Exact frame identity when known, else float time, else the row itself."""
+    frame = row.get("frame")
+    if isinstance(frame, dict) and type(frame.get("pts")) is int and frame.get("time_base"):
+        return ("pts", frame.get("stream", 0), frame["pts"], frame["time_base"])
+    if isinstance(row.get("time"), (int, float)):
+        return ("time", row["time"])
+    return ("row", index)
+
+
+def _pass_summary(pass_index, engine, name, rows, *, selection, preprocessing, coverage, requested=None, search=None):
+    times = [row["time"] for row in rows if isinstance(row.get("time"), (int, float))]
+    summary = {"pass": pass_index, "algorithm": name, "implementation": _implementation(engine),
+               "selection": selection, "preprocessing": preprocessing, "coverage": coverage,
+               "unique_frames": len({_frame_key(row, i) for i, row in enumerate(rows)}),
+               "observations": len(rows), "time_range_s": [min(times), max(times)] if times else None}
+    if requested is not None:
+        summary["requested_positions"] = requested
+    if search is not None:
+        summary["stop_reason"] = search.get("reason")
+        summary["complete"] = bool(search.get("file_exhausted") and search.get("hypotheses_complete"))
+    return summary
+
+
+def _evidence_scope(passes, unavailable, *, video):
+    whole = (not video and bool(passes)) or any(p["coverage"] == "full_decode" for p in passes)
+    return {"passes": [{k: v for k, v in p.items() if k != "samples"} for p in passes][:8],
+            "whole_file_examined": whole,
+            "unavailable_schemes": [u["algorithm"] for u in unavailable],
+            "positions_scope": "observed_positions_only",
+            "unexamined_content": "none" if whole and not unavailable else "not_established"}
+
+
 def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_marker=None, registry=None, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None) -> dict:
     path = Path(path).resolve()
     if not path.is_file() or path.suffix.lower() not in MIME:
@@ -119,6 +180,9 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                 frames = list(sample_frames(path))
             else:
                 frames = [(open_image(path), None)]
+            selection = "uniform_positions" if video else "whole_image"
+            coverage = "sampled_positions" if video else "whole_image"
+            view = VIDEO_VIEW if video else IMAGE_VIEW
             candidates = []
             owned_engines = []
             # Signed engine identifiers route directly; stripped metadata needs
@@ -142,32 +206,50 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                 try:
                     if video and hasattr(engine, "scan_video"):
                         result = engine.scan_video(path)
-                        rows = result["samples"]
+                        rows = _annotate(result["samples"], [], len(attempts), name)
                         aggregates.extend({**a, "algorithm": name} for a in result["aggregates"])
-                        attempts.append({"algorithm": name, "samples": rows, "status": result["status"], "search": result["search"]})
+                        attempts.append({"algorithm": name, "samples": rows, "status": result["status"], "search": result["search"],
+                                         **_pass_summary(len(attempts), engine, name, rows, selection="sequential_from_start",
+                                                         preprocessing=VIDEO_VIEW, search=result["search"],
+                                                         coverage="full_decode" if result["search"].get("file_exhausted") else "prefix_until_stop")})
                         search_results.append(result)
                         if result["status"] == "recovered_claim":
                             confirmed_engines.append(name)
+                        observations.extend(rows)
                     elif hasattr(engine, "decode_frames"):
-                        rows, aggregate = engine.decode_frames(frames)
+                        raw, aggregate = engine.decode_frames(frames)
+                        rows = _annotate(raw, frames, len(attempts), name)
                         first = summarize_watermarks(rows, [aggregate] if aggregate else [], video=video)
-                        attempts.append({"algorithm": name, "samples": rows, "aggregate": aggregate, "status": first["status"]})
+                        attempts.append({"algorithm": name, "samples": rows, "aggregate": aggregate, "status": first["status"],
+                                         **_pass_summary(len(attempts), engine, name, rows, selection=selection, preprocessing=view,
+                                                         coverage=coverage, requested=5 if video else None)})
+                        # Every pass's primary observations stay in the trace;
+                        # a repeated frame is one unique frame, not two reads.
+                        observations.extend(rows)
                         if (video and name == "adobe.trustmark.Q.variax-bch5"
                                 and first["status"] == "not_found"):
                             from ariadne_mark.video import sample_frames
-                            rows, aggregate = engine.decode_frames(list(sample_frames(path, samples=20)))
+                            more = list(sample_frames(path, samples=20))
+                            raw, aggregate = engine.decode_frames(more)
+                            rows = _annotate(raw, more, len(attempts), name)
                             attempts.append({"algorithm": name, "samples": rows, "aggregate": aggregate,
-                                             "status": summarize_watermarks(rows, [aggregate] if aggregate else [], video=video)["status"]})
+                                             "status": summarize_watermarks(rows, [aggregate] if aggregate else [], video=video)["status"],
+                                             **_pass_summary(len(attempts), engine, name, rows, selection=selection, preprocessing=view,
+                                                             coverage=coverage, requested=20)})
+                            observations.extend(rows)
                         if aggregate:
                             aggregates.append({**aggregate, "algorithm": name})
                         if summarize_watermarks(rows, [aggregate] if aggregate else [], video=video)['status'] == 'recovered_claim':
                             confirmed_engines.append(name)
                     else:
-                        rows = [{"time": timestamp, "token": engine.decode(frame)} for frame, timestamp in frames]
-                        attempts.append({"algorithm": name, "samples": rows})
+                        raw = [{"time": timestamp, "token": engine.decode(frame)} for frame, timestamp in frames]
+                        rows = _annotate(raw, frames, len(attempts), name)
+                        attempts.append({"algorithm": name, "samples": rows,
+                                         **_pass_summary(len(attempts), engine, name, rows, selection=selection, preprocessing=view,
+                                                         coverage=coverage, requested=5 if video else None)})
+                        observations.extend(rows)
                         if summarize_watermarks(rows, [], video=video)['status'] == 'recovered_claim':
                             confirmed_engines.append(name)
-                    observations.extend({**row, "algorithm": name} for row in rows)
                     engines.append(name)
                 except (AriadneError, OSError, ValueError, ImportError) as exc:
                     unavailable.append({"algorithm": name, "reason": type(exc).__name__})
@@ -179,7 +261,7 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
             watermark = summarize_watermarks(observations, aggregates, video=video)
             if search_results and any(r["search"]["reason"] == "two_concordant_ids" for r in search_results):
                 watermark["sample_coverage"]["interpretation"] = "early_stop_evidence"
-            if search_results and not confirmed_engines and watermark["status"] != "invalid":
+            if search_results and not confirmed_engines and watermark["status"] not in {"invalid", "multiple_ids"}:
                 if any(r["status"] == "not_checked" for r in search_results):
                     watermark.update(status="not_checked", reason="incomplete_video_search")
                 elif any(r["status"] == "single_observation" for r in search_results):
@@ -187,8 +269,8 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                 watermark.pop("token", None)
             watermark.update(algorithm_scope="configured_video_schemes" if video else "signed_scheme" if algorithm else "trustmark_image_scheme",
                              engines_checked=engines, unavailable_engines=unavailable,
-                             checked_frames=len({row.get("time") for attempt in attempts for row in attempt["samples"]}),
-                             attempts=attempts)
+                             checked_frames=len({_frame_key(row, i) for i, row in enumerate(observations)}),
+                             attempts=attempts, evidence_scope=_evidence_scope(attempts, unavailable, video=video))
             if unavailable and watermark["status"] == "not_found":
                 watermark.update(status="not_checked", reason="incomplete_engine_coverage")
             elif unavailable:
@@ -205,12 +287,16 @@ def verify_video_export(path, engine, expected_windows, *, trust_anchors=None, t
     observations remain in the receipt. The expected payload is never passed
     to the decoder; SDK.mark compares the returned evidence after this call.
     """
-    from ariadne_mark.video import selected_window_frames, sample_frames, _orient
+    from ariadne_mark.video import selected_window_frames, sample_frames, _orient, frame_identity
     from ariadne_mark.video.color import frame_image
     if engine.profile not in {"economy_5s", "economy_2s"}:
-        rows, aggregate = engine.decode_frames(list(sample_frames(path)))
-        rows = [{**r, "algorithm": engine.algorithm} for r in rows]
+        frames = list(sample_frames(path))
+        raw, aggregate = engine.decode_frames(frames)
+        rows = _annotate(raw, frames, 0, engine.algorithm)
         watermark = summarize_watermarks(rows, [aggregate] if aggregate else [], video=True)
+        passes = [_pass_summary(0, engine, engine.algorithm, rows, selection="uniform_positions", preprocessing=VIDEO_VIEW,
+                                coverage="sampled_positions", requested=5)]
+        watermark["evidence_scope"] = _evidence_scope(passes, [], video=True)
         return _verification_result(path, inspect_c2pa(path, trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors),
                                     watermark, registry=None, video=True)
     rows, found, seen = [], set(), set()
@@ -218,10 +304,13 @@ def verify_video_export(path, engine, expected_windows, *, trust_anchors=None, t
         seen.add(window)
         if window in found:
             continue
+        identity = frame_identity(frame)
         observations, _ = engine.decode_frames([(_orient(frame_image(frame), rotation), timestamp)])
         if len(observations) != 1:
             raise AriadneError("Incomplete Economy read-back")
-        row = {**observations[0], "window": window, "algorithm": engine.algorithm}
+        row = {**observations[0], "window": window, "algorithm": engine.algorithm, "pass": 0}
+        if identity and "frame" not in row:
+            row["frame"] = identity
         rows.append(row)
         if row.get("token"):
             found.add(window)
@@ -237,13 +326,43 @@ def verify_video_export(path, engine, expected_windows, *, trust_anchors=None, t
         watermark.pop('reason', None)
         watermark['sample_coverage'].update(confirmation_status='recovered_claim',
             confirmation_basis='known_schedule_export_readback')
+        for entry in watermark.get("ids", []):
+            if entry["token"] == token:
+                entry.update(status="confirmed", confirmation_basis="known_schedule_export_readback",
+                             reclassified={"from": "observed", "basis": "known_schedule_export_readback"})
     watermark["export_window_readback"] = {
         "profile": engine.profile, "expected_windows": sorted(expected_windows),
         "observed_windows": sorted(seen), "windows_with_id": sorted(found),
         "all_windows_have_id": all_windows_have_id,
         "interpretation": "known_schedule_export_check_not_blind_search"}
+    passes = [_pass_summary(0, engine, engine.algorithm, rows, selection="known_schedule_windows",
+                            preprocessing=VIDEO_VIEW, coverage="scheduled_windows")]
+    watermark["evidence_scope"] = _evidence_scope(passes, [], video=True)
     c2pa = inspect_c2pa(path, trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
     return _verification_result(path, c2pa, watermark, registry=None, video=True)
+
+
+def _registry_recovery(path, token, schemes, registry, digest, *, trust_anchors=None, tsa_trust_anchors=None):
+    """Registry entry for one recovered ID, bound to the schemes that read it."""
+    stored = registry.get(token)
+    recovery = {"status": "found" if stored else "unknown_id", "binding": "watermark_only_not_cryptographic"}
+    if stored:
+        recovery.update(record=stored["record"],
+                        content_binding="exact_registered_file" if digest() == stored["sha256"] else "not_verified",
+                        record_scope="registry_entry_for_id_not_authenticated_source_of_this_copy")
+        if hasattr(registry, 'get_manifest'):
+            bundle = registry.get_manifest(token=token)
+            if bundle is not None:
+                from ariadne_mark.softbinding import ALGORITHMS, inspect_recovered
+                if bundle['algorithm'] in {ALGORITHMS[s] for s in schemes if s in ALGORITHMS}:
+                    try:
+                        recovered = inspect_recovered(bundle['bytes'], path, bundle['algorithm'], token,
+                                                      trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
+                        recovery['manifest'] = {**recovered, 'sha256': bundle['sha256'],
+                            'public': bool(bundle['public']), 'algorithm_registration': 'provisional_not_registered'}
+                    except (ValueError, OSError, ImportError, AriadneError):
+                        recovery['manifest'] = {'status': 'not_checked', 'reason': 'manifest_validation_failed'}
+    return recovery
 
 
 def _verification_result(path, c2pa, watermark, *, registry, video, trust_anchors=None, tsa_trust_anchors=None):
@@ -251,33 +370,56 @@ def _verification_result(path, c2pa, watermark, *, registry, video, trust_anchor
         c2pa["record_scope"] = ("development_signer_claim" if c2pa.get("development_identity") else
                                 "trusted_signer_claim" if c2pa.get("issuer_trust") == "trusted" else
                                 "claimed_by_untrusted_signer")
-    recovery = {"status": "not_attempted"}
-    token = watermark.get("token")
-    if token and registry is not None:
-        stored = registry.get(token)
-        recovery = {"status": "found" if stored else "unknown_id", "binding": "watermark_only_not_cryptographic"}
-        if stored:
+    signed_token = c2pa.get("token")
+    for entry in watermark.get("ids", []):
+        entry["matches_signed_claim"] = (entry["token"] == signed_token) if signed_token else None
+    digest_value = []
+
+    def digest():
+        if not digest_value:
             import hashlib
             with path.open("rb") as content:
-                digest = hashlib.file_digest(content, "sha256").hexdigest()
-            recovery.update(record=stored["record"],
-                            content_binding="exact_registered_file" if digest == stored["sha256"] else "not_verified",
-                            record_scope="registry_entry_for_id_not_authenticated_source_of_this_copy")
-            if hasattr(registry, 'get_manifest'):
-                bundle = registry.get_manifest(token=token)
-                if bundle is not None:
-                    from ariadne_mark.softbinding import observed_algorithms, inspect_recovered
-                    if bundle['algorithm'] in observed_algorithms(watermark):
-                        try:
-                            recovered = inspect_recovered(bundle['bytes'], path, bundle['algorithm'], token,
-                                                          trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
-                            recovery['manifest'] = {**recovered, 'sha256': bundle['sha256'],
-                                'public': bool(bundle['public']), 'algorithm_registration': 'provisional_not_registered'}
-                        except (ValueError, OSError, ImportError, AriadneError):
-                            recovery['manifest'] = {'status': 'not_checked', 'reason': 'manifest_validation_failed'}
+                digest_value.append(hashlib.file_digest(content, "sha256").hexdigest())
+        return digest_value[0]
+
+    recovery = {"status": "not_attempted"}
+    token = watermark.get("token")
+    multiple = watermark.get("status") == "multiple_ids"
+    if token and registry is not None:
+        schemes = {row.get("algorithm") for row in [*watermark.get("samples", []), *watermark.get("aggregates", [])]
+                   if row.get("token") == token}
+        recovery = _registry_recovery(path, token, schemes, registry, digest,
+                                      trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
+    elif multiple and registry is not None:
+        # One lookup per confirmed ID, each tied to the schemes that read it.
+        # No ID is chosen for the file; a single unconfirmed read is not looked up.
+        per_id, lookups = [], 0
+        for entry in watermark.get("ids", []):
+            schemes = sorted({basis["algorithm"] for basis in entry["bases"]})
+            row = {"token": entry["token"], "algorithms": schemes}
+            if entry["status"] != "confirmed":
+                row.update(status="not_attempted", reason="id_not_confirmed")
+            elif lookups >= MAX_REGISTRY_LOOKUPS:
+                row.update(status="not_attempted", reason="lookup_limit")
+            else:
+                lookups += 1
+                row.update(_registry_recovery(path, entry["token"], schemes, registry, digest,
+                                              trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors))
+            per_id.append(row)
+        recovery = {"status": "per_id", "per_id": per_id, "automatic_selection": "none"}
     mismatch = bool(token and c2pa.get("token") and token != c2pa["token"])
-    if c2pa["status"] == "invalid" or watermark["status"] == "invalid" or mismatch:
+    if c2pa["status"] == "invalid" or watermark["status"] == "invalid":
         label = "Invalid or conflicting provenance"
+    elif multiple:
+        # Several recovered IDs are several claims about parts of the file.
+        # They neither invalidate a signature nor name one source for the file.
+        label = "Multiple watermark IDs found; each applies only where it was observed"
+        if c2pa["status"] == "verified_claim":
+            label += "; signature valid"
+        elif c2pa["status"] == "expired_credential":
+            label += "; signing credential expired"
+    elif mismatch:
+        label = "Conflicting provenance claims: watermark ID differs from the signed claim"
     elif c2pa["status"] == "expired_credential":
         label = "Signing credential expired; signing time not verified"
     elif c2pa["status"] == "verified_claim" and c2pa.get("development_identity"):
@@ -300,45 +442,108 @@ def _verification_result(path, c2pa, watermark, *, registry, video, trust_anchor
     if label == "Provenance unavailable" and (c2pa['status'] == 'not_checked' or watermark['status'] == 'not_checked'):
         label = "Check incomplete"
     if c2pa.get("reason") == "c2pa_runtime_unqualified":
-        label = (label + "; signature check unavailable") if token else "Signature check unavailable; C2PA runtime not qualified"
-    if video and token and c2pa["status"] != "verified_claim":
+        label = (label + "; signature check unavailable") if token or multiple else "Signature check unavailable; C2PA runtime not qualified"
+    if video and (token or multiple) and c2pa["status"] != "verified_claim":
         label += "; sampled video evidence only"
-    return {"schema_version": 1, "label": label, "c2pa": c2pa, "watermark": watermark,
+    return {"schema_version": REPORT_SCHEMA_VERSION, "label": label, "c2pa": c2pa, "watermark": watermark,
             "recovery": recovery, "token_mismatch": mismatch}
 
 
+def _id_evidence(observations, aggregates, *, video):
+    """Every recovered ID with its own basis; nothing is dropped or preferred."""
+    found = {}
+    for index, row in enumerate(observations):
+        token = row.get("token")
+        if token is None:
+            continue
+        scheme = found.setdefault(token, {"individual": {}, "aggregate": {}})["individual"].setdefault(
+            row.get("algorithm", "custom"), {"frames": set(), "observations": 0, "times": set()})
+        scheme["frames"].add(_frame_key(row, index))
+        scheme["observations"] += 1
+        if isinstance(row.get("time"), (int, float)):
+            scheme["times"].add(row["time"])
+    aggregate_ids = {}
+    for row in aggregates:
+        token = row.get("token")
+        if token is None:
+            continue
+        name = row.get("algorithm", "custom")
+        aggregate_ids.setdefault(name, set()).add(token)
+        hits = found.setdefault(token, {"individual": {}, "aggregate": {}})["aggregate"]
+        hits[name] = hits.get(name, 0) + 1
+    ids = []
+    for token, evidence in found.items():
+        bases, basis = [], None
+        for name in sorted(set(evidence["individual"]) | set(evidence["aggregate"])):
+            individual = evidence["individual"].get(name)
+            unique = len(individual["frames"]) if individual else 0
+            hits = evidence["aggregate"].get(name, 0)
+            if individual:
+                bases.append({"algorithm": name, "basis": "individual", "unique_frames": unique,
+                              "observations": individual["observations"]})
+            if hits:
+                bases.append({"algorithm": name, "basis": "aggregate", "aggregate_hits": hits,
+                              "conflicting_aggregate_ids": len(aggregate_ids[name]) > 1})
+            if basis is None:
+                if individual and not video:
+                    basis = "single_image_decode"
+                elif unique >= 2:
+                    basis = "two_or_more_unique_frames_one_scheme"
+                elif hits and len(aggregate_ids[name]) == 1:
+                    basis = "unambiguous_aggregate_one_scheme"
+        entry = {"token": token, "status": "confirmed" if basis else "observed",
+                 "confirmation_basis": basis, "bases": bases}
+        if video:
+            times = sorted(set().union(*[s["times"] for s in evidence["individual"].values()]))
+            entry.update(first_time_s=times[0] if times else None, last_time_s=times[-1] if times else None,
+                         positions_s=times[:MAX_POSITIONS])
+            if len(times) > MAX_POSITIONS:
+                entry["positions_truncated"] = len(times) - MAX_POSITIONS
+        ids.append(entry)
+    ids.sort(key=lambda e: (e.get("first_time_s") is None, e.get("first_time_s") or 0, e["token"]))
+    return ids
+
+
 def summarize_watermarks(observations, aggregates, *, video):
-    """Never let averaged logits hide individually recovered conflicting IDs."""
+    """Never let averaged logits hide individually recovered conflicting IDs.
+
+    Several distinct IDs give ``multiple_ids`` with every ID listed in
+    ``ids``; none is promoted to the file's ID. Confirmation counts unique
+    decoded frames within one payload scheme, so a frame read twice (two
+    passes or two views) is one frame, not two.
+    """
     tokens = {row["token"] for row in [*observations, *aggregates] if row.get("token") is not None}
+    ids = _id_evidence(observations, aggregates, video=video)
     result = {"status": "recovered_claim" if tokens else "not_found", "samples": observations,
               "aggregates": aggregates, "scope": "sampled_frames" if video else "whole_image"}
     if not observations:
         result.update(status="not_checked", reason="no_decodable_frames")
     elif len(tokens) == 1:
-        token = next(iter(tokens))
-        schemes = {row.get('algorithm', 'custom') for row in observations}
-        corroborated = any(sum(row.get('token') == token and row.get('algorithm', 'custom') == scheme
-                              for row in observations) >= 2 for scheme in schemes)
-        if video and not corroborated and not any(row.get('token') == token for row in aggregates):
+        if ids[0]["status"] != "confirmed":
             result.update(status='single_observation', reason='id_not_confirmed')
         else:
-            result['token'] = token
+            result['token'] = ids[0]["token"]
     elif len(tokens) > 1:
-        result.update(status="invalid", reason="multiple_tokens")
+        result.update(status="multiple_ids", reason="multiple_ids_observed")
+    result["ids"] = ids[:MAX_IDS]
+    if len(ids) > MAX_IDS:
+        result["ids_truncated"] = len(ids) - MAX_IDS
     if video:
         per_engine = []
         observed_token = next(iter(tokens)) if len(tokens) == 1 else None
         for name in sorted({row.get("algorithm", "custom") for row in observations}):
-            rows = [row for row in observations if row.get("algorithm", "custom") == name]
-            matches = sum(row.get("token") == observed_token for row in rows) if observed_token else 0
-            per_engine.append({"algorithm": name, "sampled_frames": len(rows), "matched_frames": matches,
-                               "matched_fraction": matches / len(rows) if rows else None})
+            rows = [(i, row) for i, row in enumerate(observations) if row.get("algorithm", "custom") == name]
+            sampled = len({_frame_key(row, i) for i, row in rows})
+            matches = len({_frame_key(row, i) for i, row in rows if row.get("token") == observed_token}) if observed_token else 0
+            per_engine.append({"algorithm": name, "sampled_frames": sampled, "matched_frames": matches,
+                               "matched_fraction": matches / sampled if sampled else None})
         best = max(per_engine, key=lambda row: row["matched_fraction"] or 0, default=None)
         result["sample_coverage"] = {"by_engine": per_engine,
             "confirmation_status": result['status'],
             "matched_frames": best["matched_frames"] if best else 0,
             "sampled_frames": best["sampled_frames"] if best else 0,
             "interpretation": "partial_sample_evidence" if result['status'] == 'single_observation' else
+                              "multiple_ids_observed" if result['status'] == 'multiple_ids' else
                               "all_sampled_frames_match" if best and best["matched_fraction"] == 1 else
                               "partial_sample_evidence" if best and best["matched_frames"] else
                               "aggregate_only_evidence" if result.get("token") else "no_id_recovered",
