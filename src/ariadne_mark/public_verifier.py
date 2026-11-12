@@ -62,6 +62,53 @@ def public_record(record, sources):
         return minimal, ['invalid_public_record']
 
 
+MAX_PUBLIC_IDS = 16
+MAX_PUBLIC_POSITIONS = 8
+MAX_PUBLIC_PASSES = 8
+
+
+def _public_id(entry):
+    """Bounded per-ID evidence: scheme, basis and observed positions only."""
+    result = {k: deepcopy(entry[k]) for k in ('token', 'status', 'confirmation_basis', 'first_time_s',
+                                              'last_time_s', 'matches_signed_claim', 'reclassified') if k in entry}
+    if isinstance(entry.get('bases'), list):
+        result['bases'] = [{k: b[k] for k in ('algorithm', 'basis', 'unique_frames', 'observations',
+                                               'aggregate_hits', 'conflicting_aggregate_ids') if k in b}
+                           for b in entry['bases'][:MAX_PUBLIC_PASSES] if isinstance(b, dict)]
+    if isinstance(entry.get('positions_s'), list):
+        positions = entry['positions_s']
+        result['positions_s'] = deepcopy(positions[:MAX_PUBLIC_POSITIONS])
+        hidden = max(0, len(positions) - MAX_PUBLIC_POSITIONS) + (entry.get('positions_truncated') or 0)
+        if hidden:
+            result['positions_truncated'] = hidden
+    return result
+
+
+def _public_scope(scope):
+    result = {k: deepcopy(scope[k]) for k in ('whole_file_examined', 'unavailable_schemes', 'positions_scope',
+                                              'unexamined_content') if k in scope}
+    if isinstance(scope.get('passes'), list):
+        result['passes'] = [{k: deepcopy(p[k]) for k in ('algorithm', 'selection', 'coverage', 'requested_positions',
+                                                         'unique_frames', 'time_range_s', 'stop_reason', 'complete')
+                             if k in p} for p in scope['passes'][:MAX_PUBLIC_PASSES] if isinstance(p, dict)]
+    return result
+
+
+def _public_recovery(recovery, sources, redacted, prefix):
+    allowed = ['status', 'binding', 'content_binding', 'record_scope']
+    result = {k: recovery[k] for k in allowed if k in recovery}
+    recovered_manifest = recovery.get('manifest', {})
+    if recovered_manifest:
+        result['manifest'] = {k: recovered_manifest[k] for k in
+            ['manifest_id', 'soft_binding', 'signature', 'issuer_trust', 'asset_binding',
+             'interpretation', 'sha256', 'public', 'algorithm_registration', 'status', 'reason']
+            if k in recovered_manifest}
+    if recovery.get('record'):
+        result['record'], fields = public_record(recovery['record'], sources)
+        redacted.extend(prefix + 'record.' + x for x in fields)
+    return result
+
+
 def public_report(report, sources=()):
     """Return a compact public API report, keeping private debug data local."""
     result = {k: deepcopy(report[k]) for k in ['schema_version', 'label', 'token_mismatch'] if k in report}
@@ -95,21 +142,27 @@ def public_report(report, sources=()):
         if searches:
             allowed = ['reason', 'frames_decoded', 'file_exhausted', 'hypotheses_complete',
                        'max_frames', 'max_seconds', 'cnn_passes', 'whole_video_coverage',
-                       'phase_bank', 'phase_resolution_s', 'aggregate_window_s']
+                       'phase_bank', 'phase_resolution_s', 'aggregate_window_s', 'selection', 'time_range_s']
             result['watermark']['search'] = {k: searches[-1][k] for k in allowed if k in searches[-1]}
+        if isinstance(watermark.get('ids'), list):
+            result['watermark']['ids'] = [_public_id(e) for e in watermark['ids'][:MAX_PUBLIC_IDS] if isinstance(e, dict)]
+            hidden = max(0, len(watermark['ids']) - MAX_PUBLIC_IDS) + (watermark.get('ids_truncated') or 0)
+            if hidden:
+                result['watermark']['ids_truncated'] = hidden
+        if isinstance(watermark.get('evidence_scope'), dict):
+            result['watermark']['evidence_scope'] = _public_scope(watermark['evidence_scope'])
     recovery = report.get('recovery', {})
     if recovery:
-        allowed = ['status', 'binding', 'content_binding', 'record_scope']
-        result['recovery'] = {k: recovery[k] for k in allowed if k in recovery}
-        recovered_manifest = recovery.get('manifest', {})
-        if recovered_manifest:
-            result['recovery']['manifest'] = {k: recovered_manifest[k] for k in
-                ['manifest_id', 'soft_binding', 'signature', 'issuer_trust', 'asset_binding',
-                 'interpretation', 'sha256', 'public', 'algorithm_registration', 'status', 'reason']
-                if k in recovered_manifest}
-        if recovery.get('record'):
-            result['recovery']['record'], fields = public_record(recovery['record'], sources)
-            redacted.extend('recovery.record.' + x for x in fields)
+        result['recovery'] = _public_recovery(recovery, sources, redacted, 'recovery.')
+        if isinstance(recovery.get('per_id'), list):
+            result['recovery']['per_id'] = []
+            for index, row in enumerate(recovery['per_id'][:MAX_PUBLIC_IDS]):
+                if isinstance(row, dict):
+                    entry = _public_recovery(row, sources, redacted, f'recovery.per_id.{index}.')
+                    entry.update({k: deepcopy(row[k]) for k in ('token', 'algorithms', 'reason') if k in row})
+                    result['recovery']['per_id'].append(entry)
+        if 'automatic_selection' in recovery:
+            result['recovery']['automatic_selection'] = recovery['automatic_selection']
     result['public_output'] = {'policy': 'reviewed_system_fields_only', 'redacted_fields': redacted,
                                'raw_metadata_and_debug_omitted': True}
     return result

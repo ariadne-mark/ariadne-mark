@@ -52,3 +52,32 @@ transformed, unmarked and corrupted files; see [release evidence](../validation/
 
 A valid C2PA binding covers its signed asset; that is separate from the extent
 to which watermark IDs can be recovered across a video's timeline.
+
+## Several IDs, frame identity and scope (report schema 2, unreleased)
+
+- `watermark.status=multiple_ids`: two or more distinct IDs were read
+  (individually or by aggregation). Every ID stays in `watermark.ids` with
+  `status` `confirmed` or `observed`, its `confirmation_basis`, per-scheme
+  `bases` (individual unique frames or aggregate hits) and observed positions.
+  No ID is chosen for the file. Several IDs do not by themselves make a C2PA
+  signature invalid; `c2pa.status` is evaluated separately on the original bytes.
+- Confirmation counts unique decoded frames within one payload scheme. Rows
+  carry `frame` = `{stream, pts, time_base}` when the decoder reports them;
+  otherwise only float time is known and that is what is compared. A frame read
+  by two passes or views stays as two rows but is one unique frame. Different
+  payload schemes are never merged.
+- `watermark.evidence_scope` lists each pass: scheme, implementation,
+  selection (`sequential_from_start`, `uniform_positions`,
+  `known_schedule_windows`, `whole_image`), unique frames, time range and stop
+  reason. `whole_file_examined` is true only for a full decode or an image. An
+  ID applies only to the positions where it was read; unexamined content is
+  `not_established`. Five requested uniform positions may yield fewer unique frames.
+- Export read-back keeps its separate known-window rule; an ID promoted by it is
+  marked `reclassified` with basis `known_schedule_export_readback`.
+- With several IDs, `recovery.status=per_id` lists one registry result per
+  confirmed ID, bound to the schemes that read it; unconfirmed reads are not
+  looked up. The public API returns a bounded summary (at most 16 IDs, 8
+  positions each, 8 passes); frame-level rows remain in the local report.
+
+Semantics follow the B06 contract (observations retained, conclusions may be
+revised). This is not a whole-file attribution or a coverage percentage.

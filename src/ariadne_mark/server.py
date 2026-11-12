@@ -339,15 +339,23 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
                 if content_query:
                     from ariadne_mark.softbinding import observed_algorithms
                     watermark = report.get('watermark', {})
-                    if watermark.get('status') not in {'recovered_claim', 'not_found'}:
+                    if watermark.get('status') not in {'recovered_claim', 'not_found', 'multiple_ids'}:
                         self.respond(503, {'error': 'incomplete_content_search', 'status': 'not_checked'})
                         return
                     registry = getattr(sdk, 'registry', None)
-                    token = watermark.get('token')
-                    bundle = registry.get_manifest(token=token, public_only=True) if registry and token else None
-                    matching = (bundle and bundle['algorithm'] in observed_algorithms(watermark)
-                        and (requested_algorithm is None or bundle['algorithm'] == requested_algorithm))
-                    self.respond(200, {'matches': [{'manifestId': bundle['id']}] if matching else []})
+                    # One candidate per confirmed ID; each match must come from a
+                    # scheme that actually read that ID. Unconfirmed reads are skipped.
+                    if watermark.get('status') == 'multiple_ids':
+                        tokens = [e['token'] for e in watermark.get('ids', []) if e.get('status') == 'confirmed']
+                    else:
+                        tokens = [watermark['token']] if watermark.get('token') else []
+                    matches = []
+                    for token in tokens[:int(maximum)]:
+                        bundle = registry.get_manifest(token=token, public_only=True) if registry else None
+                        if (bundle and bundle['algorithm'] in observed_algorithms(watermark, token)
+                                and (requested_algorithm is None or bundle['algorithm'] == requested_algorithm)):
+                            matches.append({'manifestId': bundle['id']})
+                    self.respond(200, {'matches': matches})
                     return
                 result = public_report(report, sources)
                 if report_signer is not None:

@@ -49,7 +49,7 @@
         },
         "responses": {
           "200": {
-            "description": "Report; inspect c2pa/watermark status and public_output redactions"
+            "description": "Report (schema_version 2); inspect c2pa/watermark status separately. watermark.status multiple_ids lists every recovered ID in watermark.ids with its basis and observed positions; watermark.evidence_scope states what was examined. public_output lists redactions"
           },
           "408": {
             "description": "Upload timed out; not_checked"

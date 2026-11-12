@@ -102,13 +102,34 @@ class SDK:
                 engine = next((m for m in self._video_markers.values() if m._process is not None), engine)
         return verify_file(path, marker=self.marker, video_marker=engine, legacy_video_marker=self._legacy_video_marker, registry=self.registry, trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors)
 
-    def recover_manifest(self, path: Path, destination: Path) -> dict:
-        """Blindly recover an ID, match its signed manifest and save exact bytes."""
+    def recover_manifest(self, path: Path, destination: Path, *, token: str | None = None) -> dict:
+        """Blindly recover an ID, match its signed manifest and save exact bytes.
+
+        With several recovered IDs there is no automatic choice. ``token``
+        selects one of the confirmed IDs *after* blind detection; it is never
+        given to the detector, and it must have its own validated manifest.
+        """
         if self.registry is None or not hasattr(self.registry, 'get_manifest'):
             raise AriadneError('A manifest-enabled registry is required')
+        if token is not None:
+            from ariadne_mark.watermark import valid_token
+            if not valid_token(token):
+                raise ValueError('Invalid Ariadne watermark ID')
         report = self.verify(path)
-        token = report['watermark'].get('token')
-        recovered = report.get('recovery', {}).get('manifest', {})
+        recovery = report.get('recovery', {})
+        if recovery.get('status') == 'per_id':
+            if token is None:
+                raise VerificationFailed('Multiple watermark IDs found; automatic manifest recovery is ambiguous. '
+                                         'Select one confirmed ID explicitly')
+            selected = next((row for row in recovery['per_id'] if row['token'] == token), None)
+            if selected is None or selected.get('status') != 'found':
+                raise VerificationFailed('The selected ID was not a confirmed, registered ID in this file')
+            recovered = selected.get('manifest', {})
+        else:
+            if token is not None and token != report['watermark'].get('token'):
+                raise VerificationFailed('The selected ID was not recovered from this file')
+            token = report['watermark'].get('token')
+            recovered = recovery.get('manifest', {})
         if (not token or recovered.get('soft_binding') != 'matched'
                 or recovered.get('signature') != 'valid'):
             raise VerificationFailed('No matching manifest with a validated signature was recovered')

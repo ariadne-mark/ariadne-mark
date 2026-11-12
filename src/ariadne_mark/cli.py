@@ -83,6 +83,7 @@ def main(argv=None) -> int:
     recover = commands.add_parser("recover", help="Recover a signed C2PA manifest using a local registry; media stays unchanged")
     recover.add_argument("source", type=Path)
     recover.add_argument("destination", type=Path, help="New .c2pa manifest-store file")
+    recover.add_argument("--id", dest="watermark_id", help="Choose one confirmed ID after detection when several were found")
     mark.add_argument("--publish-manifest", action="store_true", help="Explicitly approve publishing the full signed manifest/history through a repository")
     serve = commands.add_parser("serve", help="Run the self-hosted public verifier UI/API")
     serve.add_argument("--public-manifests", action="store_true", help="Enable read-only C2PA resolution for explicitly published manifests")
@@ -224,7 +225,7 @@ def main(argv=None) -> int:
                       public_manifests=args.public_manifests)
                 return 0
             if args.command == "recover":
-                result = sdk.recover_manifest(args.source, args.destination)
+                result = sdk.recover_manifest(args.source, args.destination, token=args.watermark_id)
                 print(json.dumps(result, indent=2))
                 return 0
             if args.command == "verify":
@@ -247,7 +248,12 @@ def main(argv=None) -> int:
                 print(json.dumps(result, indent=2))
                 if args.strict and (result["c2pa"]["status"] != "verified_claim" or result["c2pa"]["issuer_trust"] != "trusted" or result["c2pa"].get("development_identity")):
                     return 2
-                if result["c2pa"]["status"] in {"invalid", "not_checked", "expired_credential"} or result["watermark"]["status"] in {"invalid", "not_checked", "single_observation"} or result["token_mismatch"]:
+                # Allowlist, so a new watermark status can never fall through to
+                # success: several IDs, one unconfirmed read or an incomplete
+                # check all exit 2 with the full JSON printed above.
+                if (result["c2pa"]["status"] in {"invalid", "not_checked", "expired_credential"}
+                        or result["watermark"]["status"] not in {"recovered_claim", "not_found"}
+                        or result["token_mismatch"]):
                     return 2
                 return 0
             from ariadne_mark.signing import SigningIdentity

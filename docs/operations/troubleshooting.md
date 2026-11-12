@@ -16,7 +16,7 @@ user media, messages and local paths before opening an Issue.
 | Video metadata lost on social upload | Verify the downloaded rendition. Recoverable ID and C2PA metadata are separate layers. Mark each final crop/rendition before publishing. |
 | Watermark not found | Check supported format, dimensions, transforms and scan completeness. No recovered mark is not evidence of human origin. |
 | `not_checked` / budget exhausted | This is incomplete inspection, not a negative. Increase the documented verifier budget for trusted offline investigation or retain the incomplete result. |
-| Conflicting IDs / unverified content match | Do not turn a recovered ID into a clean whole-file origin claim. Preserve the structured result and investigate the source/renditions. |
+| `multiple_ids` / unverified content match | Each ID in `watermark.ids` applies only where it was read; several IDs do not invalidate a signature. Do not turn a recovered ID into a clean whole-file origin claim. Preserve the structured result and investigate the source/renditions. |
 | Slow video | Reuse a worker/SDK, queue jobs, compare Economy5s/2s with Resilient on your clips. Every video frame still needs decode/encode. |
 | Out of memory | Limit concurrent jobs before adding processes. The image runtime includes Torch; video-only setup omits it. A 6 GiB test limit is not measured RSS. |
 | Clean image cannot get a complete negative | Check installed engines and result completeness. Video-only installs omit image/legacy decoders. |
