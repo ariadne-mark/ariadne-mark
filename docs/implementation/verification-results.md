@@ -69,9 +69,12 @@ to which watermark IDs can be recovered across a video's timeline.
 - `watermark.evidence_scope` lists each pass: scheme, implementation,
   selection (`sequential_from_start`, `uniform_positions`,
   `known_schedule_windows`, `whole_image`), unique frames, time range and stop
-  reason. `whole_file_examined` is true only for a full decode or an image. An
-  ID applies only to the positions where it was read; unexamined content is
-  `not_established`. Five requested uniform positions may yield fewer unique frames.
+  reason. `whole_file_examined` is true when at least one scheme decoded every
+  frame (named in `full_decode_schemes`) or for an image; `unexamined_content`
+  is `none` only when every pass was exhaustive and no scheme was unavailable,
+  otherwise `not_established`. An ID applies only to the positions where it was
+  read. Five requested uniform positions may yield fewer unique frames. A signed
+  scheme without its decoder is `not_checked` (`no_decoder_for_signed_scheme`).
 - Export read-back keeps its separate known-window rule; an ID promoted by it is
   marked `reclassified` with basis `known_schedule_export_readback`.
 - With several IDs, `recovery.status=per_id` lists one registry result per

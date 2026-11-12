@@ -181,6 +181,7 @@ class CoverageTests(unittest.TestCase):
         scan = next(p for p in scope['passes'] if p['algorithm'] == Q)
         self.assertEqual((scan['coverage'], scan['unique_frames'], scan['stop_reason']),
                          ('prefix_until_stop', 2, 'two_concordant_ids'))
+        self.assertFalse({'samples', 'search', 'aggregate'} & set(scan))  # bounded summary only
         self.assertEqual(ids(report)[A]['positions_s'], [0.0, 1 / FPS])
         self.assertIn('sampled video evidence only', report['label'])
 

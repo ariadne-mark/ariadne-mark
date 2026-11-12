@@ -107,6 +107,8 @@ REPORT_SCHEMA_VERSION = 2
 MAX_IDS = 16
 MAX_POSITIONS = 32
 MAX_REGISTRY_LOOKUPS = 8
+PASS_FIELDS = ("pass", "algorithm", "implementation", "selection", "preprocessing", "coverage", "requested_positions",
+               "unique_frames", "observations", "time_range_s", "stop_reason", "complete")
 VIDEO_VIEW = "decoded_rgb_display_orientation"
 IMAGE_VIEW = "exif_transposed_rgb"
 
@@ -166,7 +168,7 @@ def _evidence_scope(passes, unavailable, *, video):
     full = {"full_decode", "whole_image"}
     exhaustive = sorted({p["algorithm"] for p in passes if p["coverage"] in full})
     every = bool(passes) and all(p["coverage"] in full for p in passes) and not unavailable
-    return {"passes": [{k: v for k, v in p.items() if k != "samples"} for p in passes][:8],
+    return {"passes": [{k: p[k] for k in PASS_FIELDS if k in p} for p in passes][:8],
             "whole_file_examined": bool(exhaustive), "full_decode_schemes": exhaustive,
             "unavailable_schemes": [u["algorithm"] for u in unavailable],
             "positions_scope": "observed_positions_only",
