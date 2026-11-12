@@ -45,9 +45,10 @@ exits with code 2.
 - **Economy vs Resilient (video).** `economy_5s` and `economy_2s` check the
   known scheduled windows: every occupied window needs at least one decoded
   matching ID, and individual unreadable frames are tolerated. `resilient` (and
-  legacy `fast`) decodes five uniform samples, and every sample must return the
-  same ID. `matching frames` counts these read-back observations only; it is not
-  whole-file coverage. See
+  legacy `fast`) requests five uniformly spaced sampling positions. Duplicate
+  decoded frames are removed, so fewer than five frames may actually be checked;
+  every returned sample must carry the same ID. `matching frames` counts these
+  read-back observations only; it is not whole-file coverage. See
   [export read-back](../implementation/video-profiles.md#export-read-back-and-blind-verification).
 
 For an Issue, keep the exact SDK version, the command and settings (product
