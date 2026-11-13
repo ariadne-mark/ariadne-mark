@@ -24,7 +24,7 @@ def link(a,b):
  if mode=='after_media' and str(b).endswith('out.png'):os._exit(137)
  if mode=='after_receipt' and str(b).endswith('.receipt.json'):os._exit(137)
 verified={'c2pa':{'status':'verified_claim','token':token,'record':record.to_dict()},'watermark':{'status':'recovered_claim','token':token,'samples':[{'token':token}]}}
-with patch.object(SDK,'check_runtime'),patch('ariadne_mark.pipeline.inspect_c2pa',return_value={'status':'not_found'}),patch('ariadne_mark.pipeline.open_image',return_value=Image()),patch('ariadne_mark.pipeline.new_token',return_value=token),patch('ariadne_mark.pipeline.sign_file',side_effect=lambda a,b,*x,**kw:shutil.copyfile(a,b)),patch.object(SDK,'verify',return_value=verified),patch('ariadne_mark.pipeline.os.link',side_effect=link):
+with patch.object(SDK,'check_runtime'),patch('ariadne_mark.pipeline.inspect_c2pa',return_value={'status':'not_found'}),patch('ariadne_mark.pipeline.open_image',return_value=Image()),patch('ariadne_mark.pipeline.new_token',return_value=token),patch('ariadne_mark.pipeline.sign_file',side_effect=lambda a,b,*x,**kw:shutil.copyfile(a,b)),patch.object(SDK,'_verify_export',return_value=verified),patch('ariadne_mark.pipeline.os.link',side_effect=link):
  SDK(Marker(),SigningIdentity(Path('c'),Path('k'),True),reg).mark(p/'in.png',p/'out.png',record)
 '''
 class PublicationTests(unittest.TestCase):
