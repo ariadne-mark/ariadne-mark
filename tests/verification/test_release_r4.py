@@ -145,3 +145,11 @@ class PublicScope(unittest.TestCase):
            'completed_schemes':[Q],'signed_routing':'independent_operator_scan',
            'unavailable_engines':[]}
         self.assertEqual(public_report({'watermark':w})['watermark'],w)
+
+class ExportScope(unittest.TestCase):
+    def test_local_export_scope_comes_from_the_configured_encoder(self):
+        from ariadne_mark.pipeline import SDK
+        class Encoder:algorithm=VS
+        with SDK() as sdk,patch('ariadne_mark.pipeline.verify_file',return_value={'fixture':True}) as verify:
+            self.assertEqual(sdk._verify_export(Path('export.mp4'),Encoder()),{'fixture':True})
+            self.assertEqual(verify.call_args.kwargs['verification_scope'],(VS,))

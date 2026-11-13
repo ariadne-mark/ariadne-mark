@@ -259,8 +259,10 @@ class MediaTests(unittest.TestCase):
         old = SDK(self.marker, self.identity, video_marker=self.marker)
         output = self.path / "legacy.mp4"
         receipt = old.mark(self.video(audio=False), output, self.record("video"))
-        with patch.object(self.video_marker, "decode_frames", side_effect=AssertionError("Wrong dispatch")):
-            report = self.sdk.verify(output)
+        # This is a development signature: it must not suppress independent
+        # configured decoders. The old Python-Q ID must still be recovered.
+        report = self.sdk.verify(output)
+        self.assertIn("adobe.trustmark.Q.variax-bch5", report["watermark"]["engines_checked"])
         self.assertEqual(report["watermark"]["token"], receipt["token"])
         stripped = self.path / "legacy-stripped.mp4"
         self.ffmpeg("-i", output, "-c:v", "libx264", "-crf", "28", "-map_metadata", "-1", stripped)

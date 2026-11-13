@@ -105,6 +105,18 @@ class SDK:
                 engine = next((m for m in self._video_markers.values() if m._process is not None), engine)
         return verify_file(path, marker=self.marker, video_marker=engine, legacy_video_marker=self._legacy_video_marker, registry=self.registry, trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors, verification_scope=self.verification_scope)
 
+    def _verify_export(self, path, engine):
+        """Known local encoder controls read-back, never an input-supplied claim.
+
+        Public ``verify`` keeps its independent operator scan. This check still
+        reads actual bytes and the gate below still checks the signed ID/record,
+        every sampled value and atomic publication before accepting an export.
+        """
+        return verify_file(path, marker=self.marker, video_marker=engine,
+            legacy_video_marker=self._legacy_video_marker, registry=self.registry,
+            trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors,
+            verification_scope=(getattr(engine, "algorithm", "adobe.trustmark.Q.bch5"),))
+
     def recover_manifest(self, path: Path, destination: Path, *, token: str | None = None) -> dict:
         """Blindly recover an ID, match its signed manifest and save exact bytes.
 
@@ -233,7 +245,7 @@ class SDK:
                 checked = verify_video_export(signed, engine,
                     [w["index"] for w in details["watermark_windows"]], trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors)
             else:
-                checked = self.verify(signed)
+                checked = self._verify_export(signed, engine)
             samples = checked["watermark"].get("samples", [])
             if (checked["c2pa"]["status"] != "verified_claim" or checked["c2pa"].get("token") != token
                     or checked["c2pa"].get("record") != record.to_dict()

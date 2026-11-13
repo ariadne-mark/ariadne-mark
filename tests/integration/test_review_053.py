@@ -10,11 +10,11 @@ class ReviewRegressions(unittest.TestCase):
  video=fixtures.MediaTests.video;image=fixtures.MediaTests.image;record=fixtures.MediaTests.record;ffmpeg=fixtures.MediaTests.ffmpeg
  def test_partial_video_export_is_rejected_before_publication(self):
   from ariadne_mark.errors import VerificationFailed
-  original=self.sdk.verify
-  def partial(path):
-   report=original(path);report['watermark']['samples'][-1]['token']=None;return report
+  original=self.sdk._verify_export
+  def partial(path,engine):
+   report=original(path,engine);report['watermark']['samples'][-1]['token']=None;return report
   target=self.path/'partial.mp4'
-  with patch.object(self.sdk,'verify',side_effect=partial),self.assertRaises(VerificationFailed):self.sdk.mark(self.video(audio=False),target,self.record('video'))
+  with patch.object(self.sdk,'_verify_export',side_effect=partial),self.assertRaises(VerificationFailed):self.sdk.mark(self.video(audio=False),target,self.record('video'))
   self.assertFalse(target.exists());self.assertFalse(Path(str(target)+'.receipt.json').exists())
  def test_actual_pyav_codec_is_checked_even_if_preflight_is_wrong(self):
   from ariadne_mark.video import sample_frames,probe

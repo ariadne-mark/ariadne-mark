@@ -1,7 +1,11 @@
 # 0.7.3a1 candidate: verifier integrity and migration
 
 This unpublished candidate follows the independently reviewed 0.7.3a0. It is
-not legal certification. All marking profiles, schedules, strength, models and
+not legal certification. Internal export read-back uses the explicitly chosen local encoder, while public
+verification remains independent of untrusted claims. Gate thresholds and atomic
+publication are unchanged.
+
+All marking profiles, schedules, strength, models and
 direct-SDK Economy5s default remain unchanged.
 
 Untrusted/development signatures cannot suppress configured independent scans.
