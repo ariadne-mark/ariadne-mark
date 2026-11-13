@@ -58,7 +58,7 @@ def main(argv=None) -> int:
     profile_check.add_argument("--as-of", help="Evaluate a YYYY-MM-DD scenario (does not update source knowledge)")
     models = commands.add_parser("models", help="Provision or check pinned watermark models")
     models.add_argument("action", choices=["fetch", "check"])
-    models.add_argument("--engine", choices=["media", "all", "trustmark", "videoseal", "video"], default="media")
+    models.add_argument("--engine", choices=["auto", "media", "all", "trustmark", "videoseal", "video"], default="auto")
     dev = commands.add_parser("init-dev", help="Generate a DEVELOPMENT signing identity")
     dev.add_argument("directory", type=Path)
     mark = commands.add_parser("mark", help="Watermark, sign and verify a JPEG, PNG or MP4")
@@ -176,9 +176,15 @@ def main(argv=None) -> int:
                 return 2 if result["configuration_status"] == "invalid" else 3 if result["assessment_status"] != "configuration_reviewed" else 0
         elif args.command == "models":
             from ariadne_mark import watermark, videoseal, videoq
-            result = {}
+            import importlib.util
+            selected_engine = args.engine
+            if selected_engine == 'auto':
+                selected_engine = 'media' if importlib.util.find_spec('trustmark') is not None else 'video'
+            result = {"selection": {"requested": args.engine, "selected": selected_engine}}
+            if args.engine == 'auto' and selected_engine == 'video':
+                result['trustmark'] = {'status': 'skipped', 'reason': 'optional_media_runtime_not_installed'}
             for name, engine in (("trustmark", watermark), ("videoseal", videoseal), ("video", videoq)):
-                if args.engine in {"all", name} or (args.engine == "media" and name in {"trustmark", "video"}):
+                if selected_engine in {"all", name} or (selected_engine == "media" and name in {"trustmark", "video"}):
                     import importlib.util
                     dependency = {"trustmark": "trustmark", "videoseal": "torch"}.get(name)
                     if args.engine == "all" and dependency and importlib.util.find_spec(dependency) is None:

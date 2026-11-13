@@ -15,7 +15,7 @@ FROM dependencies AS build
 COPY . /app
 # Public source must remain readable even from a checkout created with umask077.
 # Ownership remains root; the unprivileged runtime user gains no write access.
-RUN chmod -R a+rX /app && python scripts/build_release.py && ariadne models fetch && python -m pip check
+RUN chmod -R a+rX /app && python scripts/build_release.py && ariadne models fetch --engine media && python -m pip check
 
 FROM python:3.12-slim-trixie@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30 AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg ca-certificates libstdc++6 \

@@ -1,4 +1,4 @@
-# 0.7.3a0 candidate: migration, setup and known issues
+# Historical 0.7.3a0 migration record: migration, setup and known issues
 
 This is a local developer-alpha candidate, not a published release or legal certification.
 The previous public package is 0.7.2a1. Do not label the new schema-2 wheel as that version.

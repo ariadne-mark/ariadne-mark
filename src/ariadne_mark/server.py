@@ -302,6 +302,15 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
                 length = int(self.headers.get("Content-Length", "0"))
             except ValueError:
                 length = 0
+            if content_query and requested_algorithm is not None:
+                from ariadne_mark.verification.scope import media_scope
+                from ariadne_mark.softbinding import ALGORITHMS
+                applicable = media_scope(getattr(sdk, 'verification_scope', 'all'), video=ext == 'mp4')
+                if requested_algorithm not in {ALGORITHMS[s] for s in applicable}:
+                    self.close_connection = True
+                    self.respond(422, {'error': 'algorithm_outside_operator_scope', 'status': 'not_checked',
+                                       'declared_schemes': list(applicable)})
+                    return
             if not 0 < length <= limit or self.headers.get("Transfer-Encoding"):
                 self.respond(413, {"error": "invalid_upload_size"})
                 return
@@ -358,6 +367,12 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
                             matches.append({'manifestId': bundle['id']})
                             if len(matches) >= int(maximum):
                                 break
+                    if requested_algorithm is not None and not matches:
+                        from ariadne_mark.softbinding import ALGORITHMS
+                        checked = {ALGORITHMS[s] for s in watermark.get('completed_schemes', []) if s in ALGORITHMS}
+                        if requested_algorithm not in checked:
+                            self.respond(503, {'error': 'incomplete_content_search', 'status': 'not_checked'})
+                            return
                     self.respond(200, {'matches': matches})
                     return
                 result = public_report(report, sources)
@@ -414,6 +429,8 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
     server.configuration_warnings = ([] if sources else [
         'No reviewed public sources configured: provider/system provenance fields are withheld. '
         'Configure --public-sources and issuer trust before relying on public provenance disclosure.'])
+    from ariadne_mark.verification.scope import runtime_warnings
+    server.configuration_warnings.extend(w['message'] for w in runtime_warnings(getattr(sdk, 'verification_scope', 'all')))
     return server
 
 

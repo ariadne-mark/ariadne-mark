@@ -1,6 +1,9 @@
 # Ariadne Mark documentation
 
-SDK **0.7.2a1** · documentation review **2026-11-10**.
+SDK **0.7.3a1 candidate** · documentation updated **2026-11-13**.
+
+Versioned benchmark and legal-source review dates below remain historical evidence;
+they are not a new qualification or legal approval of this candidate.
 
 Start here if you run a generative image/video product and want to add marking,
 signed provenance and verification at export. Use the qualified Linux CPU kit,
@@ -36,7 +39,7 @@ choose a mode for your delivery workflow and retain evidence of your implementat
 
 ## Inspect the evidence
 
-- [Latest qualification results](validation/0.7.2a1-results.md).
+- [Previous published baseline qualification](validation/0.7.2a1-results.md).
 - [Testing protocols](benchmarks/protocols.md) and [versioned evidence index](benchmarks/evidence-index.md).
 - [Result terminology](reference/glossary.md).
 
@@ -54,3 +57,5 @@ Historical validation pages describe their original versions, datasets and machi
 - [Components, kits and managed alternatives](guides/alternatives.md)
 - [Troubleshooting](operations/troubleshooting.md)
 - [Downloadable SDK sample exports](benchmarks/samples.md)
+
+- [Current candidate fixes and remaining qualification](operations/release-0.7.3a1.md).

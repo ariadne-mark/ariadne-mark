@@ -1,6 +1,9 @@
 # Implement EU Article 50 marking for visual media
 
-SDK **0.7.2a1** · source review **2026-11-10**.
+SDK **0.7.3a1 candidate** · baseline legal-source review **2026-11-10**.
+
+The source review date and dated evidence below remain historical; this header
+is not a new legal clearance or candidate qualification.
 
 This guide covers image/video marking and detection for a provider using
 Ariadne at final export. Identify your role and output modalities first.

@@ -1,6 +1,9 @@
 # Requirements to implementation and evidence
 
-SDK **0.7.2a1** · source review **2026-11-10**.
+SDK **0.7.3a1 candidate** · baseline legal-source review **2026-11-10**.
+
+The source review date and dated evidence below remain historical; this header
+is not a new legal clearance or candidate qualification.
 
 This matrix separates binding law, voluntary Code measures and SDK engineering
 policy. “Reference verified” describes the tested kit, not an unknown product's

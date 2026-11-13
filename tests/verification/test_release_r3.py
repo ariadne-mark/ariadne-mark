@@ -37,7 +37,7 @@ class ReleaseR3(unittest.TestCase):
             def decode_frames(self, frames): raise AssertionError('out-of-scope legacy must not run')
         with tempfile.TemporaryDirectory() as folder:
             file = Path(folder)/'file.mp4'; file.touch()
-            claim = {'status':'verified_claim','watermark_algorithm':VS} if signed else {'status':'not_found'}
+            claim = {'status':'verified_claim','watermark_algorithm':VS,'issuer_trust':'trusted'} if signed else {'status':'not_found'}
             with patch('ariadne_mark.verification.media.inspect_c2pa', return_value=claim), patch('ariadne_mark.video.sample_frames',return_value=[(object(),0)]):
                 return verify_file(file, marker=PythonQ(), video_marker=Scan(), legacy_video_marker=Legacy(), verification_scope=scope)
 
@@ -75,7 +75,7 @@ class ReleaseR3(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             file=Path(folder)/'x.mp4';file.touch()
             r=_verification_result(file,{'status':'verified_claim','token':A},
-                {'status':'multiple_ids','ids':[{'token':B,'status':'observed','bases':[]}]},registry=None,video=True)
+                {'status':'multiple_ids','samples':[{'time':0,'token':B}], 'ids':[{'token':B,'status':'observed','bases':[]}]},registry=None,video=True)
             self.assertFalse(r['signed_id_observed'])
             self.assertFalse(r['token_mismatch'])
 

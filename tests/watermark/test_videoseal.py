@@ -99,6 +99,6 @@ class VideoRoutingTests(unittest.TestCase):
             def decode_frames(self, frames): return ([{"time": 0, "token": None}], {"token": token})
         class Legacy:
             def decode(self, image): raise AssertionError("unnecessary legacy detector")
-        result = self.verify({"status": "verified_claim", "watermark_algorithm": Video.algorithm}, Video(), Legacy())
+        result = self.verify({"status": "verified_claim", "issuer_trust": "trusted", "watermark_algorithm": Video.algorithm}, Video(), Legacy())
         self.assertEqual(result["watermark"]["token"], token)
         self.assertEqual(result["watermark"]["engines_checked"], [Video.algorithm])

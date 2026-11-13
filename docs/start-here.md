@@ -1,6 +1,9 @@
 # Install and produce your first marked export
 
-SDK **0.7.2a1** · documentation review **2026-11-10**.
+SDK **0.7.3a1 candidate** · documentation updated **2026-11-13**.
+
+Versioned benchmark and legal-source review dates below remain historical evidence;
+they are not a new qualification or legal approval of this candidate.
 
 Use this path for your own generated JPEG/PNG or final SDR MP4 rendition.
 The supported media runtime is Linux x86-64/Python 3.12 on CPU. The record/profile
@@ -9,20 +12,11 @@ this visual kit; AAC may be preserved as original audio.
 
 ## Get one complete result first
 
-[Download Release 0.7.2a1](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1).
-On Linux x86-64 with Docker Engine, curl, tar and sha256sum:
-
-```sh
-curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.2a1/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
-# Inspect before executing. Run where ariadne-first-run does not already exist.
-bash FIRST_EXPORT.sh
-```
-
-The script checks the frozen wheel/source hashes and sample archive, builds
-the Docker recipe, then exports and verifies a PNG and all three video profiles.
-Results stay under `ariadne-first-run/`. It uses development credentials and
-public synthetic test fixtures. Allow time/disk/network for explicit setup;
-this is not a browser-only install. [Inspect the sample reports](benchmarks/samples.md).
+This checkout is an unpublished candidate. Use its matching local wheel/source
+archive and qualification manifest; do not install the older public release
+and assume it contains these changes. The older
+[0.7.2a1 release](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1)
+is baseline evidence only. Candidate setup follows the instructions below.
 
 ## Choose an installation
 
@@ -33,7 +27,7 @@ provides an installation outside the source checkout:
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.2a1-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a1-py3-none-any.whl
 ariadne setup media --fetch-models
 ariadne runtime check
 ```
@@ -72,7 +66,7 @@ committed earlier successful jobs; inspect per-file receipts before retrying.
 ## Check the result
 
 ```sh
-ariadne verify deployments/demo/outputs/YOUR_OUTPUT.png   --registry deployments/demo/registry/assets.sqlite3
+ariadne verify deployments/demo/outputs/YOUR_OUTPUT.png --verification-scope current --registry deployments/demo/registry/assets.sqlite3
 ```
 
 Development files intentionally show a development-signature headline. They do

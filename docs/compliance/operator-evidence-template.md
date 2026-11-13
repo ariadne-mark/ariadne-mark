@@ -1,6 +1,9 @@
 # Record your product implementation and remaining actions
 
-SDK **0.7.2a1** · source review **2026-11-10**.
+SDK **0.7.3a1 candidate** · baseline legal-source review **2026-11-10**.
+
+The source review date and dated evidence below remain historical; this header
+is not a new legal clearance or candidate qualification.
 
 Copy this template into your product's internal release evidence. Replace
 bracketed entries with actual facts; an unchecked item is an action, not a

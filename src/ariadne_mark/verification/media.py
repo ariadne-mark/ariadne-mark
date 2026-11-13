@@ -177,17 +177,31 @@ def _evidence_scope(passes, unavailable, *, video):
 
 def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_marker=None, registry=None, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None, verification_scope="all") -> dict:
     from ariadne_mark.verification.scope import normalize_scope, ALL_SCHEMES, CURRENT_SCHEMES
-    declared_schemes = normalize_scope(verification_scope)
+    configured_schemes = normalize_scope(verification_scope)
     path = Path(path).resolve()
     if not path.is_file() or path.suffix.lower() not in MIME:
         raise UnsupportedMedia("Provide a local JPEG, PNG or MP4 file")
     c2pa = inspect_c2pa(path, trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
     video = path.suffix.lower() == ".mp4"
+    from ariadne_mark.verification.scope import media_scope
+    declared_schemes = media_scope(configured_schemes, video=video)
+    signed_algorithm = c2pa.get("watermark_algorithm") if c2pa["status"] == "verified_claim" else None
+    # An input signer is not an authority over the operator's independent scan.
+    # Only an explicitly trusted, non-development issuer may select a fast path.
+    trusted_route = c2pa.get("issuer_trust") == "trusted" and not c2pa.get("development_identity")
+    algorithm = signed_algorithm if trusted_route else None
+    # A known signed Python-Q MP4 also requires its historical decoder. For an
+    # untrusted claim this ADDS an obligation; it never removes the primary scan.
+    python_required = bool(video and signed_algorithm == "adobe.trustmark.Q.bch5"
+                           and signed_algorithm in configured_schemes)
+    if python_required and signed_algorithm not in declared_schemes:
+        declared_schemes = (*declared_schemes, signed_algorithm)
+    if algorithm in declared_schemes:
+        declared_schemes = (algorithm,)  # Trusted fast-path coverage is this scheme only.
     watermark = {"status": "not_checked", "reason": "watermark_engine_not_loaded"}
     if marker is not None or video_marker is not None:
         try:
             video = path.suffix.lower() == ".mp4"
-            algorithm = c2pa.get("watermark_algorithm") if c2pa["status"] == "verified_claim" else None
             if algorithm and algorithm not in declared_schemes:
                 raise _NoDecoder("signed_scheme_out_of_operator_scope")
             if video:
@@ -212,7 +226,7 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                 from ariadne_mark.videoseal import VideoSealWatermarker
                 engine = video_marker if getattr(video_marker, "algorithm", None) == VideoSealWatermarker.algorithm else (legacy_video_marker or VideoSealWatermarker())
                 candidates.append(engine)
-            if "adobe.trustmark.Q.bch5" in declared_schemes and algorithm in {None, "adobe.trustmark.Q.bch5"} and marker is not None:
+            if "adobe.trustmark.Q.bch5" in configured_schemes and algorithm in {None, "adobe.trustmark.Q.bch5"} and marker is not None:
                 candidates.append(marker)
             observations, aggregates, engines, unavailable, attempts = [], [], [], [], []
             search_results, confirmed_engines, auxiliary_unavailable = [], [], []
@@ -275,7 +289,7 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                     # In current-only video scope Python Q is an additional
                     # decoder for the same qualified payload, not another required
                     # technique. A missing primary Q decoder is always incomplete.
-                    if video and set(declared_schemes) == set(CURRENT_SCHEMES) and name == "adobe.trustmark.Q.bch5":
+                    if video and set(configured_schemes) == set(CURRENT_SCHEMES) and not python_required and name == "adobe.trustmark.Q.bch5":
                         auxiliary_unavailable.append(issue)
                     else:
                         unavailable.append(issue)
@@ -284,6 +298,8 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                         close = getattr(engine, "close", None)
                         if close:
                             close()
+            if "adobe.trustmark.Q.bch5" in declared_schemes and marker is None and algorithm in {None, "adobe.trustmark.Q.bch5"}:
+                unavailable.append({"algorithm": "adobe.trustmark.Q.bch5", "reason": "DecoderNotLoaded"})
             watermark = summarize_watermarks(observations, aggregates, video=video)
             if search_results and any(r["search"]["reason"] == "two_concordant_ids" for r in search_results):
                 watermark["sample_coverage"]["interpretation"] = "early_stop_evidence"
@@ -298,7 +314,8 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                              unavailable_auxiliary_engines=auxiliary_unavailable,
                              checked_frames=len({_frame_key(row, i) for i, row in enumerate(observations)}),
                              attempts=attempts, evidence_scope=_evidence_scope(attempts, unavailable, video=video))
-            if unavailable and watermark["status"] == "not_found":
+            # A missing required decoder cannot masquerade as an empty frame set.
+            if unavailable and watermark["status"] in {"not_found", "not_checked"}:
                 watermark.update(status="not_checked", reason="incomplete_engine_coverage")
             elif unavailable:
                 watermark["coverage"] = "partial"
@@ -307,7 +324,13 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                          **({"signed_algorithm": algorithm} if algorithm else {})}
         except (AriadneError, OSError, ValueError, ImportError) as exc:
             watermark = {"status": "not_checked", "reason": type(exc).__name__}
+    watermark["configured_schemes"] = list(configured_schemes)
     watermark["declared_schemes"] = list(declared_schemes)
+    watermark["signed_routing"] = "trusted_issuer" if algorithm else "independent_operator_scan"
+    # A list of actually completed checks, not merely configured engines.
+    watermark["completed_schemes"] = sorted({p["algorithm"] for p in watermark.get("attempts", [])
+        if p.get("status") not in {"not_checked", "single_observation"}
+        and p.get("samples") and (not p.get("search") or p["search"].get("file_exhausted"))})
     watermark["out_of_operator_scope"] = [s for s in ALL_SCHEMES if s not in declared_schemes]
     if isinstance(watermark.get("evidence_scope"), dict):
         watermark["evidence_scope"].update(declared_schemes=list(declared_schemes),
@@ -448,8 +471,12 @@ def _verification_result(path, c2pa, watermark, *, registry, video, trust_anchor
                                               trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors))
             per_id.append(row)
         recovery = {"status": "per_id", "per_id": per_id, "automatic_selection": "none"}
-    signed_id_observed = (any(e["token"] == signed_token for e in watermark.get("ids", []))
-                          or token == signed_token) if signed_token else None
+    signed_id_observed = None
+    if signed_token:
+        if any(e["token"] == signed_token for e in watermark.get("ids", [])) or token == signed_token:
+            signed_id_observed = True
+        elif watermark.get("samples") or any(p.get("unique_frames", 0) for p in watermark.get("attempts", [])):
+            signed_id_observed = False
     mismatch = bool(token and signed_token and token != signed_token)
     if c2pa["status"] == "invalid" or watermark["status"] == "invalid":
         label = "Invalid or conflicting provenance"
@@ -486,7 +513,7 @@ def _verification_result(path, c2pa, watermark, *, registry, video, trust_anchor
         label = "Check incomplete"
     if c2pa.get("reason") == "c2pa_runtime_unqualified":
         label = (label + "; signature check unavailable") if token or multiple else "Signature check unavailable; C2PA runtime not qualified"
-    if watermark["status"] == "not_checked" and c2pa.get("development_identity") and c2pa["status"] == "verified_claim":
+    if watermark["status"] == "not_checked" and c2pa["status"] == "verified_claim" and (c2pa.get("development_identity") or c2pa.get("issuer_trust") != "trusted"):
         label += "; watermark check incomplete"
     if video and (token or multiple) and c2pa["status"] != "verified_claim":
         label += "; sampled video evidence only"

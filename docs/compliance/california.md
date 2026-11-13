@@ -1,6 +1,9 @@
 # Implement California provider marking and verification
 
-SDK **0.7.2a1** · source review **2026-11-10**.
+SDK **0.7.3a1 candidate** · baseline legal-source review **2026-11-10**.
+
+The source review date and dated evidence below remain historical; this header
+is not a new legal clearance or candidate qualification.
 
 This guide maps the current provider duties in [BPC Chapter 25](https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?division=8.&chapter=25.&part=&lawCode=BPC) to the
 visual SDK. The consolidated official text was checked in the browser on

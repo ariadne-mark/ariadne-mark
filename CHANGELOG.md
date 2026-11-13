@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.3a1 (candidate, not published)
+
+- Prevent untrusted C2PA claims from suppressing independent watermark scans.
+- Report format-specific negative scope, required-decoder failures and tri-state signed-ID observations.
+- Refuse unsupported/incomplete content resolver searches; clarify UI observation positions.
+- Auto-select current models for bare commands, preserve strict explicit setup and warn on legacy-kit migration.
+- Update active candidate documentation while retaining historical benchmark evidence.
+
 ## 0.7.3a0 — candidate, not published
 
 - Default model provisioning and source Docker build use current image/video models only; legacy VideoSeal remains explicit.

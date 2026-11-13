@@ -1,8 +1,11 @@
 # Python CLI and verification reference
 
-SDK **0.7.2a1** · documentation review **2026-11-10**.
+SDK **0.7.3a1 candidate** · documentation updated **2026-11-13**.
 
-This reference describes the shipped command surface. Run `ariadne --help`
+Versioned benchmark and legal-source review dates below remain historical evidence;
+they are not a new qualification or legal approval of this candidate.
+
+This reference describes this candidate command surface. Run `ariadne --help`
 and a command's `--help` in the provisioned environment for all options.
 
 ## Main commands
@@ -11,7 +14,7 @@ and a command's `--help` in the provisioned environment for all options.
 | --- | --- | --- |
 | `setup media` / `setup video` | Explicit pinned installation | `--fetch-models`, optional bootstrap cache/wheelhouse |
 | `runtime check` | Inspect native/wrapper pair and hash | No implicit repair |
-| `models fetch` / `models check` | Provision/inspect selected engines | `--engine all`, `trustmark`, `video`, or `videoseal` |
+| `models fetch` / `models check` | Provision/inspect selected engines | `--engine auto` (default), `media`, `all`, `trustmark`, `video`, or `videoseal` |
 | `init-dev DIRECTORY` | Generate local evaluation identity | Explicit development use only |
 | `profile init` / `profile sources` / `profile check CONFIG` | Template, source catalog, requirement planning | `--as-of YYYY-MM-DD` changes evaluation date, not source knowledge |
 | `kit init DIRECTORY` | Create a new deployment | `--publisher`, `--system`, `--system-version`; development is opt-in |
@@ -20,8 +23,8 @@ and a command's `--help` in the provisioned environment for all options.
 | `kit export DIRECTORY BATCH` | Batch export with resident workers | Relative paths, actual timestamps, per-job video profile |
 | `kit serve DIRECTORY` | Run the configured verifier | Isolated inference, separate report key |
 | `mark SOURCE DESTINATION` | Mark, sign and read back | Identity, source facts/time; optional profile, registry, disclosure |
-| `verify SOURCE` | Check supported evidence | Optional roots/registry and `--strict` |
-| `recover SOURCE DESTINATION` | Recover a detached manifest | Registry; output file must be new |
+| `verify SOURCE` | Check supported evidence | Optional roots/registry, `--verification-scope all|current`, and `--strict` |
+| `recover SOURCE DESTINATION` | Recover a detached manifest | Registry, `--verification-scope all|current`; output file must be new |
 | `report keygen DIRECTORY` / `report verify RECEIPT` | Separate Ed25519 report keys and offline verification | Pinned `--public-key`; optional `--asset`, `--verifier-id` |
 | `feedback-summary DATABASE` | Read anonymous aggregate counts | Existing feedback database |
 
@@ -92,3 +95,33 @@ pinned report public key and, when needed, the submitted asset digest. See
 Full-manifest routes are disabled unless explicitly enabled; only approved
 records are published. HTTP 429 indicates capacity/rate limits, not a negative
 media result. TLS edge and application upload ceilings can differ.
+
+## Detection scope and model selection
+
+`verify`, `recover` and `serve` accept `--verification-scope all|current`; the
+Python SDK also accepts a nonempty finite list of known schemes. Existing SDK/CLI
+defaults remain `all`; new kits explicitly configure `current`. `current` promises
+Python-Q image checks and video-Q MP4 checks. Python-Q video reads are supplemental
+when available: a negative video-Q result is not a check of the older Python-Q
+MP4 scheme. A signed Python-Q MP4 also requires that historical decoder; provision
+the media runtime. `all` retains legacy VideoSeal and Python-Q video obligations.
+`configured_schemes` records the operator configuration; `declared_schemes` is the
+file-specific obligation, and `completed_schemes` lists completed checks. Missing
+required decoders or expired budgets never become a completed negative.
+
+Untrusted/development C2PA claims cannot restrict the independent operator scan.
+A trusted non-development issuer may select a signed-scheme path; the reported
+`signed_routing` makes that choice visible. `signed_id_observed` is true on an
+actual matching read, false after performed nonmatching observations, and null
+when observation was not established. A partial scan can still have a true value.
+
+Bare `models fetch/check` uses `auto`: current media if Python TrustMark is
+installed, otherwise video-only, with selection/skips printed. Explicit `media`
+requires both current runtimes; explicit `all` retains its legacy requirements.
+No request handling downloads models.
+
+`POST /matches/byContent` rejects an explicit algorithm outside this file's
+operator scope with HTTP422 `algorithm_outside_operator_scope` / `not_checked`.
+An in-scope requested technique without completed negative or matching positive
+evidence returns HTTP503 `incomplete_content_search`, never an empty successful
+search. These outcomes are separate from a completed HTTP200 empty match list.

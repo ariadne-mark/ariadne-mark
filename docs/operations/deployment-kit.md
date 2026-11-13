@@ -13,12 +13,12 @@ Use the source archive and wheel from the same release manifest. The source
 archive includes Dockerfile, dependency locks, kit assets and test scripts.
 
 ```sh
-tar -xzf ariadne_mark-0.7.2a1.tar.gz
-cd ariadne_mark-0.7.2a1
-docker build --platform linux/amd64 -t ariadne-mark:0.7.2a1 .
+tar -xzf ariadne_mark-0.7.3a1.tar.gz
+cd ariadne_mark-0.7.3a1
+docker build --platform linux/amd64 -t ariadne-mark:0.7.3a1 .
 mkdir -p deployments
 docker run --rm --network none --user "$(id -u):$(id -g)" \
-  -v "$PWD/deployments:/data" ariadne-mark:0.7.2a1 \
+  -v "$PWD/deployments:/data" ariadne-mark:0.7.3a1 \
   kit init /data/demo --development --publisher 'Your Public Studio' \
   --system 'Your Generator' --system-version '1.0'
 ```
@@ -150,3 +150,18 @@ re-encoding (PNG re-save and MP4 remux). Recovery after recompression, crop,
 letterboxing or temporal extraction is not guaranteed. A recovered watermark ID
 alone does not authenticate an edited copy. Earlier transformation experiments
 retain their own version, corpus and limitations.
+
+## Detection-scope migration
+
+`config/kit.json` has `verification_scope: "current"` on a new kit. An existing
+kit with no field retains `all`. Configure only `all` or `current`, then render
+and restart. A startup/`kit check` warning identifies a configured legacy decoder
+whose pinned model is unavailable. If you issued legacy VideoSeal marks, provision
+`models fetch --engine videoseal` explicitly and retain its model. Only narrow to
+`current` after reviewing historical issuance; do not silence a warning by hiding
+marks you previously issued. Detection compatibility must survive a detector
+upgrade. The warning never downloads a model or changes scope.
+
+For current MP4 checks, video-Q is required; Python-Q reads can supplement it.
+A signed legacy Python-Q MP4 requires the media runtime. See the
+[scope contract](../reference/api-cli.md#detection-scope-and-model-selection).

@@ -1,6 +1,9 @@
 # Software licences attribution and redistribution
 
-SDK **0.7.2a1** · documentation review **2026-11-10**.
+SDK **0.7.3a1 candidate** · documentation updated **2026-11-13**.
+
+Versioned benchmark and legal-source review dates below remain historical evidence;
+they are not a new qualification or legal approval of this candidate.
 
 Ariadne's original code/documentation use [Apache-2.0](../../LICENSE).
 Preserve the applicable licence, notices and required attribution/modification

@@ -35,7 +35,7 @@ function render(report) {
   const record = c.record && c.record.publisher ? c.record : r.record || c.record || {};
   addField('Watermark ID', w.token);
   (w.ids || []).forEach(e => addField(e.status === 'confirmed' ? 'Watermark ID (confirmed)' : 'Watermark ID (unconfirmed)',
-    `${e.token}${typeof e.first_time_s === 'number' ? ` · seen ${e.first_time_s.toFixed(2)}–${e.last_time_s.toFixed(2)} s` : ''}`));
+    `${e.token}${typeof e.first_time_s === 'number' ? ` · first read ${e.first_time_s.toFixed(2)} s · last read ${e.last_time_s.toFixed(2)} s · sampled positions only` : ''}`));
   const scope = w.evidence_scope || {};
   if (Array.isArray(scope.passes) && scope.passes.length) {
     addField('Evidence scope', scope.whole_file_examined ? 'At least one scheme examined the full file; see each pass.' : 'Sampled positions only; the rest of the file is not established.');

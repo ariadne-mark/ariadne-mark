@@ -1,6 +1,9 @@
 # EU voluntary Code implementation map
 
-SDK **0.7.2a1** · source review **2026-11-10**.
+SDK **0.7.3a1 candidate** · baseline legal-source review **2026-11-10**.
+
+The source review date and dated evidence below remain historical; this header
+is not a new legal clearance or candidate qualification.
 
 Use this map when deciding whether to follow the [Code of Practice](https://digital-strategy.ec.europa.eu/en/policies/code-practice-ai-generated-content)
 or substantiate alternative measures. The Commission/AI Board recognises the

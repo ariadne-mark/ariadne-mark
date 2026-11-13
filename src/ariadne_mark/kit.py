@@ -205,6 +205,8 @@ def check(root, *, runtime=False):
         config, profile = load(root)
     except (ValueError, OSError) as exc:
         return {'status': 'configuration_required', 'errors': [str(exc)], 'legal_determination': 'not_performed'}
+    from ariadne_mark.verification.scope import runtime_warnings
+    warnings = runtime_warnings(config['verification_scope'])
     needed = ['private/provider/identity.json', 'private/provider/private.key',
               'private/provider/certificate.pem', 'private/reports/report.key',
               'private/tls/key.pem', 'private/tls/cert.pem', 'config/issuer-roots.pem', 'config/report.pub', 'registry/assets.sqlite3']
@@ -257,7 +259,7 @@ def check(root, *, runtime=False):
     from ariadne_mark.profiles import evaluate
     return {'status': 'configuration_required' if errors else 'ready_for_development' if config['mode'] == 'development' else 'local_configuration_checked',
             'errors': errors, 'mode': config['mode'], 'profile': evaluate(profile),
-            'legal_determination': 'not_performed', 'public_reachability': 'not_checked',
+            'warnings': warnings, 'legal_determination': 'not_performed', 'public_reachability': 'not_checked',
             'certificate_enrollment': 'not_checked',
             'issuer_chain': 'checked_against_configured_roots' if not errors and config['mode'] == 'production' else 'not_checked',
             'default_video_profile': profile['sdk']['video_profile']}

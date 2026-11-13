@@ -10,7 +10,7 @@ summary=json.loads((root/'docs/validation/results/0.7.2a1-summary.json').read_te
 # The website publication snapshot is immutable evidence for the prior release,
 # not qualification of a new SDK candidate.
 assert manifest['sdk_version']==summary['sdk_version']=='0.7.2a1'
-assert version == '0.7.3a0'
+assert version == '0.7.3a1'
 assert (root/'docs/operations/release-0.7.3a0.md').is_file()
 assert manifest['tested_sdk_commit']==summary['commit']=='8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa'
 assert summary['ci_conclusion']=='success' and summary['full_media']=={'tests':217,'wall_s':357.287,'skipped':0}
@@ -23,7 +23,7 @@ for item in manifest['pages']+manifest['assets']:
 routes=[x['route'] for x in manifest['pages']+manifest['assets']]
 if len(routes)!=len(set(routes)):errors.append('Duplicate publication route')
 paths|={root/'README.md',root/'compliance/COVERAGE.md',root/'docs/README.ru.md'}
-for section in ['implementation','operations','compliance','benchmarks']:
+for section in ['implementation','operations','compliance','benchmarks','reference']:
  paths|=set((root/'docs'/section).glob('*.md'))
 # Include the current protocol as well as actual results; old validation is immutable history.
 paths.add(root/'docs/validation/0.7.2a1.md')
@@ -66,6 +66,16 @@ for p in sorted(paths):
   if fragment and dest.suffix=='.md':
    headings={slug(h) for h in re.findall(r'^#{1,6} (.+)$',dest.read_text(),re.M)}
    if unquote(fragment) not in headings:errors.append(rel+': missing anchor '+target)
+# Candidate headings cannot impersonate the dated published baseline.
+for p in paths:
+ if p.is_file() and 'validation' not in p.parts and 'benchmarks' not in p.parts:
+  text=p.read_text()
+  for header in re.findall(r'^SDK \*\*([^*]+)\*\*',text,re.M):
+   if header.split()[0] != version:errors.append(str(p.relative_to(root))+': stale active SDK header '+header)
+  first=text.splitlines()[0] if text else ''
+  if 'candidate' in first.lower() and re.search(r'0\.7\.[0-9]+a[0-9]+',first) and version not in first:
+   errors.append(str(p.relative_to(root))+': stale candidate heading')
+
 for p in (root/'docs').rglob('*.json'):json.loads(p.read_text())
 for p in (root/'compliance').rglob('*.json'):json.loads(p.read_text())
 legal=json.loads((root/'docs/compliance/requirements-matrix.json').read_text())

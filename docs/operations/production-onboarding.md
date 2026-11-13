@@ -1,6 +1,9 @@
 # Prepare your production deployment
 
-SDK **0.7.2a1** · documentation review **2026-11-10**.
+SDK **0.7.3a1 candidate** · documentation updated **2026-11-13**.
+
+Versioned benchmark and legal-source review dates below remain historical evidence;
+they are not a new qualification or legal approval of this candidate.
 
 Use the qualified kit as a reference deployment and assign an owner for each
 step below. A development init is a local evaluation, not a production setup.

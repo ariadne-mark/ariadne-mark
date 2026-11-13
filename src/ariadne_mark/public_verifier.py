@@ -136,7 +136,8 @@ def public_report(report, sources=()):
     watermark = report.get('watermark', {})
     if watermark:
         allowed = ['status', 'reason', 'token', 'algorithm_scope', 'engines_checked',
-                   'coverage', 'scope', 'sample_coverage', 'checked_frames', 'declared_schemes', 'out_of_operator_scope', 'unavailable_auxiliary_engines']
+                   'coverage', 'scope', 'sample_coverage', 'checked_frames', 'declared_schemes', 'out_of_operator_scope',
+                   'configured_schemes', 'completed_schemes', 'signed_routing', 'unavailable_engines', 'unavailable_auxiliary_engines']
         result['watermark'] = {k: deepcopy(watermark[k]) for k in allowed if k in watermark}
         searches = [a['search'] for a in watermark.get('attempts', []) if 'search' in a]
         if searches:

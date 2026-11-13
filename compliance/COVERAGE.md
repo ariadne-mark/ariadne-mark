@@ -1,6 +1,8 @@
 # Implementation and operator coverage
 
-Reviewed 10 November 2026 against qualified SDK 0.7.2a1. These 15 records are
+Current code: **0.7.3a1 candidate**. The baseline review below was performed
+10 November 2026 against qualified SDK 0.7.2a1; it is not new candidate qualification.
+These 15 records are
 engineering/implementation controls, not 15 statutory duties. A component can
 be implemented and reference-tested while product deployment or legal acceptance
 remains open. The former 8/15 headline is not a readiness or compliance score.

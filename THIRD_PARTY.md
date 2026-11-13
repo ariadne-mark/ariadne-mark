@@ -1,9 +1,9 @@
-# Third-party components — 0.7.2a1
+# Third-party components — 0.7.3a1 candidate
 
 The wheel contains Ariadne Mark's code and a model checksum manifest, not model
 weights. It also contains the attributed Apache-2.0 vocabulary described below.
 Pip/Docker installation obtains upstream
-packages. The Docker build downloads TrustMark and VideoSeal weights explicitly and verifies
+packages. The default Docker build downloads current TrustMark image/video-Q weights explicitly and verifies
 their SHA-256 hashes; runtime processing can be offline.
 
 | Component | Tested pin | Origin | License / notes |
@@ -20,7 +20,7 @@ their SHA-256 hashes; runtime processing can be offline.
 
 TrustMark model hashes live in [models.json](src/ariadne_mark/watermark/models.json).
 Downloads come from the location embedded in the pinned official TrustMark
-package. VideoSeal is provisioned from Meta; the wheel does not include its weights.
+package. Optional legacy VideoSeal is provisioned explicitly from Meta; neither the wheel nor the default Docker image includes its weights.
 The BCH codec is reused from the pinned TrustMark package; no bchlib dependency
 or copied competitor implementation is introduced. Preserve upstream notices when redistributing packages or images, and
 review the license obligations of the exact transitive/binary build. The

@@ -34,7 +34,7 @@ class C2paPolicyTests(unittest.TestCase):
         from ariadne_mark.verification.media import _verification_result
         claim = self.check(native_result(['claimSignature.validated', 'assertion.dataHash.match']))
         report = _verification_result(Path('fixture.png'), claim, {'status': 'not_checked'}, registry=None, video=False)
-        self.assertEqual(report['label'], 'C2PA signature valid; no supported AI-origin claim')
+        self.assertEqual(report['label'], 'C2PA signature valid; no supported AI-origin claim; watermark check incomplete')
 
     def test_incomplete_negative_checks_are_not_headlined_as_absence(self):
         from ariadne_mark.verification.media import _verification_result

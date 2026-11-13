@@ -229,7 +229,7 @@ class CoverageTests(unittest.TestCase):
         self.assertEqual((clean['status'], clean['reason']), ('not_checked', 'incomplete_engine_coverage'))
 
     def test_legacy_only_scheme_without_its_decoder_is_not_imitated(self):
-        signed_legacy = {**SIGNED_A, 'watermark_algorithm': 'adobe.trustmark.Q.bch5'}
+        signed_legacy = {**SIGNED_A, 'issuer_trust': 'trusted', 'watermark_algorithm': 'adobe.trustmark.Q.bch5'}
         scanner = QScanner([A] * 240)
         report = run(signed_legacy, scanner, marker=None)
         self.assertEqual(report['watermark']['status'], 'not_checked')
@@ -292,7 +292,7 @@ class FrameIdentityTests(unittest.TestCase):
             path = Path(folder) / 'fixture.mp4'
             path.write_bytes(b'x')
             with patch('ariadne_mark.video.sample_frames', side_effect=sample), \
-                 patch('ariadne_mark.verification.media.inspect_c2pa', return_value={**SIGNED_A, 'watermark_algorithm': Q}):
+                 patch('ariadne_mark.verification.media.inspect_c2pa', return_value={**SIGNED_A, 'issuer_trust': 'trusted', 'watermark_algorithm': Q}):
                 report = verify_file(path, video_marker=Sampled())
         first, second = sample(None), sample(None, samples=20)
         union = {f.identity['pts'] for f in first + second}
