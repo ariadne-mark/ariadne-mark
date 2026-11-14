@@ -85,8 +85,8 @@ class SDK:
             raise ValueError("A video profile override requires the built-in VideoWatermarker")
         with self._video_markers_lock:
             if profile not in self._video_markers:
-                self._video_markers[profile] = VideoWatermarker(profile=profile,
-                    threads=self.video_marker.threads, timeout=self.video_marker.timeout)
+                # One Node worker per SDK for every preset (ISS-12); see with_profile.
+                self._video_markers[profile] = self.video_marker.with_profile(profile)
             return self._video_markers[profile]
 
     def __enter__(self):

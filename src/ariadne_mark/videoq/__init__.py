@@ -139,13 +139,30 @@ class VideoWatermarker:
                            'economy_2s': 'economy-2s-125ms-cpu-v1'}[profile]
         self.threads = threads
         self.timeout = timeout
-        self._lock = threading.RLock()
+        # Worker state lives in one holder so profile views can share it.
+        self._worker = SimpleNamespace(_lock=threading.RLock(), _process=None, _owner=None,
+                                       _cleanup_registered=False)
+        self._lock = self._worker._lock
         self._process = None
         self._owner = None
         self._token = None
         self.stats = {}
         self.last_error = None
         self._cleanup_registered = False
+
+    def with_profile(self, profile):
+        """Another preset on the SAME Node worker process (ISS-12).
+
+        The worker is profile-agnostic: the preset is sent with each encoding
+        session and its state is reset at begin/end, and every preset loads the
+        same two ONNX models. Separate processes per preset only duplicated
+        those models. The shared lock serialises whole sessions, as it already
+        did for concurrent exports of one preset.
+        """
+        validate_profile(profile)
+        view = VideoWatermarker(profile=profile, threads=self.threads, timeout=self.timeout)
+        view._worker = self._worker
+        return view
 
     def _load(self):
         if self._process and self._owner == os.getpid() and (self._process.poll() is None):
@@ -321,6 +338,7 @@ class VideoWatermarker:
                               max_hypotheses=max_hypotheses)
 
     def close(self):
+        """Stop the shared worker process (idempotent for every profile view)."""
         if self._cleanup_registered:
             atexit.unregister(self.close)
             self._cleanup_registered = False
@@ -343,3 +361,14 @@ class VideoWatermarker:
                     f.close()
         self._process = None
         self._token = None
+
+
+def _shared(name):
+    return property(lambda self: getattr(self._worker, name, None),
+                    lambda self, value: setattr(self._worker, name, value))
+
+
+for _name in ('_lock', '_process', '_owner', '_responses', '_stderr_tail', '_stderr_lock',
+              '_stderr_thread', '_cleanup_registered'):
+    setattr(VideoWatermarker, _name, _shared(_name))
+del _name
