@@ -1,6 +1,6 @@
 # AI labeling requirements and implementation evidence
 
-Source review **2026-11-10** · SDK **0.7.2a1** visual-media scope.
+Source review **2026-11-10** · SDK **0.7.3a1** visual-media scope.
 
 Start with the role your product plays, its output types and where it is
 available. Then connect each applicable marking/detection duty to a technical
