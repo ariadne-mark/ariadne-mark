@@ -1,6 +1,6 @@
 # Python CLI and verification reference
 
-SDK **0.7.3a2 candidate** · documentation updated **2026-11-14**.
+SDK **0.7.3a3 candidate** · documentation updated **2026-11-14**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.
@@ -135,3 +135,12 @@ operator scope with HTTP422 `algorithm_outside_operator_scope` / `not_checked`.
 An in-scope requested technique without completed negative or matching positive
 evidence returns HTTP503 `incomplete_content_search`, never an empty successful
 search. These outcomes are separate from a completed HTTP200 empty match list.
+
+## Authenticated TSA options
+
+`mark` accepts `--timestamp-credential-file PATH`, `--timestamp-timeout SECONDS`
+and `--timestamp-ca-bundle PATH` with `--timestamp-url`. The file contains a bearer
+token and must be a regular owner-only file. Authenticated timeout: >0 to 25s;
+the HTTPS CA bundle is separate from timestamp signer trust. Kit equivalents
+and offline qualification boundaries are described in
+[authenticated timestamping](../operations/authenticated-timestamping.md).

@@ -13,8 +13,8 @@ Use the source archive and wheel from the same release manifest. The source
 archive includes Dockerfile, dependency locks, kit assets and test scripts.
 
 ```sh
-tar -xzf ariadne_mark-0.7.3a2.tar.gz
-cd ariadne_mark-0.7.3a2
+tar -xzf ariadne_mark-0.7.3a3.tar.gz
+cd ariadne_mark-0.7.3a3
 docker build --platform linux/amd64 --iidfile ariadne-image.id .
 IMAGE=$(cat ariadne-image.id)
 mkdir -p deployments
@@ -36,7 +36,7 @@ never pulls), asks the image for its SDK version and installed-file digest
 the one recorded by `kit init`. It writes `KIT_SDK_IMAGE=sha256:…` and
 `KIT_SDK_RECORD_SHA256` to `.env`. Compose then uses that ID, and `kit export` /
 `kit serve` refuse to run if the image reports another SDK version. A tag such
-as `ariadne-mark:0.7.3a2` can name a different object on a shared host; kits
+as `ariadne-mark:0.7.3a3` can name a different object on a shared host; kits
 created before pinning keep their tag and `kit check` warns
 `sdk_image_not_pinned`. To pin such a kit, add `KIT_SDK_VERSION=<version>` to
 its `.env` and run the script (copy it from a newly initialized kit).
@@ -188,3 +188,11 @@ upgrade. The warning never downloads a model or changes scope.
 For current MP4 checks, video-Q is required; Python-Q reads can supplement it.
 A signed legacy Python-Q MP4 requires the media runtime. See the
 [scope contract](../reference/api-cli.md#detection-scope-and-model-selection).
+
+## Authenticated timestamps
+
+The optional kit fields `timestamp_credential_file` and `timestamp_timeout`
+configure the credential relay. Store the token under `private/tsa/` with
+permissions 0600; only the exporter receives that directory. Use the production
+egress override for external TSA access. See [authenticated timestamping](authenticated-timestamping.md)
+for configuration, limits and the distinction between HTTPS and timestamp trust.

@@ -1,4 +1,4 @@
-# Supported scope — 0.7.3a2 candidate
+# Supported scope — 0.7.3a3 candidate
 
 | Area | Supported | Boundary |
 | --- | --- | --- |

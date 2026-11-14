@@ -1,6 +1,6 @@
 # Ariadne Mark documentation
 
-SDK **0.7.3a2 candidate** · documentation updated **2026-11-14**.
+SDK **0.7.3a3 candidate** · documentation updated **2026-11-14**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.
@@ -58,5 +58,5 @@ Historical validation pages describe their original versions, datasets and machi
 - [Troubleshooting](operations/troubleshooting.md)
 - [Downloadable SDK sample exports](benchmarks/samples.md)
 
-- [0.7.3a2 adoption fixes: install, image identity, memory, TSA boundary](operations/release-0.7.3a2.md).
+- [0.7.3a3 adoption fixes: install, image identity, memory, TSA boundary](operations/release-0.7.3a3.md).
 - [0.7.3a1 candidate fixes and remaining qualification](operations/release-0.7.3a1.md).

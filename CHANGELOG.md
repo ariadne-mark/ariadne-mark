@@ -1,12 +1,19 @@
 # Changelog
 
+## 0.7.3a3 (candidate, not published)
+
+- Complete authenticated RFC 3161 timestamps on the unchanged pinned C2PA pair via a per-operation loopback relay and owner-only bearer file.
+- Bound credential reads, requests/replies and response time; reject redirects and preserve native token/trust validation and fail-closed publication.
+- Add offline authenticated HTTPS TSA, kit-configuration and relay regressions; document deployment and the remaining live-provider qualification.
+- Preserve Economy5s default, Economy2s and Resilient, including 0.7.3a2 verifier, installation and shared-worker fixes.
+
 ## 0.7.3a2 (candidate, not published)
 
 - Trusted C2PA claims can no longer switch off the operator's primary watermark scan; out-of-scope claims keep primary evidence and stay `not_checked` on a negative (review P-01). `completed_schemes` ⊆ `declared_schemes`, new `supplemental_completed_schemes` (P-02). `SDK.mark` refuses an encoder outside its own verification scope (P-03).
 - One Node video worker per SDK for all presets: mixed-preset peak resident memory 2.44 → 1.33 GiB on the qualification host (ISS-12).
 - Kit pins the SDK image by immutable ID (`pin-image.sh`, `ariadne runtime identity`) and refuses a mismatched SDK version before work (ISS-05/01). `kit serve --host/--port`, loopback by default on hosts (ISS-09). Production origins reject all RFC 2606/6761 reserved names (ISS-16).
 - Runtime caches honour `XDG_CACHE_HOME`; existing caches are reused, never moved; no `~/.npm` writes (ISS-08).
-- TSA URL must be HTTPS without credentials/query/fragment; failed timestamp calls are redacted and publish nothing; `sign_file` removes a failed output. Authenticated TSA requires a newer C2PA pair (documented).
+- TSA URL must be HTTPS without credentials/query/fragment; failed timestamp calls are redacted and publish nothing; `sign_file` removes a failed output. Direct native TSA authorization is unavailable; the optional authenticated relay is added in 0.7.3a3.
 - Docs: disk budget, image identity, host bind, mixed-preset memory, verification cost, TSA boundary.
 
 ## 0.7.3a1 (candidate, not published)

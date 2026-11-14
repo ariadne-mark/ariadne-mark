@@ -1,4 +1,4 @@
-# C2PA runtime preflight — 0.7.3a2
+# C2PA runtime preflight — 0.7.3a3
 
 ```sh
 ariadne runtime check
