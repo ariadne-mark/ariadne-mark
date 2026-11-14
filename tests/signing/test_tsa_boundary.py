@@ -18,6 +18,14 @@ class TimestampUrlTests(unittest.TestCase):
             with self.subTest(identity=url), self.assertRaises(ValueError):
                 SigningIdentity(Path('c'), Path('k'), False, url)
 
+    def test_loopback_http_test_tsa_only_for_development_identities(self):
+        url = 'http://127.0.0.1:8123/tsa'
+        self.assertEqual(SigningIdentity(Path('c'), Path('k'), True, url).timestamp_url, url)
+        with self.assertRaises(ValueError):
+            SigningIdentity(Path('c'), Path('k'), False, url)
+        with self.assertRaises(ValueError):
+            SigningIdentity(Path('c'), Path('k'), True, 'http://tsa.operator-tsa.org/tsa')
+
     def test_https_endpoint_with_path_and_port_is_accepted(self):
         url = 'https://timestamp.operator-tsa.org:8443/rfc3161'
         self.assertEqual(SigningIdentity(Path('c'), Path('k'), False, url).timestamp_url, url)
