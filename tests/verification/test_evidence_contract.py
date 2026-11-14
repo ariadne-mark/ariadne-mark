@@ -232,9 +232,15 @@ class CoverageTests(unittest.TestCase):
         signed_legacy = {**SIGNED_A, 'issuer_trust': 'trusted', 'watermark_algorithm': 'adobe.trustmark.Q.bch5'}
         scanner = QScanner([A] * 240)
         report = run(signed_legacy, scanner, marker=None)
-        self.assertEqual(report['watermark']['status'], 'not_checked')
-        self.assertEqual(report['watermark']['reason'], 'no_decoder_for_signed_scheme')
-        self.assertEqual(scanner.calls, 0)
+        w = report['watermark']
+        # ADOPTION-OPT-01 / review P-01: a trusted claim no longer switches off
+        # the operator's primary video-Q scan, so the scanner runs. The
+        # protection is unchanged: the missing Python-Q decoder is reported and
+        # video-Q evidence never stands in for the claimed Python-Q layout.
+        self.assertGreater(scanner.calls, 0)
+        self.assertIn('adobe.trustmark.Q.bch5', [u['algorithm'] for u in w['unavailable_engines']])
+        self.assertNotIn('adobe.trustmark.Q.bch5', w['completed_schemes'])
+        self.assertEqual(w.get('coverage'), 'partial')
 
 
 class CryptoContextTests(unittest.TestCase):
