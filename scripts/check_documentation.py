@@ -78,7 +78,8 @@ for p in paths:
   if heading_version and heading_version.group(1)!=version and 'release-' not in p.name and p.name!='releases.md':
    errors.append(str(p.relative_to(root))+': stale versioned title '+heading_version.group(1))
   first=text.splitlines()[0] if text else ''
-  if 'candidate' in first.lower() and re.search(r'0\.7\.[0-9]+a[0-9]+',first) and version not in first:
+  # Per-version release notes describe their own version by design.
+  if 'candidate' in first.lower() and re.search(r'0\.7\.[0-9]+a[0-9]+',first) and version not in first and not p.name.startswith('release-'):
    errors.append(str(p.relative_to(root))+': stale candidate heading')
 
 for p in (root/'docs').rglob('*.json'):json.loads(p.read_text())
