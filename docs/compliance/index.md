@@ -6,6 +6,9 @@ Start with the role your product plays, its output types and where it is
 available. Then connect each applicable marking/detection duty to a technical
 measure, evidence and an accountable operator action.
 
+See the [14 November evidence refresh](evidence-refresh-2026-11-14.md) for
+completed-pilot evidence, source-access limits and remaining operator actions.
+
 - [EU Article 50](eu-ai-act.md): provider marking/detection, relevant deployer
   disclosure and the specific transition by market-placement date.
 - [California](california.md): current covered-provider latent disclosure,

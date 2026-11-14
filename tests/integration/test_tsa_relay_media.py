@@ -92,3 +92,20 @@ class AuthenticatedTsaTests(fixtures.TsaFailureTests):
             with self.assertRaisesRegex(VerificationFailed,'trusted timestamp'):sdk.mark(source,out,example_record())
         self.assertFalse(out.exists());self.assertFalse(out.with_name(out.name+'.receipt.json').exists())
         with registry.connect() as db:self.assertEqual(db.execute('SELECT count(*) FROM assets').fetchone()[0],0)
+
+    def test_authenticated_failure_cannot_publish_through_sdk(self):
+        from PIL import Image
+        from ariadne_mark.pipeline import SDK
+        from ariadne_mark.registry import Registry
+        from ariadne_mark.watermark import Watermarker
+        from ariadne_mark.errors import AriadneError
+        from tests.provenance.test_records import example_record
+        source=self.p/'auth-sdk-input.png';Image.new('RGB',(512,512),(40,90,140)).save(source)
+        registry=Registry(self.p/'auth-failures.sqlite3')
+        with SDK(Watermarker(),self.identity(timeout=.2),registry,
+                 trust_anchors=self.p/'root.pem',tsa_trust_anchors=self.p/'root.pem') as sdk:
+            for mode in ['401','wrong_imprint','hang']:
+                type(self).mode=mode;out=self.p/f'auth-sdk-{mode}.png'
+                with self.subTest(mode=mode),self.assertRaises(AriadneError):sdk.mark(source,out,example_record())
+                self.assertFalse(out.exists());self.assertFalse(out.with_name(out.name+'.receipt.json').exists())
+        with registry.connect() as db:self.assertEqual(db.execute('SELECT count(*) FROM assets').fetchone()[0],0)
