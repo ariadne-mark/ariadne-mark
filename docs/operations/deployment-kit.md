@@ -13,15 +13,45 @@ Use the source archive and wheel from the same release manifest. The source
 archive includes Dockerfile, dependency locks, kit assets and test scripts.
 
 ```sh
-tar -xzf ariadne_mark-0.7.2a1.tar.gz
-cd ariadne_mark-0.7.2a1
-docker build --platform linux/amd64 -t ariadne-mark:0.7.2a1 .
+tar -xzf ariadne_mark-0.7.3a4.tar.gz
+cd ariadne_mark-0.7.3a4
+docker build --platform linux/amd64 --iidfile ariadne-image.id .
+IMAGE=$(cat ariadne-image.id)
 mkdir -p deployments
 docker run --rm --network none --user "$(id -u):$(id -g)" \
-  -v "$PWD/deployments:/data" ariadne-mark:0.7.2a1 \
+  -v "$PWD/deployments:/data" "$IMAGE" \
   kit init /data/demo --development --publisher 'Your Public Studio' \
   --system 'Your Generator' --system-version '1.0'
 ```
+
+Then pin the image the kit will run, on the Docker host:
+
+```sh
+deployments/demo/pin-image.sh "$IMAGE"
+```
+
+`pin-image.sh` resolves the local reference to its immutable image ID (it
+never pulls), asks the image for its SDK version and installed-file digest
+(`ariadne runtime identity`) and refuses an image whose version differs from
+the one recorded by `kit init`. It writes `KIT_SDK_IMAGE=sha256:…` and
+`KIT_SDK_RECORD_SHA256` to `.env`. Compose then uses that ID, and `kit export` /
+`kit serve` refuse to run if the image reports another SDK version. A tag such
+as `ariadne-mark:0.7.3a4` can name a different object on a shared host; kits
+created before pinning keep their tag and `kit check` warns
+`sdk_image_not_pinned`. To pin such a kit, add `KIT_SDK_VERSION=<version>` to
+its `.env` and run the script (copy it from a newly initialized kit).
+
+The local immutable image ID fixes which local object Compose runs. The SDK
+version and `KIT_SDK_RECORD_SHA256` are self-reported inventory, not independent
+proof of origin. Startup checks the version; it does not revalidate that RECORD
+digest or authenticate the image publisher. Verify downloaded wheel/sdist hashes
+against the exact CI release evidence before building. Do not substitute a tag
+or a self-reported digest for artifact provenance.
+
+`kit serve DIRECTORY` binds `127.0.0.1:8080` on a host; inside a container it
+binds `0.0.0.0` (the container's own network; Compose publishes only the TLS
+edge). Override with `--host` / `--port`. The shipped compose file passes the
+container bind explicitly.
 
 Init refuses an existing target directory. A failed initialization is marked
 `INIT_INCOMPLETE`; inspect it instead of deploying. It never overwrites keys.
@@ -150,3 +180,26 @@ re-encoding (PNG re-save and MP4 remux). Recovery after recompression, crop,
 letterboxing or temporal extraction is not guaranteed. A recovered watermark ID
 alone does not authenticate an edited copy. Earlier transformation experiments
 retain their own version, corpus and limitations.
+
+## Detection-scope migration
+
+`config/kit.json` has `verification_scope: "current"` on a new kit. An existing
+kit with no field retains `all`. Configure only `all` or `current`, then render
+and restart. A startup/`kit check` warning identifies a configured legacy decoder
+whose pinned model is unavailable. If you issued legacy VideoSeal marks, provision
+`models fetch --engine videoseal` explicitly and retain its model. Only narrow to
+`current` after reviewing historical issuance; do not silence a warning by hiding
+marks you previously issued. Detection compatibility must survive a detector
+upgrade. The warning never downloads a model or changes scope.
+
+For current MP4 checks, video-Q is required; Python-Q reads can supplement it.
+A signed legacy Python-Q MP4 requires the media runtime. See the
+[scope contract](../reference/api-cli.md#detection-scope-and-model-selection).
+
+## Authenticated timestamps
+
+The optional kit fields `timestamp_credential_file` and `timestamp_timeout`
+configure the credential relay. Store the token under `private/tsa/` with
+permissions 0600; only the exporter receives that directory. Use the production
+egress override for external TSA access. See [authenticated timestamping](authenticated-timestamping.md)
+for configuration, limits and the distinction between HTTPS and timestamp trust.

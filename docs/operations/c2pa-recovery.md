@@ -12,6 +12,11 @@ cross-vendor discovery. Before interoperability enrollment, confirm the owned
 namespace, stable public endpoint, contact and informational URL and submit an
 algorithm-list request. No enrollment or external agreement is made by the SDK.
 
+A stripped asset's opaque token does not identify a per-operator endpoint.
+Algorithm-list enrollment and resolver discovery are separate. See the
+[production discovery acceptance](resolver-discovery.md) before claiming that
+an unrelated verifier can locate the correct registry.
+
 ## Local storage and recovery
 
 When a registry is configured, final native `application/c2pa` bytes and their
@@ -38,6 +43,15 @@ asset. A recovered original manifest can have a valid signature while its hard
 binding mismatches an edited asset. Those states are kept separate, including in
 the signed verification report. A copied ID is not authentication of an edited
 copy. A corrupt stored blob is refused, rather than served as a successful match.
+
+If several watermark IDs are found, recovery does not pick one. Each confirmed ID
+gets its own registry result in `recovery.per_id`, checked only against a scheme
+that actually read that ID; a single unconfirmed read is not looked up. Choose
+one with `ariadne recover ... --id ID` (SDK `token=`) after reviewing the
+verification result. `POST /matches/byContent` returns one candidate per
+confirmed ID, up to `maxResults`. The limit applies to returned public matches
+after filtering, so a missing, private or algorithm-mismatched earlier ID does
+not hide a later eligible match. The candidate ID list remains bounded.
 
 ## Explicit publication
 

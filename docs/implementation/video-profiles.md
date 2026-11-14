@@ -66,7 +66,8 @@ conflict or a budget. For weak IDs it tests unknown-phase 1/2/5 s window groups
 using at most 20 cached logits per upstream BCH aggregate. Period 1 is retained
 only as a recovery hypothesis for experimental assets, not as a new encoder
 preset. Logits are computed at most once per scanned frame. Different recovered
-IDs remain conflicting; the signed token and registry never select the answer.
+IDs are reported together as `multiple_ids` (every ID with its positions); the
+signed token and registry never select the answer.
 
 Default search budgets: 2000 frames, 120 seconds, 512 aggregate hypotheses.
 Budget exhaustion gives incomplete/not_checked, never a negative. A lone ID
@@ -89,8 +90,8 @@ compliance, copyright ownership or truth.
 Use Docker for the complete CPU bundle, including old-format compatibility:
 
 ```sh
-docker build --platform linux/amd64 -t ariadne-mark:local .
-docker run --rm --network none ariadne-mark:local models check
+docker build --platform linux/amd64 --iidfile ariadne-image.id .
+docker run --rm --network none "$(cat ariadne-image.id)" models check
 ```
 
 For a video-only installation, activate a Linux x86-64 / Python 3.12 virtualenv
@@ -135,9 +136,15 @@ result = sdk.verify(Path("output.mp4"))
 sdk.close()
 ```
 
-Each SDK owns lazy persistent workers for the profiles it actually uses. Create one SDK per product worker and
-reuse it. Shared-thread exports serialize access to the encoder and isolate
-per-export caches; start separate SDKs in separate processes for parallel jobs.
+Each SDK owns one lazy persistent Node worker shared by its video profiles.
+Create one SDK per application process after fork and reuse it. Export and video
+verification on that SDK acquire the same worker lock. The lock is held for an
+entire export or scan, with isolated per-export caches. Waiting for that lock is
+outside the scan's own time budget and currently has no separate timeout.
+Do not share an exporter SDK with a latency-sensitive public verifier. Run the
+verifier in a separate process with its own SDK; the deployment kit and stock
+product example already use this topology. Additional processes cost memory.
+See [CPU deployment](../operations/cpu-deployment.md#separate-export-and-verification).
 After a worker failure, the export fails before publication; a later export
 can create a fresh worker. Receipts contain model-call count, profile, total
 processing seconds, signed-file SHA-256 and verification attempts.

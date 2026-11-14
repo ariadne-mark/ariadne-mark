@@ -57,11 +57,25 @@ class BlindSearchTests(unittest.TestCase):
         self.assertFalse(result['search']['expected_id_supplied'])
 
     def test_conflicting_aggregate_never_chooses_a_preferred_id(self):
+        # B06: several IDs are several observed claims (multiple_ids), not
+        # invalid evidence. The protection kept from the former 'invalid'
+        # verdict: no ID is preferred and both remain visible.
         result, _ = self.run_scan([None] * 10, [A, B])
-        self.assertEqual(result['status'], 'invalid')
+        self.assertEqual(result['status'], 'multiple_ids')
         self.assertIsNone(result['token'])
-        result, _ = self.run_scan([A, B])
-        self.assertEqual(result['status'], 'invalid')
+        self.assertEqual(result['search']['observed_ids'], sorted([A, B]))
+        result, calls = self.run_scan([A, B] + [None] * 8)
+        self.assertEqual(result['status'], 'multiple_ids')
+        self.assertIsNone(result['token'])
+        self.assertEqual([row['token'] for row in result['samples']], [A, B])
+        self.assertEqual(len(calls), 2)  # unchanged stopping rule
+        self.assertFalse(result['search']['file_exhausted'])
+
+    def test_scan_rows_carry_integer_pts_identity(self):
+        result, _ = self.run_scan([None, A, A])
+        self.assertEqual(result['samples'][1]['frame'], {'stream': 0, 'pts': 1, 'time_base': '1/24'})
+        self.assertEqual(result['search']['selection'], 'sequential_from_start')
+        self.assertEqual(result['search']['time_range_s'], [0.0, 2 / 24])
 
     def test_budgets_cannot_turn_a_partial_search_into_absence(self):
         result, calls = self.run_scan([None] * 20, max_frames=5)

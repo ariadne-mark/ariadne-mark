@@ -8,6 +8,11 @@ on:
         description: Reviewed full commit SHA to qualify on the temporary EC2 runner
         required: true
         type: string
+      no_cache:
+        description: Re-download and rebuild all source dependencies without Docker layer cache
+        required: true
+        default: false
+        type: boolean
       qualification_mode:
         description: Source rebuild or unchanged published-package documentation qualification
         required: true
@@ -61,6 +66,8 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
       - name: Qualify source build on EC2
         if: inputs.qualification_mode == 'source-build'
+        env:
+          ARIADNE_CI_NO_CACHE: ${{ inputs.no_cache && '1' || '0' }}
         run: bash scripts/ci_server.sh
       - name: Qualify unchanged published package on EC2
         if: inputs.qualification_mode == 'published-package'

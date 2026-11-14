@@ -49,7 +49,8 @@ The response is HTTP200 for a completed inspection request, not necessarily a re
 | `single_observation` | One individual ID read without sufficient confirmation |
 | `not_found` | No supported ID recovered within the completed inspection scope |
 | `not_checked` | Missing engine, budget or another operational/incomplete check |
-| `invalid` | Invalid credential or conflicting recovered evidence |
+| `multiple_ids` | Several distinct watermark IDs read; see `watermark.ids` and `watermark.evidence_scope`. Each applies only where it was read |
+| `invalid` | Invalid credential (`c2pa.status`); several watermark IDs alone are `multiple_ids`, not `invalid` |
 
 The CLI service runs verification in a persistent verification-only child with a 180-second whole-job deadline (configurable with `--verification-timeout`), including model startup. On timeout or crash it terminates the qualified POSIX process group, including Node, and starts a fresh worker for the next request. Cleanup has a separate bounded wait. HTTP 504 is `not_checked`; uploaded files are removed and the inference slot is released. The parent never passes a signing identity. Create each service after any application fork; inherited service instances are rejected. The low-level `make_server(custom_sdk)` testing/embedding interface uses the supplied object directly; wrap it in `IsolatedVerifier` for this process boundary.
 

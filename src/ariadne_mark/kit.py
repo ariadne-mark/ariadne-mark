@@ -15,6 +15,28 @@ from ariadne_mark.errors import AriadneError
 
 NGINX_IMAGE = 'nginx@sha256:583b7f2fce1cdb8da5ad5c39ebd3c33b98b87d493190e548bdee1fa8c619c311'
 PROFILES = {'economy_5s', 'economy_2s', 'resilient'}
+# RFC 2606 / RFC 6761 reserved names: documentation and special-use domains
+# can never be an operator's public production origin (ISS-16).
+RESERVED_NAMES = ('example', 'example.com', 'example.net', 'example.org', 'test', 'invalid', 'localhost')
+EXPECTED_SDK_ENV = 'ARIADNE_KIT_EXPECTED_SDK'
+
+
+def reserved_host(host):
+    name = (host or '').lower().rstrip('.')
+    return any(name == reserved or name.endswith('.' + reserved) for reserved in RESERVED_NAMES)
+
+
+def require_expected_runtime():
+    """Refuse to run kit work on an SDK image other than the one the kit pinned.
+
+    Compose passes the version recorded at init. An empty value (kits created
+    before image pinning) keeps the previous behaviour; kit check warns.
+    """
+    from ariadne_mark.version import sdk_version
+    expected = os.environ.get(EXPECTED_SDK_ENV, '')
+    if expected and expected != sdk_version():
+        raise ValueError(f'This kit expects SDK {expected}, but the running image provides {sdk_version()}. '
+                         'Pin the matching image with ./pin-image.sh IMAGE before running the kit.')
 
 
 def _json(path):
@@ -46,7 +68,7 @@ def _url(value, *, development=False):
     _ = url.port  # Reject invalid port syntax.
     if not development:
         from ariadne_mark.profiles import _public_https
-        if not _public_https(value) or url.hostname.endswith(('.example', '.test', '.invalid', '.example.org', '.example.com')) or url.hostname in {'example.org', 'example.com'}:
+        if not _public_https(value) or reserved_host(url.hostname):
             raise ValueError('Production needs your public HTTPS origin, not a placeholder')
     return value.rstrip('/')
 
@@ -55,8 +77,17 @@ def load(root):
     from ariadne_mark.profiles import load as load_profile
     root = Path(root).resolve()
     value = _json(root / 'config/kit.json')
-    expected = {'schema_version', 'mode', 'verifier_url', 'timestamp_url',
-                'public_manifests', 'threads', 'max_upload_mb', 'verification_timeout'}
+    if not isinstance(value, dict):
+        raise ValueError('Invalid kit schema')
+    value.setdefault('verification_scope', 'all')  # Preserve scope of existing deployments.
+    # Authenticated TSA (optional; kits created before it simply lack the keys).
+    value.setdefault('timestamp_credential_file', None)
+    value.setdefault('timestamp_timeout', 10)
+    if not isinstance(value['verification_scope'], str) or value['verification_scope'] not in {'all', 'current'}:
+        raise ValueError('Invalid kit verification_scope')
+    expected = {'verification_scope', 'schema_version', 'mode', 'verifier_url', 'timestamp_url',
+                'public_manifests', 'threads', 'max_upload_mb', 'verification_timeout',
+                'timestamp_credential_file', 'timestamp_timeout'}
     if not isinstance(value, dict) or set(value) != expected or type(value['schema_version']) is not int or value['schema_version'] != 1:
         raise ValueError('Invalid kit schema')
     if not isinstance(value['mode'], str) or value['mode'] not in {'development', 'production'} or type(value['public_manifests']) is not bool:
@@ -71,6 +102,16 @@ def load(root):
         tsa = urlsplit(value['timestamp_url'])
         if tsa.scheme != 'https' or not tsa.hostname or tsa.username or tsa.password or tsa.fragment or tsa.query:
             raise ValueError('Timestamp URL must be HTTPS without credentials or query')
+    credential = value['timestamp_credential_file']
+    if credential is not None:
+        # A path inside the kit's private/tsa directory, never the token itself.
+        if (not isinstance(credential, str) or not credential.startswith('private/tsa/')
+                or '..' in Path(credential).parts or not value['timestamp_url']):
+            raise ValueError('timestamp_credential_file must be a path under private/tsa/ and needs timestamp_url')
+    if type(value['timestamp_timeout']) is not int or not 1 <= value['timestamp_timeout'] <= 60:
+        raise ValueError('Invalid kit limit: timestamp_timeout')
+    if credential and value['timestamp_timeout'] > 25:
+        raise ValueError('Authenticated TSA timeout must not exceed 25 seconds')
     profile = load_profile(root / 'config/product.json')
     if profile['sdk']['video_profile'] not in PROFILES:
         raise ValueError('Kit supports Economy5s, Economy2s and Resilient')
@@ -142,7 +183,7 @@ def initialize(directory, *, publisher, system, system_version, development=Fals
     # user-owned directory. Never overwrite an existing kit or key.
     _write(root / 'INIT_INCOMPLETE', 'Initialization did not finish. Do not deploy.\n')
     for name in ['config', 'registry', 'state', 'inputs', 'outputs', 'private',
-                 'private/provider', 'private/tls']:
+                 'private/provider', 'private/tls', 'private/tsa']:
         (root / name).mkdir(mode=0o700 if name.startswith('private') else 0o750)
     from ariadne_mark.reports import generate_report_key
     generate_report_key(root / 'private/reports')
@@ -156,7 +197,8 @@ def initialize(directory, *, publisher, system, system_version, development=Fals
         _dev_tls(root)
     kit = {'schema_version': 1, 'mode': 'development' if development else 'production',
            'verifier_url': verifier_url, 'timestamp_url': None, 'public_manifests': public_manifests,
-           'threads': 2, 'max_upload_mb': 128, 'verification_timeout': 180}
+           'threads': 2, 'max_upload_mb': 128, 'verification_timeout': 180,
+           'verification_scope': 'current', 'timestamp_credential_file': None, 'timestamp_timeout': 10}
     profile = template()
     profile.update(publisher=publisher, system={'name': system, 'version': system_version}, role='provider')
     profile['sdk'].update(audio_kind='none')
@@ -173,12 +215,15 @@ def initialize(directory, *, publisher, system, system_version, development=Fals
         {'source': 'your-final-image.png', 'destination': 'marked-image.png', 'created_at': None},
         {'source': 'your-final-video.mp4', 'destination': 'marked-video.mp4', 'created_at': None,
          'video_profile': 'economy_5s', 'audio_kind': 'none'}]})
-    _write(root / '.env', f'KIT_SDK_IMAGE=ariadne-mark:{sdk_version()}\nKIT_NGINX_IMAGE={NGINX_IMAGE}\n'
+    # The SDK image is pinned by immutable image ID with ./pin-image.sh after a
+    # local build; a tag can silently name another object on a shared host.
+    _write(root / '.env', f'KIT_SDK_VERSION={sdk_version()}\nKIT_SDK_IMAGE=\nKIT_NGINX_IMAGE={NGINX_IMAGE}\n'
         f'KIT_UID={os.getuid()}\nKIT_GID={os.getgid()}\nKIT_BIND_ADDRESS=127.0.0.1\n'
         'KIT_HTTP_PORT=8800\nKIT_HTTPS_PORT=8443\n')
     for name in ['compose.yaml', 'README.md', 'production-egress.yaml']:
         raw = files('ariadne_mark').joinpath('kit_assets', name).read_text()
         _write(root / name, raw)
+    _write(root / 'pin-image.sh', files('ariadne_mark').joinpath('kit_assets', 'pin-image.sh').read_text(), 0o755)
     _write(root / 'nginx.conf', _nginx(kit))
     _write(root / 'kit-proxy.conf', files('ariadne_mark').joinpath('kit_assets', 'kit-proxy.conf').read_text())
     _write(root / '.gitignore', 'private/\nregistry/\nstate/\ninputs/\noutputs/\n.env\n')
@@ -199,6 +244,8 @@ def check(root, *, runtime=False):
         config, profile = load(root)
     except (ValueError, OSError) as exc:
         return {'status': 'configuration_required', 'errors': [str(exc)], 'legal_determination': 'not_performed'}
+    from ariadne_mark.verification.scope import runtime_warnings
+    warnings = runtime_warnings(config['verification_scope']) + _image_warnings(root)
     needed = ['private/provider/identity.json', 'private/provider/private.key',
               'private/provider/certificate.pem', 'private/reports/report.key',
               'private/tls/key.pem', 'private/tls/cert.pem', 'config/issuer-roots.pem', 'config/report.pub', 'registry/assets.sqlite3']
@@ -206,11 +253,13 @@ def check(root, *, runtime=False):
         needed.append('config/tsa-roots.pem')
         if not config['timestamp_url']:
             errors.append('Configure timestamp_url: the SDK currently requires a trusted TSA for production exports')
+    if config['timestamp_credential_file']:
+        needed.append(config['timestamp_credential_file'])
     for name in needed:
         path = root / name
         if not path.is_file() or path.is_symlink():
             errors.append('Missing regular file: ' + name)
-        elif name.endswith(('.key', 'key.pem')) and stat.S_IMODE(path.stat().st_mode) & 0o077:
+        elif (name.endswith(('.key', 'key.pem')) or name.startswith('private/tsa/')) and stat.S_IMODE(path.stat().st_mode) & 0o077:
             errors.append('Private key must not be group/world-readable: ' + name)
     if not errors:
         try:
@@ -219,6 +268,9 @@ def check(root, *, runtime=False):
                 allow_dev=config['mode'] == 'development', timestamp_url=config['timestamp_url'])
             if identity.development != (config['mode'] == 'development'):
                 raise ValueError('Signing identity and kit mode differ')
+            if config['timestamp_credential_file']:
+                from ariadne_mark.signing.tsa_relay import read_credential
+                read_credential(root / config['timestamp_credential_file'])  # format/permissions; value never reported
             if config['mode'] == 'production':
                 validate_trust_roots(root / 'config/issuer-roots.pem')
                 validate_trust_roots(root / 'config/tsa-roots.pem')
@@ -251,10 +303,24 @@ def check(root, *, runtime=False):
     from ariadne_mark.profiles import evaluate
     return {'status': 'configuration_required' if errors else 'ready_for_development' if config['mode'] == 'development' else 'local_configuration_checked',
             'errors': errors, 'mode': config['mode'], 'profile': evaluate(profile),
-            'legal_determination': 'not_performed', 'public_reachability': 'not_checked',
+            'warnings': warnings, 'legal_determination': 'not_performed', 'public_reachability': 'not_checked',
             'certificate_enrollment': 'not_checked',
             'issuer_chain': 'checked_against_configured_roots' if not errors and config['mode'] == 'production' else 'not_checked',
             'default_video_profile': profile['sdk']['video_profile']}
+
+
+def _image_warnings(root):
+    """Report an unpinned SDK image; never inspects Docker from inside the kit."""
+    try:
+        env = dict(line.split('=', 1) for line in (root / '.env').read_text().splitlines() if '=' in line)
+    except OSError:
+        return []
+    image = env.get('KIT_SDK_IMAGE', '')
+    if image.startswith('sha256:') and len(image) == 71 and env.get('KIT_SDK_VERSION'):
+        return []
+    return [{'code': 'sdk_image_not_pinned',
+             'message': 'KIT_SDK_IMAGE is not an immutable image ID with a recorded SDK version. '
+                        'Run ./pin-image.sh IMAGE on the Docker host; a tag can name another image on a shared host.'}]
 
 
 def _inside(root, value):
@@ -273,6 +339,7 @@ def export_batch(root, batch):
     successful exports remain if a later job fails; there is no batch-wide ACID
     promise. The per-file receipts identify exactly what was committed.
     """
+    require_expected_runtime()
     root = Path(root).resolve(); config, profile = load(root)
     data = _json(batch)
     if (not isinstance(data, dict) or set(data) != {'schema_version', 'jobs'} or type(data['schema_version']) is not int or data['schema_version'] != 1
@@ -313,7 +380,9 @@ def export_batch(root, batch):
     from ariadne_mark.registry import Registry
     from ariadne_mark.watermark import LazyWatermarker
     from ariadne_mark.videoq import VideoWatermarker
-    identity = SigningIdentity.from_directory(root / 'private/provider', allow_dev=config['mode'] == 'development', timestamp_url=config['timestamp_url'])
+    identity = SigningIdentity.from_directory(root / 'private/provider', allow_dev=config['mode'] == 'development', timestamp_url=config['timestamp_url'],
+        timestamp_credential_file=(root / config['timestamp_credential_file']) if config['timestamp_credential_file'] else None,
+        timestamp_timeout=config['timestamp_timeout'])
     if identity.development != (config['mode'] == 'development'):
         raise ValueError('Signing identity and kit mode differ')
     with SDK(marker=LazyWatermarker(threads=config['threads']), identity=identity,
@@ -332,15 +401,31 @@ def export_batch(root, batch):
     return {'status': 'complete', 'exports': results, 'sdk_reused_per_batch': True}
 
 
-def serve(root):
+def default_bind_host():
+    """Loopback on a host; all interfaces only inside a container (ISS-09).
+
+    A container's own network namespace is not the host's; Compose publishes
+    only the TLS edge. Pass --host explicitly to override either default.
+    """
+    return '0.0.0.0' if any(Path(p).exists() for p in ('/.dockerenv', '/run/.containerenv')) else '127.0.0.1'
+
+
+def serve(root, *, host=None, port=8080):
+    require_expected_runtime()
+    host = host or default_bind_host()
+    if type(port) is not int or not 1 <= port <= 65535:
+        raise ValueError('Port must be 1-65535')
     root = Path(root).resolve(); config, _ = load(root)
+    import sys
+    print(json.dumps({'kind': 'kit_serve', 'host': host, 'port': port}), file=sys.stderr, flush=True)
     from ariadne_mark.isolated_verifier import IsolatedVerifier
     from ariadne_mark.reports import ReportSigner
     from ariadne_mark.server import serve as run_server
     with IsolatedVerifier(registry=root / 'registry/assets.sqlite3', trust_anchors=root / 'config/issuer-roots.pem',
             tsa_trust_anchors=(root / 'config/tsa-roots.pem') if config['mode'] == 'production' else None,
-            threads=config['threads'], timeout=config['verification_timeout']) as verifier:
-        run_server(verifier, host='0.0.0.0', port=8080, production=config['mode'] == 'production',
+            threads=config['threads'], timeout=config['verification_timeout'],
+            verification_scope=config['verification_scope']) as verifier:
+        run_server(verifier, host=host, port=port, production=config['mode'] == 'production',
             max_upload_mb=config['max_upload_mb'], public_sources=root / 'config/public-sources.json',
             feedback_url=config['verifier_url'] + '/feedback',
             feedback_db=root / 'state/feedback.sqlite', public_manifests=config['public_manifests'],

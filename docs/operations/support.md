@@ -1,4 +1,4 @@
-# Supported scope — 0.7.2a1 candidate
+# Supported scope — 0.7.3a4 developer alpha
 
 | Area | Supported | Boundary |
 | --- | --- | --- |

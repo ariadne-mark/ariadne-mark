@@ -21,14 +21,59 @@ class SigningIdentity:
     private_key: Path
     development: bool = False
     timestamp_url: str | None = None
+    # Authenticated TSA (e.g. SSL.com C2PA TSA, ``Authorization: Bearer``):
+    # path to an owner-only file holding the token, never the token itself.
+    timestamp_credential_file: Path | None = None
+    timestamp_timeout: float = 10.0
+    timestamp_ca_bundle: Path | None = None
+
+    def __post_init__(self):
+        if self.timestamp_url is not None:
+            validate_timestamp_url(self.timestamp_url, allow_loopback_http=self.development)
+        if self.timestamp_credential_file is not None and not self.timestamp_url:
+            raise ValueError('A TSA credential file requires a TSA URL')
+        if (type(self.timestamp_timeout) not in (int, float) or not 0 < self.timestamp_timeout <= 60):
+            raise ValueError('TSA timeout must be between 0 and 60 seconds')
+        if self.timestamp_credential_file is not None and self.timestamp_timeout > 25:
+            raise ValueError('Authenticated TSA timeout must not exceed 25 seconds')
+
+    def __repr__(self):
+        return (f'SigningIdentity(development={self.development}, timestamp_url={self.timestamp_url!r}, '
+                f'authenticated_tsa={self.timestamp_credential_file is not None})')
 
     @classmethod
-    def from_directory(cls, directory: Path, *, allow_dev: bool = False, timestamp_url=None):
+    def from_directory(cls, directory: Path, *, allow_dev: bool = False, timestamp_url=None,
+                       timestamp_credential_file=None, timestamp_timeout=10.0, timestamp_ca_bundle=None):
         directory = Path(directory)
         config = json.loads((directory / "identity.json").read_text())
         if config.get("development") is not False and not allow_dev:
             raise AriadneError("Development identity requires explicit allow_dev / --allow-dev")
-        return cls(directory / "certificate.pem", directory / "private.key", config.get("development") is not False, timestamp_url)
+        return cls(directory / "certificate.pem", directory / "private.key", config.get("development") is not False, timestamp_url,
+                   Path(timestamp_credential_file) if timestamp_credential_file else None, timestamp_timeout,
+                   Path(timestamp_ca_bundle) if timestamp_ca_bundle else None)
+
+
+def validate_timestamp_url(value, *, allow_loopback_http=False):
+    """An RFC 3161 TSA endpoint: HTTPS, no credentials, query or fragment.
+
+    The pinned C2PA pair (c2pa-python 0.38.3 / native 0.91.11) sends the
+    timestamp request from its own HTTP client with bundled public roots and
+    no hook for request headers. Authenticated TSAs use the optional local
+    credential relay; secrets must never be placed in the URL.
+    """
+    from urllib.parse import urlsplit
+    if not isinstance(value, str) or any(ord(c) < 33 or ord(c) == 127 for c in value):
+        raise ValueError('TSA URL must be text without whitespace')
+    url = urlsplit(value)
+    # Development identities may use a local offline test TSA over loopback
+    # HTTP (RFC 3161 tokens are signed; the qualification suite uses OpenSSL).
+    # Production identities always require HTTPS.
+    loopback = url.hostname in {'127.0.0.1', '::1', 'localhost'}
+    scheme_ok = url.scheme == 'https' or (allow_loopback_http and url.scheme == 'http' and loopback)
+    if not scheme_ok or not url.hostname or url.username or url.password or url.query or url.fragment:
+        raise ValueError('TSA URL must be HTTPS without credentials, query or fragment')
+    _ = url.port  # reject invalid port syntax
+    return value
 
 
 def create_development_identity(directory: Path) -> None:
@@ -204,13 +249,42 @@ def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: 
     from ariadne_mark.softbinding import assertion
     manifest['assertions'].append(assertion(algorithm, token))
     manifest['assertions'][0]['data']['actions'].append({'action': 'c2pa.watermarked.bound'})
-    info = c2pa.C2paSignerInfo("es256", identity.certificate.read_bytes(), identity.private_key.read_bytes(), identity.timestamp_url)
+    import contextlib
+    with contextlib.ExitStack() as stack:
+        tsa_url = identity.timestamp_url
+        if identity.timestamp_credential_file is not None:
+            # The pinned native signer accepts only a URL; a loopback relay
+            # adds the credential for this one signing operation.
+            from ariadne_mark.signing.tsa_relay import TimestampRelay
+            relay = stack.enter_context(TimestampRelay(identity.timestamp_url, identity.timestamp_credential_file,
+                                                       timeout=identity.timestamp_timeout,
+                                                       ca_bundle=identity.timestamp_ca_bundle,
+                                                       development=identity.development))
+            tsa_url = relay.url
+        return _sign_with(c2pa, manifest, source, destination, identity, parent, tsa_url, tsa_trust_anchors)
+
+
+def _sign_with(c2pa, manifest, source, destination, identity, parent, tsa_url, tsa_trust_anchors):
+    info = c2pa.C2paSignerInfo("es256", identity.certificate.read_bytes(), identity.private_key.read_bytes(), tsa_url)
     with context(tsa_trust_anchors=tsa_trust_anchors) as ctx, c2pa.Signer.from_info(info) as signer, c2pa.Builder(manifest, ctx) as builder:
         if parent is not None:
             builder.set_intent(c2pa.C2paBuilderIntent.EDIT)
             with parent.open("rb") as stream:
                 builder.add_ingredient({"title": "Source material", "relationship": "parentOf"}, MIME[parent.suffix.lower()], stream)
-        return builder.sign_file(source, destination, signer)
+        existed = Path(destination).exists()
+        try:
+            return builder.sign_file(source, destination, signer)
+        except Exception as exc:
+            # The native builder can leave its output behind after a failed
+            # timestamp call (observed: TSA timeout). Never leave an unsigned or
+            # partially signed file at a path this call created.
+            if not existed:
+                Path(destination).unlink(missing_ok=True)
+            # Native errors can echo endpoints or local paths; keep the cause
+            # chained for local debugging, never in the message (receipts,
+            # CLI JSON, worker IPC). Nothing has been published at this point.
+            stage = 'with a timestamp authority' if identity.timestamp_url else 'locally'
+            raise AriadneError(f'C2PA signing {stage} failed; no output published') from exc
 
 
 def read_manifest(path: Path, *, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None) -> dict:

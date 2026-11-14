@@ -25,8 +25,11 @@ def main(argv=None) -> int:
     kit_check = kit_commands.add_parser('check', help='Check local configuration, not legal compliance or public reachability')
     kit_check.add_argument('directory', type=Path)
     kit_check.add_argument('--runtime', action='store_true')
-    for name in ['serve', 'render']:
-        kit_commands.add_parser(name).add_argument('directory', type=Path)
+    kit_commands.add_parser('render').add_argument('directory', type=Path)
+    kit_serve = kit_commands.add_parser('serve', help='Run the kit verifier; loopback by default on a host')
+    kit_serve.add_argument('directory', type=Path)
+    kit_serve.add_argument('--host', help='Bind address; default 127.0.0.1 on a host, 0.0.0.0 inside a container')
+    kit_serve.add_argument('--port', type=int, default=8080)
     kit_export = kit_commands.add_parser('export', help='Export a batch with one resident SDK')
     kit_export.add_argument('directory', type=Path)
     kit_export.add_argument('batch', type=Path)
@@ -37,7 +40,7 @@ def main(argv=None) -> int:
     setup.add_argument('--wheelhouse', type=Path, help='Local dependency wheels; disables the pip index')
     setup.add_argument('--fetch-models', action='store_true', help='Also provision/check the selected engines; requires FFmpeg and Node')
     runtime = commands.add_parser("runtime", help="Inspect the qualified C2PA wrapper/native pair; never installs packages")
-    runtime.add_argument("action", choices=["check"])
+    runtime.add_argument("action", choices=["check", "identity"])
     reports = commands.add_parser("report", help="Generate verifier keys or independently verify a signed receipt")
     report_commands = reports.add_subparsers(dest="report_command", required=True)
     report_keygen = report_commands.add_parser("keygen")
@@ -58,7 +61,7 @@ def main(argv=None) -> int:
     profile_check.add_argument("--as-of", help="Evaluate a YYYY-MM-DD scenario (does not update source knowledge)")
     models = commands.add_parser("models", help="Provision or check pinned watermark models")
     models.add_argument("action", choices=["fetch", "check"])
-    models.add_argument("--engine", choices=["all", "trustmark", "videoseal", "video"], default="all")
+    models.add_argument("--engine", choices=["auto", "media", "all", "trustmark", "videoseal", "video"], default="auto")
     dev = commands.add_parser("init-dev", help="Generate a DEVELOPMENT signing identity")
     dev.add_argument("directory", type=Path)
     mark = commands.add_parser("mark", help="Watermark, sign and verify a JPEG, PNG or MP4")
@@ -73,6 +76,9 @@ def main(argv=None) -> int:
     mark.add_argument("--identity", type=Path, required=True)
     mark.add_argument("--allow-dev", action="store_true")
     mark.add_argument("--timestamp-url", help="Optional TSA URL; explicitly enables timestamp network request")
+    mark.add_argument("--timestamp-credential-file", type=Path, help="Owner-only file with a TSA bearer token (e.g. SSL.com C2PA TSA)")
+    mark.add_argument("--timestamp-timeout", type=float, default=10.0, help="Seconds to wait for an authenticated TSA (relay)")
+    mark.add_argument("--timestamp-ca-bundle", type=Path, help="Optional CA bundle for the authenticated TSA's HTTPS endpoint")
     mark.add_argument("--visible", action="store_true", help="Add an AI-generated/AI-altered visible label")
     mark.add_argument("--video-profile", choices=["economy_5s", "economy_2s", "resilient", "fast"],
                       help="CPU video preset (default: economy_5s; fast is legacy)")
@@ -83,6 +89,7 @@ def main(argv=None) -> int:
     recover = commands.add_parser("recover", help="Recover a signed C2PA manifest using a local registry; media stays unchanged")
     recover.add_argument("source", type=Path)
     recover.add_argument("destination", type=Path, help="New .c2pa manifest-store file")
+    recover.add_argument("--id", dest="watermark_id", help="Choose one confirmed ID after detection when several were found")
     mark.add_argument("--publish-manifest", action="store_true", help="Explicitly approve publishing the full signed manifest/history through a repository")
     serve = commands.add_parser("serve", help="Run the self-hosted public verifier UI/API")
     serve.add_argument("--public-manifests", action="store_true", help="Enable read-only C2PA resolution for explicitly published manifests")
@@ -104,6 +111,9 @@ def main(argv=None) -> int:
         sub.add_argument("--trust-anchors", type=Path, help="PEM trust roots supplied by the operator")
         sub.add_argument("--tsa-trust-anchors", type=Path, help="Optional separate PEM roots for private timestamp authorities")
         sub.add_argument("--threads", type=int, default=2)
+    for sub in (verify, serve, recover):
+        sub.add_argument("--verification-scope", choices=["all", "current"], default="all",
+                         help="current: operator uses TrustMark image/video only; all: include legacy VideoSeal")
     args = parser.parse_args(argv)
     try:
         if args.command == 'kit':
@@ -119,7 +129,7 @@ def main(argv=None) -> int:
             elif args.kit_command == 'render':
                 result = deployment.render(args.directory)
             else:
-                deployment.serve(args.directory)
+                deployment.serve(args.directory, host=args.host, port=args.port)
                 return 0
             print(json.dumps(result, indent=2))
             return 2 if result.get('errors') else 0
@@ -130,6 +140,10 @@ def main(argv=None) -> int:
             print(json.dumps(result, indent=2))
             return 0
         if args.command == "runtime":
+            if args.action == "identity":
+                from ariadne_mark.version import installed_identity
+                print(json.dumps(installed_identity(), indent=2))
+                return 0
             from ariadne_mark.c2pa_runtime import runtime_info
             result = runtime_info()
             print(json.dumps(result, indent=2))
@@ -172,9 +186,15 @@ def main(argv=None) -> int:
                 return 2 if result["configuration_status"] == "invalid" else 3 if result["assessment_status"] != "configuration_reviewed" else 0
         elif args.command == "models":
             from ariadne_mark import watermark, videoseal, videoq
-            result = {}
+            import importlib.util
+            selected_engine = args.engine
+            if selected_engine == 'auto':
+                selected_engine = 'media' if importlib.util.find_spec('trustmark') is not None else 'video'
+            result = {"selection": {"requested": args.engine, "selected": selected_engine}}
+            if args.engine == 'auto' and selected_engine == 'video':
+                result['trustmark'] = {'status': 'skipped', 'reason': 'optional_media_runtime_not_installed'}
             for name, engine in (("trustmark", watermark), ("videoseal", videoseal), ("video", videoq)):
-                if args.engine in {"all", name}:
+                if selected_engine in {"all", name} or (selected_engine == "media" and name in {"trustmark", "video"}):
                     import importlib.util
                     dependency = {"trustmark": "trustmark", "videoseal": "torch"}.get(name)
                     if args.engine == "all" and dependency and importlib.util.find_spec(dependency) is None:
@@ -209,6 +229,7 @@ def main(argv=None) -> int:
             from ariadne_mark.videoq import VideoWatermarker
             from ariadne_mark.video.policy import DEFAULT_PROFILE
             sdk = SDK(marker, registry=registry, trust_anchors=args.trust_anchors, tsa_trust_anchors=args.tsa_trust_anchors,
+                      verification_scope=getattr(args, "verification_scope", "all"),
                       video_marker=VideoWatermarker(threads=args.threads,
                           profile=getattr(args, "video_profile", None) or DEFAULT_PROFILE))
             sdk.check_runtime()
@@ -217,14 +238,15 @@ def main(argv=None) -> int:
                 from ariadne_mark.isolated_verifier import IsolatedVerifier
                 sdk.close()
                 isolated = IsolatedVerifier(registry=args.registry, trust_anchors=args.trust_anchors,
-                                            threads=args.threads, timeout=args.verification_timeout, tsa_trust_anchors=args.tsa_trust_anchors)
+                                            threads=args.threads, timeout=args.verification_timeout, tsa_trust_anchors=args.tsa_trust_anchors,
+                                            verification_scope=args.verification_scope)
                 serve(isolated, host=args.host, port=args.port, max_upload_mb=args.max_upload_mb,
                       feedback_url=args.feedback_url, production=args.production,
                       public_sources=args.public_sources, feedback_db=args.feedback_db, report_signer=report_signer,
                       public_manifests=args.public_manifests)
                 return 0
             if args.command == "recover":
-                result = sdk.recover_manifest(args.source, args.destination)
+                result = sdk.recover_manifest(args.source, args.destination, token=args.watermark_id)
                 print(json.dumps(result, indent=2))
                 return 0
             if args.command == "verify":
@@ -247,12 +269,19 @@ def main(argv=None) -> int:
                 print(json.dumps(result, indent=2))
                 if args.strict and (result["c2pa"]["status"] != "verified_claim" or result["c2pa"]["issuer_trust"] != "trusted" or result["c2pa"].get("development_identity")):
                     return 2
-                if result["c2pa"]["status"] in {"invalid", "not_checked", "expired_credential"} or result["watermark"]["status"] in {"invalid", "not_checked", "single_observation"} or result["token_mismatch"]:
+                # Allowlist, so a new watermark status can never fall through to
+                # success: several IDs, one unconfirmed read or an incomplete
+                # check all exit 2 with the full JSON printed above.
+                if (result["c2pa"]["status"] in {"invalid", "not_checked", "expired_credential"}
+                        or result["watermark"]["status"] not in {"recovered_claim", "not_found"}
+                        or result["token_mismatch"]):
                     return 2
                 return 0
             from ariadne_mark.signing import SigningIdentity
             from ariadne_mark.provenance import ProvenanceRecord, GenerativeSystem, MediaKind, Action
-            sdk.identity = SigningIdentity.from_directory(args.identity, allow_dev=args.allow_dev, timestamp_url=args.timestamp_url)
+            sdk.identity = SigningIdentity.from_directory(args.identity, allow_dev=args.allow_dev, timestamp_url=args.timestamp_url,
+                timestamp_credential_file=args.timestamp_credential_file, timestamp_timeout=args.timestamp_timeout,
+                timestamp_ca_bundle=args.timestamp_ca_bundle)
             record = ProvenanceRecord.create(
                 publisher=args.publisher, system=GenerativeSystem(args.system, args.system_version),
                 media_kind=MediaKind.VIDEO if args.source.suffix.lower() == ".mp4" else MediaKind.IMAGE,

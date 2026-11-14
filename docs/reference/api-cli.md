@@ -1,8 +1,11 @@
 # Python CLI and verification reference
 
-SDK **0.7.2a1** · documentation review **2026-11-10**.
+SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-14**.
 
-This reference describes the shipped command surface. Run `ariadne --help`
+Versioned benchmark and legal-source review dates below remain historical evidence;
+they are not a new qualification or legal approval of this candidate.
+
+This reference describes this candidate command surface. Run `ariadne --help`
 and a command's `--help` in the provisioned environment for all options.
 
 ## Main commands
@@ -11,7 +14,7 @@ and a command's `--help` in the provisioned environment for all options.
 | --- | --- | --- |
 | `setup media` / `setup video` | Explicit pinned installation | `--fetch-models`, optional bootstrap cache/wheelhouse |
 | `runtime check` | Inspect native/wrapper pair and hash | No implicit repair |
-| `models fetch` / `models check` | Provision/inspect selected engines | `--engine all`, `trustmark`, `video`, or `videoseal` |
+| `models fetch` / `models check` | Provision/inspect selected engines | `--engine auto` (default), `media`, `all`, `trustmark`, `video`, or `videoseal` |
 | `init-dev DIRECTORY` | Generate local evaluation identity | Explicit development use only |
 | `profile init` / `profile sources` / `profile check CONFIG` | Template, source catalog, requirement planning | `--as-of YYYY-MM-DD` changes evaluation date, not source knowledge |
 | `kit init DIRECTORY` | Create a new deployment | `--publisher`, `--system`, `--system-version`; development is opt-in |
@@ -20,8 +23,8 @@ and a command's `--help` in the provisioned environment for all options.
 | `kit export DIRECTORY BATCH` | Batch export with resident workers | Relative paths, actual timestamps, per-job video profile |
 | `kit serve DIRECTORY` | Run the configured verifier | Isolated inference, separate report key |
 | `mark SOURCE DESTINATION` | Mark, sign and read back | Identity, source facts/time; optional profile, registry, disclosure |
-| `verify SOURCE` | Check supported evidence | Optional roots/registry and `--strict` |
-| `recover SOURCE DESTINATION` | Recover a detached manifest | Registry; output file must be new |
+| `verify SOURCE` | Check supported evidence | Optional roots/registry, `--verification-scope all|current`, and `--strict` |
+| `recover SOURCE DESTINATION` | Recover a detached manifest | Registry, `--verification-scope all|current`; output file must be new |
 | `report keygen DIRECTORY` / `report verify RECEIPT` | Separate Ed25519 report keys and offline verification | Pinned `--public-key`; optional `--asset`, `--verifier-id` |
 | `feedback-summary DATABASE` | Read anonymous aggregate counts | Existing feedback database |
 
@@ -37,6 +40,9 @@ close it on shutdown. `SDK.mark(source, destination, record, ...)` is synchronou
 A per-export profile override must agree with any supplied product configuration.
 `SDK.verify(path)` checks evidence; `SDK.recover_manifest(source, destination)`
 validates and saves the registered manifest without modifying the submitted file.
+When several IDs are found it refuses an automatic choice; pass `token=` (CLI
+`recover --id`) to select one confirmed ID after detection. The selector is never
+given to the detector.
 See the runnable [integration pattern](../implementation/integration.md).
 
 `ProvenanceRecord` contains publisher, system name/version, image/video kind,
@@ -54,19 +60,31 @@ external records remains possible. The allowance is an SDK clock-skew policy.
 | `not_found` | Scoped check completed without a supported mark |
 | `not_checked` | Check incomplete/unavailable; not a successful negative |
 | `single_observation` | A video ID was observed once without sufficient corroboration |
-| `invalid` / `token_mismatch` | Invalid or conflicting evidence |
+| `multiple_ids` | Several distinct watermark IDs were read. Each is listed in `watermark.ids` with its scheme, basis (`confirmed`/`observed`) and observed positions. No ID is chosen for the file, and several IDs do not by themselves invalidate a C2PA signature |
+| `c2pa.status=invalid` | Invalid credential; `c2pa.reason` gives the cause. Watermark evidence is reported separately |
+| `token_mismatch` | One recovered ID differs from the signed claim: conflicting claims, not by itself an invalid signature |
 | `expired_credential` | Acceptable signing time could not be established for an expired credential |
 | Registry `content_binding=not_verified` | ID association exists; edited copy is not authenticated by that association |
 
 An incomplete negative headline is `Check incomplete`. Existing positive or
 invalid evidence is retained. Inspect structured fields, not only the label.
 Video sample coverage is not the percentage of the whole video carrying a mark.
+`watermark.evidence_scope` lists each pass (scheme, selection, unique frames,
+time range, stop reason) and `whole_file_examined`; an ID applies only to the
+positions where it was read. With several IDs, `recovery.status=per_id` gives one
+registry result per confirmed ID, bound to the schemes that read it.
+
+Report `schema_version` 2 (unreleased, after 0.7.2a1): the former watermark
+`invalid` with reason `multiple_tokens`/`conflicting_ids` is now
+`multiple_ids` with `watermark.ids`. Single-ID results keep their fields.
 
 ## Exit codes and HTTP
 
 Most successful commands return 0; argument, operational and verification failures
 return 2. `profile check` uses 3 for open actions/review. An ordinary `verify`
-can return 0 for a completed `not_found`; parse the result. `--strict` requires
+can return 0 for a completed `not_found`; parse the result. `verify` returns 0
+only for watermark `recovered_claim`/`not_found` without a C2PA failure or ID
+mismatch; `multiple_ids`, `single_observation` and incomplete checks return 2. `--strict` requires
 a valid, non-development credential and trusted issuer, otherwise 2.
 
 The verifier accepts raw binary `POST /verify?format=png|jpg|jpeg|mp4`, not
@@ -77,3 +95,54 @@ pinned report public key and, when needed, the submitted asset digest. See
 Full-manifest routes are disabled unless explicitly enabled; only approved
 records are published. HTTP 429 indicates capacity/rate limits, not a negative
 media result. TLS edge and application upload ceilings can differ.
+
+## Detection scope and model selection
+
+`verify`, `recover` and `serve` accept `--verification-scope all|current`; the
+Python SDK also accepts a nonempty finite list of known schemes. Existing SDK/CLI
+defaults remain `all`; new kits explicitly configure `current`. `current` promises
+Python-Q image checks and video-Q MP4 checks. Python-Q video reads are supplemental
+when available: a negative video-Q result is not a check of the older Python-Q
+MP4 scheme. A signed Python-Q MP4 also requires that historical decoder; provision
+the media runtime. `all` retains legacy VideoSeal and Python-Q video obligations.
+`configured_schemes` records the operator configuration; `declared_schemes` is the
+file-specific obligation. `completed_schemes` lists completed declared checks only
+(always a subset of `declared_schemes`); a supplemental reader that also finished,
+such as Python-Q on a current-scope MP4, is in `supplemental_completed_schemes`.
+A positive early stop is not a completed negative; the ID is in `watermark.ids`.
+For a declared legacy Python-Q MP4 the documented procedure is five uniformly
+requested positions. Missing required decoders or expired budgets never become a
+completed negative.
+
+No input C2PA claim, including a trusted non-development issuer's claim, can
+narrow the operator's declared checks. Explicit `all` retains every historical
+scheme for that media; a custom list also retains its obligations. A broad public
+CA trust store does not authorize third-party signers to skip local history.
+Missing historical decoders are reported as incomplete coverage, even if the
+trusted claim names a current algorithm. If the trusted claim names a technique
+outside the operator scope, the primary result
+is kept, `signed_scheme_unchecked` names the claimed technique and a negative
+becomes `not_checked` (`signed_scheme_out_of_operator_scope`). The reported
+`signed_routing` makes the routing visible. `signed_id_observed` is true on an
+actual matching read, false after performed nonmatching observations, and null
+when observation was not established. A partial scan can still have a true value.
+
+Bare `models fetch/check` uses `auto`: current media if Python TrustMark is
+installed, otherwise video-only, with selection/skips printed. Explicit `media`
+requires both current runtimes; explicit `all` retains its legacy requirements.
+No request handling downloads models.
+
+`POST /matches/byContent` rejects an explicit algorithm outside this file's
+operator scope with HTTP422 `algorithm_outside_operator_scope` / `not_checked`.
+An in-scope requested technique without completed negative or matching positive
+evidence returns HTTP503 `incomplete_content_search`, never an empty successful
+search. These outcomes are separate from a completed HTTP200 empty match list.
+
+## Authenticated TSA options
+
+`mark` accepts `--timestamp-credential-file PATH`, `--timestamp-timeout SECONDS`
+and `--timestamp-ca-bundle PATH` with `--timestamp-url`. The file contains a bearer
+token and must be a regular owner-only file. Authenticated timeout: >0 to 25s;
+the HTTPS CA bundle is separate from timestamp signer trust. Kit equivalents
+and offline qualification boundaries are described in
+[authenticated timestamping](../operations/authenticated-timestamping.md).

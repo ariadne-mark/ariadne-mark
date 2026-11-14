@@ -4,25 +4,39 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Public developer alpha · 0.7.2a1.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Public developer alpha · 0.7.3a4.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 [Documentation hub](docs/index.md) · [EU guide](docs/compliance/eu-ai-act.md) ·
 [California guide](docs/compliance/california.md) · [Test protocols and evidence](docs/benchmarks/protocols.md)
 
-## Download the qualified release
+## Download and get a first result
 
-[Release 0.7.2a1](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1)
-contains the wheel/source, SHA-256 hashes, runtime inventory and real sample
-exports with signed verification reports. This is a GitHub release; no PyPI
-publication is claimed. Qualified runtime source: `8c6fda8`; documentation can evolve separately.
+[Release 0.7.3a4](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4) contains the qualified wheel/source, exact hashes,
+runtime inventory and real image/video examples with signed verification reports.
+The tested source is `49578688710a8bae2373aaf9d47ff9521f566d4c`; [EC2 qualification](https://github.com/ariadne-mark/ariadne-mark/actions/runs/43598162234) passed
+341 installed-media tests with zero skips, the four-version core matrix,
+clean media/video installs and the connected HTTPS kit.
 
-For a complete image + three-video-mode walkthrough on Linux x86-64 with Docker:
+This is a GitHub release; no PyPI package or prebuilt combined Docker binary is
+published. Documentation can evolve separately from the immutable packages.
+The source README inside the qualified artifacts records their candidate build
+stage; this page describes their subsequent publication. Prior
+[0.7.2a1 artifacts](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1)
+remain historical evidence.
+
+With Linux x86-64, Docker Engine, curl, tar and sha256sum:
 
 ```sh
-curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.2a1/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
-# Read the script before running it. It creates a new ariadne-first-run directory.
+curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.3a4/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
+# Inspect the script; it creates a new ariadne-first-run directory.
 bash FIRST_EXPORT.sh
 ```
+
+The walkthrough verifies downloads, builds the source recipe and exports an
+image and Economy5s, Economy2s and Resilient video. It uses development
+credentials and deterministic engineering fixtures. Allow about 10 GB free for
+the Docker build. For an existing Python 3.12 backend, use the lighter
+[wheel installation](docs/operations/wheel-install.md) below.
 
 [Production identity and timestamps](docs/operations/production-onboarding.md) ·
 [Node.js / Next.js / mobile backend](docs/guides/nodejs-nextjs.md) ·
@@ -31,34 +45,40 @@ bash FIRST_EXPORT.sh
 ## Quick start with Docker
 
 ```sh
-# Download the source and SHA256SUMS from Release 0.7.2a1; check hashes first.
-tar -xzf ariadne_mark-0.7.2a1.tar.gz
-cd ariadne_mark-0.7.2a1
-docker build --platform linux/amd64 -t ariadne-mark:local -t ariadne-mark:0.7.2a1 .
+# From the downloaded 0.7.3a4 source archive or its qualified source checkout.
+# --iidfile records the immutable image ID; no shared tag is created or moved.
+docker build --platform linux/amd64 --iidfile ariadne-image.id .
+IMAGE=$(cat ariadne-image.id)
 ```
+
+Plan disk space before building: on the qualification host the final image is
+about 3.2 GB and the build stage about 3.5 GB, plus BuildKit cache, so allow
+roughly 9–10 GB free while building (more if layers are not already cached).
+The wheel path below needs about 2.2 GB (venv 1.5 GB, models ~0.3 GB, Node
+~0.2 GB) and is the fallback for hosts that cannot hold the Docker build.
 
 The build downloads CPU dependencies and verifies pinned model files. Processing can then run without a network connection:
 
 ```sh
 # Create a local DEVELOPMENT identity. Production uses your own credentials.
 docker run --rm --network none --user "$(id -u):$(id -g)" \
-  -v "$PWD:/data" ariadne-mark:local init-dev .ariadne/dev
+  -v "$PWD:/data" "$IMAGE" init-dev .ariadne/dev
 
 # Put input.png in this directory. Supply its actual generator and creation time.
 docker run --rm --network none --user "$(id -u):$(id -g)" \
-  -v "$PWD:/data" ariadne-mark:local mark input.png output.png \
+  -v "$PWD:/data" "$IMAGE" mark input.png output.png \
   --publisher "Example Studio" --system "Example Generator" --system-version "1.0" \
   --created-at "2026-11-03T10:00:00Z" --identity .ariadne/dev --allow-dev \
   --registry .ariadne/registry.sqlite3
 
 docker run --rm --network none --user "$(id -u):$(id -g)" \
-  -v "$PWD:/data" ariadne-mark:local verify output.png \
+  -v "$PWD:/data" "$IMAGE" verify output.png \
   --registry .ariadne/registry.sqlite3
 ```
 
 Video uses TrustMark Q on CPU. The default `economy_5s` marks 125 ms windows every 5 seconds; `economy_2s` uses 2 seconds. Each selected frame receives a fresh signal. `resilient` processes every frame. All three presets are in the same SDK/wheel and need the same video runtime. Select with `SDK(video_profile="economy_2s")`, a per-export `sdk.mark(..., video_profile="resilient")`, `--video-profile`, or `sdk.video_profile` in a product JSON configuration.
 
-Economy export checks require an independently decoded matching ID in every occupied watermark window; Resilient retains its five-sample read-back gate. Independent verification does not need the export profile: it scans for IDs and can recover weak signals from cached logits without a second CNN pass. Search budgets and incomplete/conflicting results are explicit. A recovered ID does not establish whole-video coverage or legal compliance. Legacy Fast, VideoSeal and older TrustMark IDs remain readable; `fast` is an explicit compatibility encoder, no longer the default.
+Economy export checks require an independently decoded matching ID in every occupied watermark window; Resilient retains its five-sample read-back gate. For a new operator that has never issued VideoSeal marks, set `SDK(verification_scope="current")` or CLI `--verification-scope current`; new kits write this scope explicitly. Existing SDK/CLI defaults remain `all` for compatibility. A negative applies only to declared schemes; a signed out-of-scope technique remains `not_checked`. Independent verification does not need the export profile: it scans for IDs and can recover weak signals from cached logits without a second CNN pass. Search budgets and incomplete/conflicting results are explicit. A recovered ID does not establish whole-video coverage or legal compliance. Legacy Fast and older TrustMark IDs remain readable; VideoSeal requires its explicit optional model setup; `fast` is an explicit compatibility encoder, no longer the default.
 
 ```sh
 ariadne mark input.mp4 output.mp4 --video-profile resilient \
@@ -81,7 +101,7 @@ The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free
 python3.12 -m venv .venv
 . .venv/bin/activate
 # Use the downloaded wheel, or use: python -m pip install --no-deps .
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.2a1-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a4-py3-none-any.whl
 # Explicit setup installs the pinned C2PA pair and CPU dependencies, then models.
 # FFmpeg/ffprobe and Node.js/npm must already be installed.
 ariadne setup media --fetch-models
@@ -98,7 +118,7 @@ The explicit C2PA bootstrap builds the official tagged Python wrapper with the
 SHA-256-pinned upstream native library 0.91.11. It is qualified on Linux x86-64;
 use the Docker recipe for the supported media environment.
 
-`models fetch` provisions image, new video and legacy VideoSeal engines. Use `--engine trustmark` for images, `--engine video` for Economy/Resilient, or `--engine videoseal` for legacy compatibility. `ARIADNE_VIDEOSEAL_MODEL` can point to a shared, checksum-verified model file.
+`models fetch` defaults to the current image and video engines (`--engine media`). Legacy VideoSeal is not on the normal setup/build path. Use `models fetch --engine all` to request all engines explicitly; a requested engine download failure remains an error. Use `--engine trustmark` for images, `--engine video` for Economy/Resilient, or `--engine videoseal` for legacy compatibility. `ARIADNE_VIDEOSEAL_MODEL` can point to a shared, checksum-verified model file.
 
 `models fetch` is an explicit setup step. Later requests fail clearly if models are missing or have incorrect checksums. They do not silently download models.
 
@@ -188,7 +208,7 @@ python scripts/check_requirements.py
 # Full real-engine suite in the built image, with networking disabled:
 docker run --rm --network none --cpus 2 --memory 6g \
   -e ARIADNE_MEDIA_TESTS=1 -w /app --entrypoint python \
-  ariadne-mark:local -m unittest discover -s tests -t . -v
+  "$IMAGE" -m unittest discover -s tests -t . -v
 ```
 
 The ordinary core suite skips media tests unless explicitly enabled. Release qualification runs the Python matrix and real-engine Docker suite in a maintainer-dispatched EC2 job for an exact commit. Automatic PR/push checks are notices and do not run SDK tests. [Reproducible benchmark](benchmarks/durability/README.md) · [0.7.2a1 qualification](docs/validation/0.7.2a1.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).

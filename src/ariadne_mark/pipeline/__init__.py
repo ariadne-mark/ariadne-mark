@@ -46,9 +46,12 @@ class SDK:
     video_marker: object | None = None
     video_profile: str = DEFAULT_PROFILE
     tsa_trust_anchors: Path | None = None
+    verification_scope: str | tuple = "all"
 
     def __post_init__(self):
         validate_profile(self.video_profile)
+        from ariadne_mark.verification.scope import normalize_scope
+        normalize_scope(self.verification_scope)
         from ariadne_mark.c2pa_runtime import check_if_installed
         # Pure core construction must not be broken by another application's
         # optional C2PA installation. Export/verification and HTTP preflight
@@ -82,8 +85,8 @@ class SDK:
             raise ValueError("A video profile override requires the built-in VideoWatermarker")
         with self._video_markers_lock:
             if profile not in self._video_markers:
-                self._video_markers[profile] = VideoWatermarker(profile=profile,
-                    threads=self.video_marker.threads, timeout=self.video_marker.timeout)
+                # One Node worker per SDK for every preset (ISS-12); see with_profile.
+                self._video_markers[profile] = self.video_marker.with_profile(profile)
             return self._video_markers[profile]
 
     def __enter__(self):
@@ -100,15 +103,48 @@ class SDK:
         if isinstance(engine, VideoWatermarker) and engine._process is None:
             with self._video_markers_lock:
                 engine = next((m for m in self._video_markers.values() if m._process is not None), engine)
-        return verify_file(path, marker=self.marker, video_marker=engine, legacy_video_marker=self._legacy_video_marker, registry=self.registry, trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors)
+        return verify_file(path, marker=self.marker, video_marker=engine, legacy_video_marker=self._legacy_video_marker, registry=self.registry, trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors, verification_scope=self.verification_scope)
 
-    def recover_manifest(self, path: Path, destination: Path) -> dict:
-        """Blindly recover an ID, match its signed manifest and save exact bytes."""
+    def _verify_export(self, path, engine):
+        """Known local encoder controls read-back, never an input-supplied claim.
+
+        Public ``verify`` keeps its independent operator scan. This check still
+        reads actual bytes and the gate below still checks the signed ID/record,
+        every sampled value and atomic publication before accepting an export.
+        """
+        return verify_file(path, marker=self.marker, video_marker=engine,
+            legacy_video_marker=self._legacy_video_marker, registry=self.registry,
+            trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors,
+            verification_scope=(getattr(engine, "algorithm", "adobe.trustmark.Q.bch5"),))
+
+    def recover_manifest(self, path: Path, destination: Path, *, token: str | None = None) -> dict:
+        """Blindly recover an ID, match its signed manifest and save exact bytes.
+
+        With several recovered IDs there is no automatic choice. ``token``
+        selects one of the confirmed IDs *after* blind detection; it is never
+        given to the detector, and it must have its own validated manifest.
+        """
         if self.registry is None or not hasattr(self.registry, 'get_manifest'):
             raise AriadneError('A manifest-enabled registry is required')
+        if token is not None:
+            from ariadne_mark.watermark import valid_token
+            if not valid_token(token):
+                raise ValueError('Invalid Ariadne watermark ID')
         report = self.verify(path)
-        token = report['watermark'].get('token')
-        recovered = report.get('recovery', {}).get('manifest', {})
+        recovery = report.get('recovery', {})
+        if recovery.get('status') == 'per_id':
+            if token is None:
+                raise VerificationFailed('Multiple watermark IDs found; automatic manifest recovery is ambiguous. '
+                                         'Select one confirmed ID explicitly')
+            selected = next((row for row in recovery['per_id'] if row['token'] == token), None)
+            if selected is None or selected.get('status') != 'found':
+                raise VerificationFailed('The selected ID was not a confirmed, registered ID in this file')
+            recovered = selected.get('manifest', {})
+        else:
+            if token is not None and token != report['watermark'].get('token'):
+                raise VerificationFailed('The selected ID was not recovered from this file')
+            token = report['watermark'].get('token')
+            recovered = recovery.get('manifest', {})
         if (not token or recovered.get('soft_binding') != 'matched'
                 or recovered.get('signature') != 'valid'):
             raise VerificationFailed('No matching manifest with a validated signature was recovered')
@@ -155,6 +191,13 @@ class SDK:
             if video_profile is not None and configured is not None and video_profile != configured:
                 raise ValueError("video_profile conflicts with the selected product profile")
             video_engine = self._select_video_marker(video_profile or configured)
+        # Never issue a mark that this SDK's own verification scope would not
+        # detect (Code Sub-measure 2.1.1): refuse before touching media (P-03).
+        from ariadne_mark.verification.scope import media_scope
+        scheme = getattr(video_engine if video else self.marker, "algorithm", "adobe.trustmark.Q.bch5")
+        if scheme not in media_scope(self.verification_scope, video=video):
+            raise ValueError(f"Encoder scheme {scheme} is outside this SDK's verification_scope; "
+                             "widen the scope or use an encoder its verifier covers")
         if audio_kind not in {"original", "synthetic", "unknown", "none"}:
             raise ValueError("audio_kind must be original, synthetic, unknown or none")
         receipt_path = destination.with_name(destination.name + ".receipt.json")
@@ -209,7 +252,7 @@ class SDK:
                 checked = verify_video_export(signed, engine,
                     [w["index"] for w in details["watermark_windows"]], trust_anchors=self.trust_anchors, tsa_trust_anchors=self.tsa_trust_anchors)
             else:
-                checked = self.verify(signed)
+                checked = self._verify_export(signed, engine)
             samples = checked["watermark"].get("samples", [])
             if (checked["c2pa"]["status"] != "verified_claim" or checked["c2pa"].get("token") != token
                     or checked["c2pa"].get("record") != record.to_dict()

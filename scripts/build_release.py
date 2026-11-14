@@ -3,9 +3,12 @@ from pathlib import Path
 import subprocess
 import os
 import tomllib
+import json
 import sys
 from setuptools.build_meta import build_sdist
 expected = tomllib.loads(Path('pyproject.toml').read_text())['project']['version']
+if json.loads(Path('src/ariadne_mark/verifier_assets/openapi.json').read_text())['info']['version'] != expected:
+    raise RuntimeError('OpenAPI and SDK candidate versions differ')
 subprocess.run([sys.executable, 'scripts/check_runtime_locks.py'], check=True)
 out=Path('/opt/dist');out.mkdir(parents=True,exist_ok=True)
 subprocess.run([sys.executable,'-m','pip','wheel','--no-build-isolation','--no-deps','--wheel-dir',str(out),'.'],check=True)

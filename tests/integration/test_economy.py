@@ -101,10 +101,12 @@ class EconomyIntegrationTests(unittest.TestCase):
         config['deployment']['disclosure'] = 'none'
         output = self.path / 'config-worker.mp4'
         receipt = self.sdk.mark(source, output, self.record('video'), profile=config)
-        self.assertIsNone(self.sdk.video_marker._process)
+        worker = self.sdk._video_markers['economy_2s']._process
+        self.assertIsNotNone(worker)
+        # ISS-12: presets share one worker, so no second (default) worker exists.
+        self.assertIs(self.sdk.video_marker._process, worker)
         self.assertEqual(self.sdk.verify(output)['watermark']['token'], receipt['token'])
-        self.assertIsNone(self.sdk.video_marker._process)
-        self.assertIsNotNone(self.sdk._video_markers['economy_2s']._process)
+        self.assertIs(self.sdk.video_marker._process, worker)  # verification reused the same process
 
     def test_worker_death_after_last_selected_frame_fails_before_publication(self):
         from ariadne_mark.errors import AriadneError

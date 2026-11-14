@@ -1,0 +1,12 @@
+{
+  "version": "0.7.3a4",
+  "qualified_source": "49578688710a8bae2373aaf9d47ff9521f566d4c",
+  "image_id": "sha256:1a4dd358bcf698df654daaac631a26d3bc874104de5108bc94ce941c33a49980",
+  "image_tag": "ariadne-mark:ci-43598162234-4957868",
+  "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/43598162234",
+  "full_media_tests": 341,
+  "artifacts": {
+    "ariadne_mark-0.7.3a4-py3-none-any.whl": "97a83d5edf47f63c990505f9eb76d9214a431a2e535455759afc36eb86fa2793",
+    "ariadne_mark-0.7.3a4.tar.gz": "3635e88f1d5653af6444a94eb415da40f3b908b62707f7b9cb39a558aeeb0e9a"
+  }
+}

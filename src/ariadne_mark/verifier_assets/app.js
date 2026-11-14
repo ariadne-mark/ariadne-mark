@@ -5,7 +5,8 @@ const messages = {
   verified_claim: 'Signature and file binding validated', invalid: 'Invalid or conflicting evidence',
   expired_credential: 'Signing time could not be validated', not_found: 'Not found in this check',
   not_checked: 'Check incomplete or unavailable', recovered_claim: 'Watermark ID recovered',
-  single_observation: 'One ID observation; not confirmed'
+  single_observation: 'One ID observation; not confirmed',
+  multiple_ids: 'Several watermark IDs found'
 };
 async function getHealth() {
   try {
@@ -29,10 +30,20 @@ function render(report) {
   $('watermark').textContent = messages[w.status] || 'Watermark check unavailable';
   const search = w.search;
   $('search').textContent = search ? `${search.frames_decoded} frames examined. ${search.file_exhausted ? 'The scan reached the end of the file.' : search.reason === 'two_concordant_ids' ? 'Stopped after two matching ID reads; whole-video coverage is not established.' : 'The search did not exhaust the file.'}` : 'Detection is limited to supported watermark schemes.';
-  $('interpretation').textContent = w.status === 'not_checked' ? 'This is an incomplete check, not evidence that the file is unmarked.' : w.status === 'single_observation' ? 'The detector saw an ID once, but could not confirm it.' : w.status === 'not_found' ? 'No supported mark was recovered. This does not establish human origin.' : w.token && c.status !== 'verified_claim' ? 'The ID is recoverable. It does not authenticate the source of this copy.' : 'Read the credential and watermark evidence separately. Neither establishes factual truth.';
+  $('interpretation').textContent = w.status === 'multiple_ids' ? 'Each ID applies only to the positions where it was read. No single source is established for the whole file.' : w.status === 'not_checked' ? 'This is an incomplete check, not evidence that the file is unmarked.' : w.status === 'single_observation' ? 'The detector saw an ID once, but could not confirm it.' : w.status === 'not_found' ? 'No supported mark was recovered. This does not establish human origin.' : w.token && c.status !== 'verified_claim' ? 'The ID is recoverable. It does not authenticate the source of this copy.' : 'Read the credential and watermark evidence separately. Neither establishes factual truth.';
   $('provenance').replaceChildren();
   const record = c.record && c.record.publisher ? c.record : r.record || c.record || {};
-  addField('Watermark ID', w.token); addField('Provider', record.publisher);
+  addField('Watermark ID', w.token);
+  (w.ids || []).forEach(e => addField(e.status === 'confirmed' ? 'Watermark ID (confirmed)' : 'Watermark ID (unconfirmed)',
+    `${e.token}${typeof e.first_time_s === 'number' ? ` · first read ${e.first_time_s.toFixed(2)} s · last read ${e.last_time_s.toFixed(2)} s · sampled positions only` : ''}`));
+  const scope = w.evidence_scope || {};
+  if (Array.isArray(scope.passes) && scope.passes.length) {
+    addField('Evidence scope', scope.whole_file_examined ? 'At least one scheme examined the full file; see each pass.' : 'Sampled positions only; the rest of the file is not established.');
+    scope.passes.forEach(p => addField('Detection pass', `${p.algorithm}: ${p.selection || p.coverage}${p.stop_reason ? `; stop: ${p.stop_reason}` : ''}`));
+  }
+  if (w.out_of_operator_scope && w.out_of_operator_scope.length) addField('Outside operator scope', w.out_of_operator_scope.join(', '));
+  if (report.signed_id_observed === false) addField('Signed ID observation', 'The signed watermark ID was not observed in this scan.');
+  addField('Provider', record.publisher);
   addField('System', record.system ? `${record.system.name} · ${record.system.version}` : null);
   addField('Operation', record.action); addField('Created / altered', record.created_at); addField('Public asset UUID', record.asset_id);
   if (r.manifest && r.manifest.soft_binding === 'matched') addField('Recovered C2PA', `Original manifest recovered · signature ${r.manifest.signature} · file binding ${r.manifest.asset_binding}`);

@@ -58,6 +58,7 @@ def fetch_models():
 class VideoSealWatermarker:
     algorithm = ALGORITHM
     payload_format = FORMAT
+    implementation = 'python-torch-videoseal'
     batch_size = 4
 
     def __init__(self, *, threads=2):

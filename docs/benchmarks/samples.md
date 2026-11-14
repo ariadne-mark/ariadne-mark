@@ -1,7 +1,7 @@
 # Download and verify real SDK exports
 
-The [0.7.2a1 release](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1)
-includes **ariadne-mark-samples-0.7.2a1.tar.gz**: one marked PNG, video exported
+The [0.7.3a4 release](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4)
+includes **ariadne-mark-samples-0.7.3a4.tar.gz**: one marked PNG, video exported
 in Economy5s, Economy2s and Resilient, receipts, verification JSON and signed
 verifier reports. It also includes the unmarked inputs, a metadata-stripped PNG,
 its verification result and recovered C2PA manifest.
@@ -19,7 +19,7 @@ archive hash before extracting; inside, `SHA256SUMS` covers individual samples.
 results. `verifier-report.pub` is the report verification key.
 
 ```sh
-ariadne report verify ariadne-samples/image.png.signed-report.json   --public-key ariadne-samples/verifier-report.pub   --asset ariadne-samples/image.png   --verifier-id urn:ariadne-mark:sample-verifier:0.7.2a1
+ariadne report verify ariadne-samples/image.png.signed-report.json   --public-key ariadne-samples/verifier-report.pub   --asset ariadne-samples/image.png   --verifier-id urn:ariadne-mark:sample-verifier:0.7.3a4
 ```
 
 For a video use the matching `economy_5s.mp4`, `economy_2s.mp4` or `resilient.mp4`
@@ -39,4 +39,4 @@ durability study or production throughput claim.
 
 To create new outputs and a private local registry yourself, follow
 [the first-export walkthrough](../start-here.md). For methods and limitations
-see [test protocols](protocols.md) and [qualification](../validation/0.7.2a1-results.md).
+see [test protocols](protocols.md) and [qualification](../validation/0.7.3a4-results.md).

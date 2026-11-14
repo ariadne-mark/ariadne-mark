@@ -1,6 +1,9 @@
 # Prepare your production deployment
 
-SDK **0.7.2a1** · documentation review **2026-11-10**.
+SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-14**.
+
+Versioned benchmark and legal-source review dates below remain historical evidence;
+they are not a new qualification or legal approval of this candidate.
 
 Use the qualified kit as a reference deployment and assign an owner for each
 step below. A development init is a local evaluation, not a production setup.
@@ -114,25 +117,22 @@ cannot be completed by changing a development identity flag. The SDK/sample
 qualification is available now; production public trust remains an explicit
 operator onboarding step. See [cost planning](../guides/cost.md).
 
-## Provider compatibility checked during launch preparation
+## Authenticated TSA compatibility
 
-| Candidate route | What is established | What is not established |
-| --- | --- | --- |
-| SSL.com C2PA certificate/TSA | Published eligibility, quota and HTTPS TSA endpoint | No enrollment/key; API-key authentication is not directly exposed by this SDK adapter |
-| Generic DigiCert RFC3161 endpoint | Official documentation publishes an HTTP endpoint | The kit requires HTTPS; a single EC2 HTTPS probe failed to connect. No C2PA-TSA compatibility is claimed |
-| Operator-owned compatible HTTPS TSA route | SDK accepts an HTTPS URL and separately configured TSA roots | The actual service, authentication and end-to-end production export need qualification |
+SSL.com is the selected pilot route. Its official provenance SDK uses bearer
+credentials and a short-lived loopback forwarder for the same c2pa-python
+family. This candidate implements that approach with verified HTTPS, bounded
+messages, a deadline and no redirects; see [authenticated timestamping](authenticated-timestamping.md).
+The pinned C2PA pair is unchanged. A future native HTTP-resolver migration
+requires its own compatibility qualification and is not a release prerequisite.
 
-[SSL.com's timestamp documentation](https://www.ssl.com/products/content-authenticity/timestamping/)
-specifies `https://ts-c2pa.ssl.com` with an API key. Current kit configuration
-accepts a plain HTTPS URL, rejecting URL credentials/query secrets; the C2PA
-signer adapter supplies no configurable TSA authorization header. Do not put a
-secret into a public URL or imply that this vendor works out of the box.
-Confirm a supported authenticated signing interface or separately qualify a
-restricted operator-owned egress adapter before selecting that route. This
-documentation does not provide or qualify such an adapter.
+Use `timestamp_credential_file` for an owner-only token file, never a token in
+the URL. A kit must also have actual provider credentials and independent TSA
+roots. The available offline fixture results do not establish live service
+availability or production public trust. Real enrollment and authenticated
+SSL.com exports remain pending operator credentials.
 
-The DigiCert probe sent only a synthetic random-hash request; its failed HTTPS
-connection is an observation from one host, not a finding that the vendor's
-service is generally unavailable. Do not downgrade the kit's HTTPS policy to
-make that example pass. A real CA/TSA export remains pending actual operator
-identity, credentials and endpoint arrangements.
+An unauthenticated HTTPS TSA can still use the original direct-URL path. The
+previous DigiCert connection failure was a single-host observation, not a
+finding that its service is generally unavailable. Do not downgrade production
+HTTPS or reuse a development signer to make an example pass.

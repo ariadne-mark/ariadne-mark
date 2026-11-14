@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.7.3a4 (public developer alpha)
+
+- Bound authenticated TSA relay to four concurrent local handlers and a two-second absolute header/body deadline; close active clients on shutdown and suppress expected disconnect tracebacks.
+- Preserve explicit all/custom verification scope under trusted input claims, including unavailable historical-decoder reporting.
+- Document shared exporter/verifier lock waits, separate-process operation, local image/RECORD identity and external resolver discovery boundaries.
+- Keep Economy5s default, Economy2s, Resilient, payloads, strength, publication gates and synthetic-audio restrictions unchanged.
+
+## 0.7.3a3 (candidate, not published)
+
+- Complete authenticated RFC 3161 timestamps on the unchanged pinned C2PA pair via a per-operation loopback relay and owner-only bearer file.
+- Bound credential reads, requests/replies and response time; reject redirects and preserve native token/trust validation and fail-closed publication.
+- Add offline authenticated HTTPS TSA, kit-configuration and relay regressions; document deployment and the remaining live-provider qualification.
+- Preserve Economy5s default, Economy2s and Resilient, including 0.7.3a2 verifier, installation and shared-worker fixes.
+
+## 0.7.3a2 (candidate, not published)
+
+- Trusted C2PA claims can no longer switch off the operator's primary watermark scan; out-of-scope claims keep primary evidence and stay `not_checked` on a negative (review P-01). `completed_schemes` ⊆ `declared_schemes`, new `supplemental_completed_schemes` (P-02). `SDK.mark` refuses an encoder outside its own verification scope (P-03).
+- One Node video worker per SDK for all presets: mixed-preset peak resident memory 2.44 → 1.33 GiB on the qualification host (ISS-12).
+- Kit pins the SDK image by immutable ID (`pin-image.sh`, `ariadne runtime identity`) and refuses a mismatched SDK version before work (ISS-05/01). `kit serve --host/--port`, loopback by default on hosts (ISS-09). Production origins reject all RFC 2606/6761 reserved names (ISS-16).
+- Runtime caches honour `XDG_CACHE_HOME`; existing caches are reused, never moved; no `~/.npm` writes (ISS-08).
+- TSA URL must be HTTPS without credentials/query/fragment; failed timestamp calls are redacted and publish nothing; `sign_file` removes a failed output. Direct native TSA authorization is unavailable; the optional authenticated relay is added in 0.7.3a3.
+- Docs: disk budget, image identity, host bind, mixed-preset memory, verification cost, TSA boundary.
+
+## 0.7.3a1 (candidate, not published)
+
+- Prevent untrusted C2PA claims from suppressing independent watermark scans.
+- Report format-specific negative scope, required-decoder failures and tri-state signed-ID observations.
+- Refuse unsupported/incomplete content resolver searches; clarify UI observation positions.
+- Auto-select current models for bare commands, preserve strict explicit setup and warn on legacy-kit migration.
+- Update active candidate documentation while retaining historical benchmark evidence.
+
+## 0.7.3a0 — candidate, not published
+
+- Default model provisioning and source Docker build use current image/video models only; legacy VideoSeal remains explicit.
+- Add declared operator scope (`all` / `current`) through SDK, CLI, isolated worker and kit; preserve incomplete results for unavailable required techniques.
+- Add finite directional Python-Q video decoder compatibility for signed-manifest recovery; crypto and token checks remain mandatory.
+- Show single-ID positions/scope and independent `signed_id_observed`; development signatures retain incomplete watermark wording.
+- Missing video-mode choice blocks profiled video export; optional selection rationale is recorded. Direct SDK default remains Economy5s; all three modes/cadence/strength are preserved.
+- [Migration, known issues and evidence boundaries](docs/operations/release-0.7.3a0.md).
+
+- Include the legal requirement matrix CSV in source distributions; verify documentation/UI from the extracted sdist.
+
+### Schema-2 verifier block
+
+- Verification report `schema_version` 2: several distinct watermark IDs give `watermark.status=multiple_ids` with every ID in `watermark.ids` (scheme, basis, observed positions) instead of a general `invalid`. No ID is preferred; a genuinely invalid C2PA signature is still `invalid`.
+- Observations record integer PTS/time base, scheme and pass; one decoded frame read twice never counts as two confirmations. `watermark.evidence_scope` states what each pass examined. Search order, frequency and budgets are unchanged.
+- Registry recovery and `/matches/byContent` work per confirmed ID; `recover --id` selects one ID after detection. CLI `verify` exits 0 only for `recovered_claim`/`not_found`.
+- Apply `/matches/byContent` result limits after public/scheme filtering; label unconfirmed ID evidence without implying a single-frame read.
+- Export gate unchanged: Economy known-window and Resilient/legacy sample read-back, ID/record checks and no publication on failure.
+
 ## 0.7.2a1 — external-review follow-up
 
 - Reject generation timestamps over five minutes in the future at batch/export/signing boundaries; parsing external claims remains possible.
