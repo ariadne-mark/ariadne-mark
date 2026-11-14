@@ -1,4 +1,4 @@
-# Public alpha checklist — 0.7.3a4 candidate
+# Public alpha checklist — 0.7.3a4 developer alpha
 
 Release target: local CPU SDK for JPEG/PNG and supported SDR MP4, with
 Economy5s/2s and Resilient video, signed provenance, self-hosted verification and partial

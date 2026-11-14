@@ -1,7 +1,7 @@
-# Ariadne Mark 0.7.3a4 candidate
+# Ariadne Mark 0.7.3a4 developer alpha
 
-This candidate addresses the low/info follow-ups from the independent 0.7.3a3
-review. It is not a legal certificate or a published production release.
+This release addresses the low/info follow-ups from the independent 0.7.3a3
+review. It is a developer alpha, not a legal certificate or production qualification.
 
 - Q-01: bounded parallel loopback TSA handling, absolute two-second local
   header/body deadline, bounded overload and active-connection shutdown.
@@ -22,3 +22,6 @@ The previous [0.7.3a3 release note](release-0.7.3a3.md) remains historical.
 
 Qualification is recorded for the exact candidate SHA and artifacts in CI.
 Do not reuse an earlier version's timing or qualification as evidence for this one.
+
+Published [v0.7.3a4](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4) uses the unchanged qualified artifacts from `49578688710a8bae2373aaf9d47ff9521f566d4c`.
+[Exact qualification](../validation/0.7.3a4-results.md) records the checks and boundaries.

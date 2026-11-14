@@ -4,34 +4,39 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer-alpha candidate · 0.7.3a4 (not yet published).** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Public developer alpha · 0.7.3a4.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 [Documentation hub](docs/index.md) · [EU guide](docs/compliance/eu-ai-act.md) ·
 [California guide](docs/compliance/california.md) · [Test protocols and evidence](docs/benchmarks/protocols.md)
 
-## Candidate and previous published release
+## Download and get a first result
 
-This checkout contains the schema-2 candidate, **0.7.3a4**. Its installation and
-verification-scope changes are described in [migration and known issues](docs/operations/release-0.7.3a0.md).
-For the latest routing and result semantics see [R4 changes](docs/operations/release-0.7.3a1.md) and [0.7.3a4 review fixes](docs/operations/release-0.7.3a4.md).
-Use the wheel built from this checkout for candidate review. Do not overwrite
-the older published artifact. The release link below is the previous 0.7.2a1
-baseline, not this candidate.
+[Release 0.7.3a4](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4) contains the qualified wheel/source, exact hashes,
+runtime inventory and real image/video examples with signed verification reports.
+The tested source is `49578688710a8bae2373aaf9d47ff9521f566d4c`; [EC2 qualification](https://github.com/ariadne-mark/ariadne-mark/actions/runs/43598162234) passed
+341 installed-media tests with zero skips, the four-version core matrix,
+clean media/video installs and the connected HTTPS kit.
 
-### Previous published baseline
+This is a GitHub release; no PyPI package or prebuilt combined Docker binary is
+published. Documentation can evolve separately from the immutable packages.
+The source README inside the qualified artifacts records their candidate build
+stage; this page describes their subsequent publication. Prior
+[0.7.2a1 artifacts](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1)
+remain historical evidence.
 
-[Release 0.7.2a1](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1)
-contains the wheel/source, SHA-256 hashes, runtime inventory and real sample
-exports with signed verification reports. This is a GitHub release; no PyPI
-publication is claimed. Qualified runtime source: `8c6fda8`; documentation can evolve separately.
-
-For a complete image + three-video-mode walkthrough on Linux x86-64 with Docker:
+With Linux x86-64, Docker Engine, curl, tar and sha256sum:
 
 ```sh
-curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.2a1/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
-# Read the script before running it. It creates a new ariadne-first-run directory.
+curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.3a4/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
+# Inspect the script; it creates a new ariadne-first-run directory.
 bash FIRST_EXPORT.sh
 ```
+
+The walkthrough verifies downloads, builds the source recipe and exports an
+image and Economy5s, Economy2s and Resilient video. It uses development
+credentials and deterministic engineering fixtures. Allow about 10 GB free for
+the Docker build. For an existing Python 3.12 backend, use the lighter
+[wheel installation](docs/operations/wheel-install.md) below.
 
 [Production identity and timestamps](docs/operations/production-onboarding.md) ·
 [Node.js / Next.js / mobile backend](docs/guides/nodejs-nextjs.md) ·
@@ -40,7 +45,7 @@ bash FIRST_EXPORT.sh
 ## Quick start with Docker
 
 ```sh
-# From this reviewed 0.7.3a4 source checkout; candidate is not published yet.
+# From the downloaded 0.7.3a4 source archive or its qualified source checkout.
 # --iidfile records the immutable image ID; no shared tag is created or moved.
 docker build --platform linux/amd64 --iidfile ariadne-image.id .
 IMAGE=$(cat ariadne-image.id)

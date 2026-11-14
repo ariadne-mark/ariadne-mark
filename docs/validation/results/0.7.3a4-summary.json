@@ -1,0 +1,58 @@
+{
+  "sdk_version": "0.7.3a4",
+  "commit": "49578688710a8bae2373aaf9d47ff9521f566d4c",
+  "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/43598162234",
+  "ci_conclusion": "success",
+  "full_media": {
+    "tests": 341,
+    "wall_s": 410.349,
+    "skipped": 0
+  },
+  "dependency_free_matrix": {
+    "3.11": {
+      "discovered": 341,
+      "executed": 248,
+      "expected_skips": 93
+    },
+    "3.12": {
+      "discovered": 341,
+      "executed": 248,
+      "expected_skips": 93
+    },
+    "3.13": {
+      "discovered": 341,
+      "executed": 248,
+      "expected_skips": 93
+    },
+    "3.14": {
+      "discovered": 341,
+      "executed": 248,
+      "expected_skips": 93
+    }
+  },
+  "package_files_matched": 70,
+  "video_profiles": [
+    "economy_5s",
+    "economy_2s",
+    "resilient"
+  ],
+  "default_video_profile": "economy_5s",
+  "scope": "Exact installed wheel on Linux x86-64/Python3.12 CPU. Local development/offline fixture credentials, not live production CA/TSA.",
+  "clean_wheel_installs": [
+    "video: online+offline",
+    "media: online+offline"
+  ],
+  "public_release": "https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4",
+  "qualified_image_id": "sha256:1a4dd358bcf698df654daaac631a26d3bc874104de5108bc94ce941c33a49980",
+  "runtime_identity": {
+    "sdk_version": "0.7.3a4",
+    "record_sha256": "916e37028aca7218b3998c613fb20e1c76027fd06ae9638612763ff1230ad4b5"
+  },
+  "public_discovery_qualified": false,
+  "not_performed": [
+    "Live operator CA/TSA enrollment",
+    "Public cross-provider discovery",
+    "Population durability/FPR study",
+    "Product legal certification"
+  ]
+}

@@ -1,42 +1,55 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Maintainer-dispatched EC2-only qualification for documentation changes.
-# Never substitutes a rebuilt package for the frozen public release.
-root=$(pwd)
-out="$root/release-dist"
+# EC2-only docs qualification against immutable public runtime artifacts.
+exec 9>"${ARIADNE_CI_LOCK_FILE:-$HOME/.ariadne-qualification.lock}"
+flock 9
+root=$(pwd);out="$root/release-dist"
 mkdir -p "$out/logs" "$out/published"
-baseline=8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa
-image=ariadne-mark:0.7.2a1
-test "$(docker image inspect "$image" --format '{{.Id}}')" = sha256:13689f43bb1e0de927c3ea9605d7a55d251bf0b9cf486e7dd780360a41d27cdc
-# This mode is deliberately inapplicable to runtime/test/build changes.
+field() { python3 -c "import json;print(json.load(open('docs/public-release-baseline.json'))['$1'])"; }
+baseline=$(field qualified_source);version=$(field version);image=$(field image_tag)
+test "$(docker image inspect "$image" --format '{{.Id}}')" = "$(field image_id)"
 git fetch --no-tags origin "$baseline"
+# Never permits changed runtime/test/dependency/build-recipe bytes.
 git diff --exit-code "$baseline" HEAD -- src tests requirements Dockerfile pyproject.toml MANIFEST.in examples > "$out/logs/unchanged-runtime.log"
-release=https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.2a1
-for file in ariadne_mark-0.7.2a1-py3-none-any.whl ariadne_mark-0.7.2a1.tar.gz SHA256SUMS; do
+release="https://github.com/ariadne-mark/ariadne-mark/releases/download/v$version"
+for file in "ariadne_mark-$version-py3-none-any.whl" "ariadne_mark-$version.tar.gz" SHA256SUMS; do
   curl --fail --location --retry 2 "$release/$file" -o "$out/published/$file" > "$out/logs/download-$file.log" 2>&1
 done
 (cd "$out/published"; sha256sum -c SHA256SUMS) > "$out/logs/public-artifact-hashes.log"
-test "$(sha256sum "$out/published/ariadne_mark-0.7.2a1-py3-none-any.whl" | cut -d' ' -f1)" = 05d2b28ae205dfc485d91cc06b7fdf09c53a4882a395e957a4bf15cd9a9931c2
-test "$(sha256sum "$out/published/ariadne_mark-0.7.2a1.tar.gz" | cut -d' ' -f1)" = db5945b325cbf48620bb842689dfcb323c0210266df536bc8821b8b027a6371f
-docker run --rm --network none --cpus 2 --memory 3g --read-only   --tmpfs /tmp:rw,noexec,nosuid,size=512m -e ARIADNE_MEDIA_TESTS=1   -v "$root:/app:ro" -w /app --entrypoint python "$image"   -m unittest discover -s tests -t . -v > "$out/logs/full-media.log" 2>&1
-docker run --rm --network none --read-only -v "$root:/review:ro"   -v "$out/published:/artifacts:ro" -w /review --entrypoint python "$image"   scripts/check_installed_payload.py /artifacts /review > "$out/logs/package-parity.json"
+python3 - <<'PY'
+import hashlib,json
+from pathlib import Path
+p=json.loads(Path('docs/public-release-baseline.json').read_text())
+for name,expected in p['artifacts'].items():
+ assert hashlib.sha256((Path('release-dist/published')/name).read_bytes()).hexdigest()==expected,name
+PY
+legacy="${ARIADNE_CI_LEGACY_MODEL:-$HOME/.cache/ariadne-ci/y_256b_img.jit}"
+printf '%s  %s\n' 5c7a4581c36fc6090aafdcfb3999123bae5172a4847f22e2da4e7fd1a39d1e1b "$legacy" | sha256sum -c - > "$out/logs/legacy-fixture-check.log"
+docker run --rm --network none --cpus 2 --memory 4g --read-only --tmpfs /tmp:rw,noexec,nosuid,size=512m \
+  -e ARIADNE_MEDIA_TESTS=1 -v "$legacy:/legacy/y_256b_img.jit:ro" -e ARIADNE_VIDEOSEAL_MODEL=/legacy/y_256b_img.jit \
+  -v "$root:/app:ro" -w /app --entrypoint python "$image" \
+  -m unittest discover -s tests -t . -v > "$out/logs/full-media.log" 2>&1
+docker run --rm --network none --cpus 2 --memory 512m --read-only -v "$root:/review:ro" \
+  -v "$out/published:/artifacts:ro" -w /review --entrypoint python "$image" \
+  scripts/check_installed_payload.py /artifacts /review > "$out/logs/package-parity.json"
+docker run --rm --network none --cpus 2 --memory 512m --read-only -v "$root:/review:ro" -w /review \
+  --entrypoint python "$image" scripts/check_documentation.py > "$out/logs/documentation.json"
 python3 scripts/check_requirements.py > "$out/logs/requirements.log"
 python3 scripts/check_runtime_locks.py > "$out/logs/runtime-locks.log"
 docker run --rm --network none --entrypoint python "$image" -m pip check > "$out/logs/pip-check.log"
 python3 - <<'PY'
-import json,os,subprocess
+import json,re,subprocess
 from pathlib import Path
-out=Path('release-dist')
+out=Path('release-dist');p=json.loads(Path('docs/public-release-baseline.json').read_text())
 log=(out/'logs/full-media.log').read_text()
-assert 'Ran 217 tests' in log and '\nOK\n' in log and 'skipped=' not in log
+assert f"Ran {p['full_media_tests']} tests" in log and re.search(r'^OK$',log,re.M) and 'skipped=' not in log
 (out/'published-qualification.json').write_text(json.dumps({
- 'mode':'unchanged published package; no runtime rebuild',
+ 'mode':'unchanged published package; updated docs; no runtime rebuild',
  'reviewed_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
- 'qualified_runtime_sha':'8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa',
- 'full_media_tests':217,'skips':0,'platform':'Linux x86-64 CPU on owned EC2',
- 'image_id':'sha256:13689f43bb1e0de927c3ea9605d7a55d251bf0b9cf486e7dd780360a41d27cdc',
- 'original_complete_qualification':'https://github.com/ariadne-mark/ariadne-mark/actions/runs/42738430001',
- 'public_release':'https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1'
+ 'qualified_runtime_sha':p['qualified_source'],'full_media_tests':p['full_media_tests'],'skips':0,
+ 'platform':'Linux x86-64 CPU on owned EC2','image_id':p['image_id'],
+ 'original_complete_qualification':p['ci_url'],
+ 'public_release':'https://github.com/ariadne-mark/ariadne-mark/releases/tag/v'+p['version']
 },indent=2)+'\n')
 PY
-printf '%s\n' 'Public artifact hashes, unchanged runtime, 217 media tests, payload parity and traceability passed.'
+printf '%s\n' 'Public hashes, unchanged runtime, full media, payload parity and docs passed.'

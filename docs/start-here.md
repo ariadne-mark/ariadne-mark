@@ -1,6 +1,6 @@
 # Install and produce your first marked export
 
-SDK **0.7.3a4 candidate** · documentation updated **2026-11-14**.
+SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-14**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.
@@ -12,11 +12,15 @@ this visual kit; AAC may be preserved as original audio.
 
 ## Get one complete result first
 
-This checkout is an unpublished candidate. Use its matching local wheel/source
-archive and qualification manifest; do not install the older public release
-and assume it contains these changes. The older
-[0.7.2a1 release](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1)
-is baseline evidence only. Candidate setup follows the instructions below.
+Download [Release 0.7.3a4](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4), starting with `START_HERE.txt`.
+`FIRST_EXPORT.sh` verifies the SDK/sample artifacts and runs the image plus
+three-video-mode walkthrough. Inspect it before running. The default Docker
+build needs about 10 GB free; the wheel path uses less disk when its system
+prerequisites are already installed.
+
+The immutable runtime/source is `49578688710a8bae2373aaf9d47ff9521f566d4c`; subsequent documentation changes do
+not replace those tested package bytes. [Qualification](validation/0.7.3a4-results.md)
+and [migration notes](operations/release-0.7.3a0.md) describe the exact scope.
 
 ## Choose an installation
 

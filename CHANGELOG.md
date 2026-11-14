@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.7.3a4 (candidate, not published)
+## 0.7.3a4 (public developer alpha)
 
 - Bound authenticated TSA relay to four concurrent local handlers and a two-second absolute header/body deadline; close active clients on shutdown and suppress expected disconnect tracebacks.
 - Preserve explicit all/custom verification scope under trusted input claims, including unavailable historical-decoder reporting.

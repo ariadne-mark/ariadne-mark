@@ -1,6 +1,6 @@
 # CPU deployment and worker ownership
 
-Current media scope: SDK 0.7.2a1, Linux x86-64/Python 3.12 CPU. The qualified
+Historical measurement baseline: SDK 0.7.2a1, Linux x86-64/Python 3.12 CPU. The qualified
 host has 2 vCPU/8 GiB; the full test container limit is 2 CPU/6 GiB. A limit is
 not measured memory consumption. See [actual results](../validation/0.7.2a1-results.md).
 

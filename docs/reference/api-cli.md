@@ -1,6 +1,6 @@
 # Python CLI and verification reference
 
-SDK **0.7.3a4 candidate** · documentation updated **2026-11-14**.
+SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-14**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.
