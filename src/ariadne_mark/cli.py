@@ -25,8 +25,11 @@ def main(argv=None) -> int:
     kit_check = kit_commands.add_parser('check', help='Check local configuration, not legal compliance or public reachability')
     kit_check.add_argument('directory', type=Path)
     kit_check.add_argument('--runtime', action='store_true')
-    for name in ['serve', 'render']:
-        kit_commands.add_parser(name).add_argument('directory', type=Path)
+    kit_commands.add_parser('render').add_argument('directory', type=Path)
+    kit_serve = kit_commands.add_parser('serve', help='Run the kit verifier; loopback by default on a host')
+    kit_serve.add_argument('directory', type=Path)
+    kit_serve.add_argument('--host', help='Bind address; default 127.0.0.1 on a host, 0.0.0.0 inside a container')
+    kit_serve.add_argument('--port', type=int, default=8080)
     kit_export = kit_commands.add_parser('export', help='Export a batch with one resident SDK')
     kit_export.add_argument('directory', type=Path)
     kit_export.add_argument('batch', type=Path)
@@ -37,7 +40,7 @@ def main(argv=None) -> int:
     setup.add_argument('--wheelhouse', type=Path, help='Local dependency wheels; disables the pip index')
     setup.add_argument('--fetch-models', action='store_true', help='Also provision/check the selected engines; requires FFmpeg and Node')
     runtime = commands.add_parser("runtime", help="Inspect the qualified C2PA wrapper/native pair; never installs packages")
-    runtime.add_argument("action", choices=["check"])
+    runtime.add_argument("action", choices=["check", "identity"])
     reports = commands.add_parser("report", help="Generate verifier keys or independently verify a signed receipt")
     report_commands = reports.add_subparsers(dest="report_command", required=True)
     report_keygen = report_commands.add_parser("keygen")
@@ -123,7 +126,7 @@ def main(argv=None) -> int:
             elif args.kit_command == 'render':
                 result = deployment.render(args.directory)
             else:
-                deployment.serve(args.directory)
+                deployment.serve(args.directory, host=args.host, port=args.port)
                 return 0
             print(json.dumps(result, indent=2))
             return 2 if result.get('errors') else 0
@@ -134,6 +137,10 @@ def main(argv=None) -> int:
             print(json.dumps(result, indent=2))
             return 0
         if args.command == "runtime":
+            if args.action == "identity":
+                from ariadne_mark.version import installed_identity
+                print(json.dumps(installed_identity(), indent=2))
+                return 0
             from ariadne_mark.c2pa_runtime import runtime_info
             result = runtime_info()
             print(json.dumps(result, indent=2))

@@ -26,7 +26,8 @@ root = work / 'bundle'
 assert not root.exists(), 'Use a new work directory for each acceptance run'
 events = (evidence / 'events.jsonl').open('a')
 project = 'ariadne-kit-' + uuid.uuid4().hex[:10]
-env = {**os.environ, 'KIT_SDK_IMAGE': image}
+# The SDK image is pinned through the kit's own pin-image.sh (immutable ID).
+env = {k: v for k, v in os.environ.items() if k != 'KIT_SDK_IMAGE'}
 compose = ['docker', 'compose', '-p', project, '--project-directory', str(root)]
 
 
@@ -83,6 +84,9 @@ try:
     command([str(validator), '--version'], 'external-validator-version')
     sdk(['kit', 'init', '/workspace/bundle', '--development', '--public-manifests',
          '--publisher', 'Kit Integration Fixture', '--system', 'Deterministic Fixture', '--system-version', '1'], 'kit-init')
+    command(['bash', str(root / 'pin-image.sh'), image], 'kit-pin-image')
+    pinned = dict(l.split('=', 1) for l in (root / '.env').read_text().splitlines() if '=' in l)
+    assert pinned['KIT_SDK_IMAGE'].startswith('sha256:') and pinned['KIT_SDK_RECORD_SHA256'], pinned
     https_port, http_port = port(), port()
     while http_port == https_port:
         http_port = port()
@@ -97,6 +101,7 @@ try:
     checked = json.loads(sdk(['kit', 'check', '/workspace/bundle', '--runtime'], 'kit-check'))
     assert checked['status'] == 'ready_for_development' and checked['default_video_profile'] == 'economy_5s'
     assert checked['legal_determination'] == 'not_performed'
+    assert not [w for w in checked['warnings'] if w['code'] == 'sdk_image_not_pinned'], checked['warnings']
     command([*compose, 'config'], 'compose-resolved')
     for name in ['input.png', 'input.mp4']:
         shutil.copyfile(fixtures / name, root / 'inputs' / name)

@@ -15,6 +15,28 @@ from ariadne_mark.errors import AriadneError
 
 NGINX_IMAGE = 'nginx@sha256:583b7f2fce1cdb8da5ad5c39ebd3c33b98b87d493190e548bdee1fa8c619c311'
 PROFILES = {'economy_5s', 'economy_2s', 'resilient'}
+# RFC 2606 / RFC 6761 reserved names: documentation and special-use domains
+# can never be an operator's public production origin (ISS-16).
+RESERVED_NAMES = ('example', 'example.com', 'example.net', 'example.org', 'test', 'invalid', 'localhost')
+EXPECTED_SDK_ENV = 'ARIADNE_KIT_EXPECTED_SDK'
+
+
+def reserved_host(host):
+    name = (host or '').lower().rstrip('.')
+    return any(name == reserved or name.endswith('.' + reserved) for reserved in RESERVED_NAMES)
+
+
+def require_expected_runtime():
+    """Refuse to run kit work on an SDK image other than the one the kit pinned.
+
+    Compose passes the version recorded at init. An empty value (kits created
+    before image pinning) keeps the previous behaviour; kit check warns.
+    """
+    from ariadne_mark.version import sdk_version
+    expected = os.environ.get(EXPECTED_SDK_ENV, '')
+    if expected and expected != sdk_version():
+        raise ValueError(f'This kit expects SDK {expected}, but the running image provides {sdk_version()}. '
+                         'Pin the matching image with ./pin-image.sh IMAGE before running the kit.')
 
 
 def _json(path):
@@ -46,7 +68,7 @@ def _url(value, *, development=False):
     _ = url.port  # Reject invalid port syntax.
     if not development:
         from ariadne_mark.profiles import _public_https
-        if not _public_https(value) or url.hostname.endswith(('.example', '.test', '.invalid', '.example.org', '.example.com')) or url.hostname in {'example.org', 'example.com'}:
+        if not _public_https(value) or reserved_host(url.hostname):
             raise ValueError('Production needs your public HTTPS origin, not a placeholder')
     return value.rstrip('/')
 
@@ -179,12 +201,15 @@ def initialize(directory, *, publisher, system, system_version, development=Fals
         {'source': 'your-final-image.png', 'destination': 'marked-image.png', 'created_at': None},
         {'source': 'your-final-video.mp4', 'destination': 'marked-video.mp4', 'created_at': None,
          'video_profile': 'economy_5s', 'audio_kind': 'none'}]})
-    _write(root / '.env', f'KIT_SDK_IMAGE=ariadne-mark:{sdk_version()}\nKIT_NGINX_IMAGE={NGINX_IMAGE}\n'
+    # The SDK image is pinned by immutable image ID with ./pin-image.sh after a
+    # local build; a tag can silently name another object on a shared host.
+    _write(root / '.env', f'KIT_SDK_VERSION={sdk_version()}\nKIT_SDK_IMAGE=\nKIT_NGINX_IMAGE={NGINX_IMAGE}\n'
         f'KIT_UID={os.getuid()}\nKIT_GID={os.getgid()}\nKIT_BIND_ADDRESS=127.0.0.1\n'
         'KIT_HTTP_PORT=8800\nKIT_HTTPS_PORT=8443\n')
     for name in ['compose.yaml', 'README.md', 'production-egress.yaml']:
         raw = files('ariadne_mark').joinpath('kit_assets', name).read_text()
         _write(root / name, raw)
+    _write(root / 'pin-image.sh', files('ariadne_mark').joinpath('kit_assets', 'pin-image.sh').read_text(), 0o755)
     _write(root / 'nginx.conf', _nginx(kit))
     _write(root / 'kit-proxy.conf', files('ariadne_mark').joinpath('kit_assets', 'kit-proxy.conf').read_text())
     _write(root / '.gitignore', 'private/\nregistry/\nstate/\ninputs/\noutputs/\n.env\n')
@@ -206,7 +231,7 @@ def check(root, *, runtime=False):
     except (ValueError, OSError) as exc:
         return {'status': 'configuration_required', 'errors': [str(exc)], 'legal_determination': 'not_performed'}
     from ariadne_mark.verification.scope import runtime_warnings
-    warnings = runtime_warnings(config['verification_scope'])
+    warnings = runtime_warnings(config['verification_scope']) + _image_warnings(root)
     needed = ['private/provider/identity.json', 'private/provider/private.key',
               'private/provider/certificate.pem', 'private/reports/report.key',
               'private/tls/key.pem', 'private/tls/cert.pem', 'config/issuer-roots.pem', 'config/report.pub', 'registry/assets.sqlite3']
@@ -265,6 +290,20 @@ def check(root, *, runtime=False):
             'default_video_profile': profile['sdk']['video_profile']}
 
 
+def _image_warnings(root):
+    """Report an unpinned SDK image; never inspects Docker from inside the kit."""
+    try:
+        env = dict(line.split('=', 1) for line in (root / '.env').read_text().splitlines() if '=' in line)
+    except OSError:
+        return []
+    image = env.get('KIT_SDK_IMAGE', '')
+    if image.startswith('sha256:') and len(image) == 71 and env.get('KIT_SDK_VERSION'):
+        return []
+    return [{'code': 'sdk_image_not_pinned',
+             'message': 'KIT_SDK_IMAGE is not an immutable image ID with a recorded SDK version. '
+                        'Run ./pin-image.sh IMAGE on the Docker host; a tag can name another image on a shared host.'}]
+
+
 def _inside(root, value):
     if not isinstance(value, str) or not value or Path(value).is_absolute():
         raise ValueError('Batch paths must be relative to inputs/outputs')
@@ -281,6 +320,7 @@ def export_batch(root, batch):
     successful exports remain if a later job fails; there is no batch-wide ACID
     promise. The per-file receipts identify exactly what was committed.
     """
+    require_expected_runtime()
     root = Path(root).resolve(); config, profile = load(root)
     data = _json(batch)
     if (not isinstance(data, dict) or set(data) != {'schema_version', 'jobs'} or type(data['schema_version']) is not int or data['schema_version'] != 1
@@ -340,8 +380,23 @@ def export_batch(root, batch):
     return {'status': 'complete', 'exports': results, 'sdk_reused_per_batch': True}
 
 
-def serve(root):
+def default_bind_host():
+    """Loopback on a host; all interfaces only inside a container (ISS-09).
+
+    A container's own network namespace is not the host's; Compose publishes
+    only the TLS edge. Pass --host explicitly to override either default.
+    """
+    return '0.0.0.0' if any(Path(p).exists() for p in ('/.dockerenv', '/run/.containerenv')) else '127.0.0.1'
+
+
+def serve(root, *, host=None, port=8080):
+    require_expected_runtime()
+    host = host or default_bind_host()
+    if type(port) is not int or not 1 <= port <= 65535:
+        raise ValueError('Port must be 1-65535')
     root = Path(root).resolve(); config, _ = load(root)
+    import sys
+    print(json.dumps({'kind': 'kit_serve', 'host': host, 'port': port}), file=sys.stderr, flush=True)
     from ariadne_mark.isolated_verifier import IsolatedVerifier
     from ariadne_mark.reports import ReportSigner
     from ariadne_mark.server import serve as run_server
@@ -349,7 +404,7 @@ def serve(root):
             tsa_trust_anchors=(root / 'config/tsa-roots.pem') if config['mode'] == 'production' else None,
             threads=config['threads'], timeout=config['verification_timeout'],
             verification_scope=config['verification_scope']) as verifier:
-        run_server(verifier, host='0.0.0.0', port=8080, production=config['mode'] == 'production',
+        run_server(verifier, host=host, port=port, production=config['mode'] == 'production',
             max_upload_mb=config['max_upload_mb'], public_sources=root / 'config/public-sources.json',
             feedback_url=config['verifier_url'] + '/feedback',
             feedback_db=root / 'state/feedback.sqlite', public_manifests=config['public_manifests'],

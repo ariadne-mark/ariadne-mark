@@ -1,6 +1,9 @@
 x-sdk: &sdk
-  image: ${KIT_SDK_IMAGE:?Build the qualified SDK image and set KIT_SDK_IMAGE}
+  # Immutable image ID written by ./pin-image.sh (never a mutable tag).
+  image: ${KIT_SDK_IMAGE:?Build the SDK image, then pin it with ./pin-image.sh IMAGE}
   pull_policy: never
+  environment:
+    ARIADNE_KIT_EXPECTED_SDK: ${KIT_SDK_VERSION:-}
   user: "${KIT_UID:?Run kit init}:${KIT_GID:?Run kit init}"
   read_only: true
   tmpfs: ["/tmp:rw,noexec,nosuid,size=512m,mode=1777"]
@@ -38,7 +41,8 @@ services:
   verifier:
     <<: *sdk
     restart: unless-stopped
-    command: ["kit", "serve", "/kit"]
+    # Container-internal network only; the TLS edge is the published entry.
+    command: ["kit", "serve", "/kit", "--host", "0.0.0.0", "--port", "8080"]
     volumes:
       - ./config:/kit/config:ro
       - ./registry:/kit/registry:ro
