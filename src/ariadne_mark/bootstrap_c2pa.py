@@ -9,6 +9,7 @@ import ctypes
 import hashlib
 import importlib
 import json
+import os
 from pathlib import Path
 import platform
 import shutil
@@ -64,6 +65,15 @@ def extract_source(archive, destination):
 def run(*args, cwd=None):
     subprocess.run([sys.executable, *map(str, args)], cwd=cwd, check=True)
 
+def _default_cache():
+    """Same rule as ariadne_mark.paths; inlined because the Docker build runs
+    this file standalone, before the package is installed."""
+    xdg = os.environ.get('XDG_CACHE_HOME', '')
+    preferred = (Path(xdg) if xdg and Path(xdg).is_absolute() else Path.home() / '.cache') / 'ariadne-mark/c2pa-bootstrap-v1'
+    legacy = Path.home() / '.cache/ariadne-mark/c2pa-bootstrap-v1'
+    return legacy if preferred != legacy and not preferred.exists() and legacy.exists() else preferred
+
+
 def install(*, allow_system=False, cache=None, wheel_dir=None):
     if platform.system() != 'Linux' or platform.machine().lower() not in {'x86_64', 'amd64'}:
         raise RuntimeError('Qualified bootstrap is Linux x86-64; use the linux/amd64 Docker recipe')
@@ -74,7 +84,7 @@ def install(*, allow_system=False, cache=None, wheel_dir=None):
     lock = ROOT / 'bootstrap-linux-py312.lock'
     if digest(lock) != MANIFEST['bootstrap_lock_sha256']:
         raise ValueError('Bootstrap requirements lock checksum mismatch')
-    cache = Path(cache or Path.home() / '.cache/ariadne-mark/c2pa-bootstrap-v1').resolve()
+    cache = Path(cache or _default_cache()).resolve()
     cache.mkdir(parents=True, exist_ok=True)
     # Exact wheel digests protect the initial update even on an older TLS store.
     wheels = [download(MANIFEST[key], cache) for key in ['pip', 'certifi']]

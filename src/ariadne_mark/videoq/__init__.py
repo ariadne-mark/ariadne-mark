@@ -14,7 +14,11 @@ PATCHED = 'b9a1c7035bed4c35a5a0e61ff423b4fae34781634a565b56d14dfc92e2927b31'
 STDERR_TAIL = 4096  # bytes of worker stderr kept in memory for last_error
 
 def data_dir():
-    return Path(os.environ.get('ARIADNE_VIDEO_DATA', str(Path.home() / '.cache/ariadne-mark/video-v1')))
+    explicit = os.environ.get('ARIADNE_VIDEO_DATA')
+    if explicit:
+        return Path(explicit)
+    from ariadne_mark.paths import cache_path
+    return cache_path('video-v1')
 
 def digest(p):
     h = hashlib.sha256()
@@ -81,11 +85,13 @@ def fetch_models():
     p = runtime / 'node_modules/@variax-ai/video-watermark/dist/index.cjs'
     ort = runtime / 'node_modules/onnxruntime-node/package.json'
     if not installation_matches(d) or not p.exists() or digest(p) != PATCHED or (not ort.is_file()) or (json.loads(ort.read_text()).get('version') != '1.23.2'):
-        env = {**os.environ, 'ONNXRUNTIME_NODE_INSTALL_CUDA': 'skip'}
-        try:
-            subprocess.run(['npm', 'ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], cwd=runtime, env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
-        except (subprocess.SubprocessError, OSError) as exc:
-            raise MissingModel('Could not provision CPU video runtime; check Node/npm and network access') from exc
+        # A throwaway npm cache: provisioning never writes ~/.npm (ISS-08).
+        with tempfile.TemporaryDirectory(prefix='.npm-cache-', dir=d) as npm_cache:
+            env = {**os.environ, 'ONNXRUNTIME_NODE_INSTALL_CUDA': 'skip', 'npm_config_cache': npm_cache}
+            try:
+                subprocess.run(['npm', 'ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], cwd=runtime, env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
+            except (subprocess.SubprocessError, OSError) as exc:
+                raise MissingModel('Could not provision CPU video runtime; check Node/npm and network access') from exc
         if digest(p) != ORIGINAL:
             raise MissingModel('Unexpected upstream video runtime; refusing to patch')
         s = p.read_text()
