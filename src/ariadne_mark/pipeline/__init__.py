@@ -191,6 +191,13 @@ class SDK:
             if video_profile is not None and configured is not None and video_profile != configured:
                 raise ValueError("video_profile conflicts with the selected product profile")
             video_engine = self._select_video_marker(video_profile or configured)
+        # Never issue a mark that this SDK's own verification scope would not
+        # detect (Code Sub-measure 2.1.1): refuse before touching media (P-03).
+        from ariadne_mark.verification.scope import media_scope
+        scheme = getattr(video_engine if video else self.marker, "algorithm", "adobe.trustmark.Q.bch5")
+        if scheme not in media_scope(self.verification_scope, video=video):
+            raise ValueError(f"Encoder scheme {scheme} is outside this SDK's verification_scope; "
+                             "widen the scope or use an encoder its verifier covers")
         if audio_kind not in {"original", "synthetic", "unknown", "none"}:
             raise ValueError("audio_kind must be original, synthetic, unknown or none")
         receipt_path = destination.with_name(destination.name + ".receipt.json")

@@ -131,3 +131,37 @@ class Projections(unittest.TestCase):
         self.assertEqual(public['signed_scheme_unchecked'], VS)
         self.assertIn('supplemental_completed_schemes', public)
 
+
+class ExportScope(unittest.TestCase):
+    def test_mark_refuses_encoder_outside_own_verification_scope(self):
+        # Review P-03: a VideoSeal encoder in current scope produced marks its own verifier cannot detect.
+        from ariadne_mark.pipeline import SDK
+        from ariadne_mark.provenance import MediaKind
+        from ariadne_mark.signing import SigningIdentity
+        from tests.provenance.test_records import example_record
+
+        class FakeVideoSeal:
+            algorithm = VS
+            profile = 'legacy'
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder) / 'in.mp4'
+            source.write_bytes(b'not decoded before refusal')
+            sdk = SDK(identity=SigningIdentity(Path('c'), Path('k'), True), video_marker=FakeVideoSeal(),
+                      verification_scope='current')
+            with patch.object(SDK, 'check_runtime'), \
+                 patch('ariadne_mark.pipeline.inspect_c2pa', side_effect=AssertionError('media touched')):
+                with self.assertRaisesRegex(ValueError, 'outside this SDK'):
+                    sdk.mark(source, Path(folder) / 'out.mp4', example_record(media_kind=MediaKind.VIDEO))
+            self.assertFalse((Path(folder) / 'out.mp4').exists())
+
+    def test_image_export_needs_python_q_in_scope(self):
+        from ariadne_mark.pipeline import SDK
+        from ariadne_mark.signing import SigningIdentity
+        from tests.provenance.test_records import example_record
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder) / 'in.png'
+            source.write_bytes(b'x')
+            sdk = SDK(identity=SigningIdentity(Path('c'), Path('k'), True), verification_scope=[Q])
+            with patch.object(SDK, 'check_runtime'):
+                with self.assertRaisesRegex(ValueError, 'outside this SDK'):
+                    sdk.mark(source, Path(folder) / 'out.png', example_record())
