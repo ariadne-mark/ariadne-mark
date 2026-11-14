@@ -106,12 +106,22 @@ when available: a negative video-Q result is not a check of the older Python-Q
 MP4 scheme. A signed Python-Q MP4 also requires that historical decoder; provision
 the media runtime. `all` retains legacy VideoSeal and Python-Q video obligations.
 `configured_schemes` records the operator configuration; `declared_schemes` is the
-file-specific obligation, and `completed_schemes` lists completed checks. Missing
-required decoders or expired budgets never become a completed negative.
+file-specific obligation. `completed_schemes` lists completed declared checks only
+(always a subset of `declared_schemes`); a supplemental reader that also finished,
+such as Python-Q on a current-scope MP4, is in `supplemental_completed_schemes`.
+A positive early stop is not a completed negative; the ID is in `watermark.ids`.
+For a declared legacy Python-Q MP4 the documented procedure is five uniformly
+requested positions. Missing required decoders or expired budgets never become a
+completed negative.
 
 Untrusted/development C2PA claims cannot restrict the independent operator scan.
-A trusted non-development issuer may select a signed-scheme path; the reported
-`signed_routing` makes that choice visible. `signed_id_observed` is true on an
+A trusted non-development issuer can only skip *other* legacy schemes: the
+operator's primary scheme (video-Q for MP4, Python-Q for images) is always
+scanned, because a public CA trust store also trusts third-party signers. If the
+trusted claim names a technique outside the operator scope, the primary result
+is kept, `signed_scheme_unchecked` names the claimed technique and a negative
+becomes `not_checked` (`signed_scheme_out_of_operator_scope`). The reported
+`signed_routing` makes the routing visible. `signed_id_observed` is true on an
 actual matching read, false after performed nonmatching observations, and null
 when observation was not established. A partial scan can still have a true value.
 

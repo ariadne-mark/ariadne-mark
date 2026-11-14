@@ -196,13 +196,19 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                            and signed_algorithm in configured_schemes)
     if python_required and signed_algorithm not in declared_schemes:
         declared_schemes = (*declared_schemes, signed_algorithm)
+    # The operator's own primary scheme is never removed by an input claim,
+    # however trusted its issuer: a broad public trust store must not let a
+    # third party switch off the scan that finds the operator's ID (P-01).
+    # A trusted claim may only drop *other* legacy schemes from this file.
+    primary = tuple(s for s in declared_schemes if s == CURRENT_SCHEMES[1]) if video else declared_schemes
     if algorithm in declared_schemes:
-        declared_schemes = (algorithm,)  # Trusted fast-path coverage is this scheme only.
+        declared_schemes = tuple(dict.fromkeys((*primary, algorithm)))
+    signed_out_of_scope = bool(algorithm and algorithm not in declared_schemes)
     watermark = {"status": "not_checked", "reason": "watermark_engine_not_loaded"}
     if marker is not None or video_marker is not None:
         try:
             video = path.suffix.lower() == ".mp4"
-            if algorithm and algorithm not in declared_schemes:
+            if signed_out_of_scope and not primary:
                 raise _NoDecoder("signed_scheme_out_of_operator_scope")
             if video:
                 from ariadne_mark.video import sample_frames
@@ -216,17 +222,20 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
             owned_engines = []
             # Signed engine identifiers route directly; stripped metadata needs
             # explicit new + legacy decoding. Never relabel an old bit layout.
-            if "adobe.trustmark.Q.variax-bch5" in declared_schemes and (algorithm == "adobe.trustmark.Q.variax-bch5" or (algorithm is None and video)):
+            if "adobe.trustmark.Q.variax-bch5" in declared_schemes and video:
                 from ariadne_mark.videoq import VideoWatermarker
                 engine = video_marker if getattr(video_marker, "algorithm", None) == VideoWatermarker.algorithm else VideoWatermarker()
                 candidates.append(engine)
                 if engine is not video_marker:
                     owned_engines.append(engine)
-            if "meta.videoseal.1.0.bch20" in declared_schemes and algorithm in {None, "meta.videoseal.1.0.bch20"} and video:
+            if "meta.videoseal.1.0.bch20" in declared_schemes and video:
                 from ariadne_mark.videoseal import VideoSealWatermarker
                 engine = video_marker if getattr(video_marker, "algorithm", None) == VideoSealWatermarker.algorithm else (legacy_video_marker or VideoSealWatermarker())
                 candidates.append(engine)
-            if "adobe.trustmark.Q.bch5" in configured_schemes and algorithm in {None, "adobe.trustmark.Q.bch5"} and marker is not None:
+            # Python-Q runs when declared, or as an auxiliary reader of the
+            # same payload during an independent (unrouted) scan.
+            if marker is not None and ("adobe.trustmark.Q.bch5" in declared_schemes
+                                       or (algorithm is None and "adobe.trustmark.Q.bch5" in configured_schemes)):
                 candidates.append(marker)
             observations, aggregates, engines, unavailable, attempts = [], [], [], [], []
             search_results, confirmed_engines, auxiliary_unavailable = [], [], []
@@ -319,6 +328,12 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                 watermark.update(status="not_checked", reason="incomplete_engine_coverage")
             elif unavailable:
                 watermark["coverage"] = "partial"
+            if signed_out_of_scope:
+                # The trusted claim names a technique this operator does not
+                # check. Positive primary evidence stays; absence is unknown.
+                watermark["signed_scheme_unchecked"] = algorithm
+                if watermark["status"] == "not_found":
+                    watermark.update(status="not_checked", reason="signed_scheme_out_of_operator_scope")
         except _NoDecoder as exc:
             watermark = {"status": "not_checked", "reason": exc.reason,
                          **({"signed_algorithm": algorithm} if algorithm else {})}
@@ -327,10 +342,15 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
     watermark["configured_schemes"] = list(configured_schemes)
     watermark["declared_schemes"] = list(declared_schemes)
     watermark["signed_routing"] = "trusted_issuer" if algorithm else "independent_operator_scan"
-    # A list of actually completed checks, not merely configured engines.
-    watermark["completed_schemes"] = sorted({p["algorithm"] for p in watermark.get("attempts", [])
+    # Completed checks, not merely configured engines. A declared obligation is
+    # reported separately from a supplemental reader of the same payload, so a
+    # completed list never contradicts out_of_operator_scope (P-02). A positive
+    # early stop is not a completed negative; its evidence is in ``ids``.
+    completed = {p["algorithm"] for p in watermark.get("attempts", [])
         if p.get("status") not in {"not_checked", "single_observation"}
-        and p.get("samples") and (not p.get("search") or p["search"].get("file_exhausted"))})
+        and p.get("samples") and (not p.get("search") or p["search"].get("file_exhausted"))}
+    watermark["completed_schemes"] = sorted(completed & set(declared_schemes))
+    watermark["supplemental_completed_schemes"] = sorted(completed - set(declared_schemes))
     watermark["out_of_operator_scope"] = [s for s in ALL_SCHEMES if s not in declared_schemes]
     if isinstance(watermark.get("evidence_scope"), dict):
         watermark["evidence_scope"].update(declared_schemes=list(declared_schemes),
