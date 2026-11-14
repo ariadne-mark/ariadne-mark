@@ -38,3 +38,39 @@ The public verifier has one inference slot and no queue; upload bounds and
 inference bounds are separate. Negative scans can be expensive. Size public
 capacity from actual workloads, and keep keys/registry permissions isolated.
 See [operations](verifier.md) and [production onboarding](production-onboarding.md).
+
+## Separate export and verification
+
+In the current candidate, one SDK's video presets share one Node worker and
+one lock. Both an entire export and a video scan serialize on it. A verify call
+may wait for an export before its scan budget starts; that wait is not bounded
+by `max_seconds`. There is no SDK lock-queue SLA or automatic busy timeout.
+
+Use distinct application processes, each constructing and closing its own SDK
+after process startup. The exporter process has signing credentials and a
+writeable registry; the verifier process has no signing key and only the
+read-only registry access required by the deployment kit. Do not pass a live
+SDK/worker across `fork`. Reuse the instance within each process.
+
+```python
+# exporter process: construct after process startup, keep for queued exports
+from ariadne_mark.pipeline import SDK
+
+with SDK(identity=identity, registry=writer_registry,
+         verification_scope="current") as exporter:
+    receipt = exporter.mark(source, destination, record)
+```
+
+```python
+# different process: no exporter identity, independent worker and scan budget
+from ariadne_mark.pipeline import SDK
+
+with SDK(registry=reader_registry, verification_scope="current") as verifier:
+    report = verifier.verify(downloaded_asset)
+```
+
+The snippets assume actual paths, records and appropriately opened registry
+objects. For runnable process separation use the [deployment kit](deployment-kit.md)
+or [stock product example](../../examples/stock_product/README.md). Separate
+workers consume more RAM; measure your own simultaneous workload. Reviewer
+instrumented concurrent timings are not a release throughput benchmark.

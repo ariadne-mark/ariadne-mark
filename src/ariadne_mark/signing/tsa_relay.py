@@ -28,6 +28,8 @@ QUERY_TYPE = 'application/timestamp-query'
 REPLY_TYPE = 'application/timestamp-reply'
 MAX_REQUEST = 64 * 1024
 MAX_RESPONSE = 1024 * 1024
+LOCAL_READ_TIMEOUT = 2.0
+MAX_LOCAL_CLIENTS = 4
 
 
 def read_credential(path):
@@ -58,8 +60,8 @@ class TimestampRelay:
     """Loopback relay for one signing operation (context manager).
 
     Binds an ephemeral port on 127.0.0.1 and accepts only POSTs to a random
-    path. This is a local capability, not isolation from a privileged process
-    on the same host. It exists only for the signing operation.
+    path. This is a local capability, not isolation from other processes on
+    the same host. It exists only for the signing operation.
     """
 
     def __init__(self, upstream, credential_file, *, timeout=10.0, ca_bundle=None, development=False):
@@ -76,6 +78,9 @@ class TimestampRelay:
         self._tls = ssl.create_default_context(cafile=str(ca_bundle) if ca_bundle else None)
         self._path = '/' + secrets.token_urlsafe(24)
         self._server = None
+        self._closing = threading.Event()
+        self._upstream_lock = threading.Lock()
+        self._upstream_stops = set()
         self.calls = []
 
     def __repr__(self):
@@ -104,6 +109,10 @@ class TimestampRelay:
         deadline = threading.Timer(self._timeout, stop)
         deadline.daemon = True
         start = time.monotonic()
+        with self._upstream_lock:
+            if self._closing.is_set():
+                return 503, b''
+            self._upstream_stops.add(stop)
         deadline.start()
         try:
             connection.request('POST', url.path or '/', body=body,
@@ -125,6 +134,8 @@ class TimestampRelay:
         finally:
             deadline.cancel()
             connection.close()
+            with self._upstream_lock:
+                self._upstream_stops.discard(stop)
         if expired.is_set() or time.monotonic() - start >= self._timeout:
             status, data = 504, b''
         self.calls.append({'upstream_status': status, 'ms': round((time.monotonic() - start) * 1000, 1)})
@@ -132,8 +143,17 @@ class TimestampRelay:
 
     def __enter__(self):
         relay = self
+        self._closing.clear()
 
         class Handler(BaseHTTPRequestHandler):
+            def handle(self):
+                try:
+                    super().handle()
+                except (OSError, TimeoutError):
+                    # A deadline or a disconnected local client is expected;
+                    # never print a traceback containing request diagnostics.
+                    pass
+
             def log_message(self, *args):
                 pass
 
@@ -147,6 +167,10 @@ class TimestampRelay:
                 body = self.rfile.read(int(length))
                 if len(body) != int(length):
                     self.send_error(400); return
+                # The absolute local deadline covers request line, headers and
+                # body together. Only a complete valid query gets upstream time.
+                if not self.server.query_received(self.connection):
+                    return
                 status, data = relay._forward(body)
                 if status != 200:
                     self.send_error(status); return
@@ -160,10 +184,78 @@ class TimestampRelay:
                 self.send_error(405)
 
         class Server(HTTPServer):
+            request_queue_size = MAX_LOCAL_CLIENTS
+
+            def __init__(self, *args):
+                self._slots = threading.BoundedSemaphore(MAX_LOCAL_CLIENTS)
+                self._clients = {}
+                self._clients_lock = threading.Lock()
+                super().__init__(*args)
+
             def get_request(self):
                 sock, address = super().get_request()
-                sock.settimeout(2.0)  # local header/body read cannot hold the operation open
+                sock.settimeout(LOCAL_READ_TIMEOUT)
                 return sock, address
+
+            def process_request(self, sock, address):
+                # Reject overflow instead of allocating unbounded threads or
+                # waiting on a semaphore in the accepting thread.
+                if not self._slots.acquire(blocking=False):
+                    self.shutdown_request(sock)
+                    return
+                def expire():
+                    with self._clients_lock:
+                        if state['received']:
+                            return
+                        state['expired'] = True
+                        try:
+                            sock.shutdown(socket.SHUT_RDWR)
+                        except OSError:
+                            pass
+                def run():
+                    try:
+                        self.finish_request(sock, address)
+                    except (OSError, TimeoutError):
+                        pass
+                    finally:
+                        timer.cancel()
+                        self.shutdown_request(sock)
+                        with self._clients_lock:
+                            self._clients.pop(sock, None)
+                        self._slots.release()
+                timer = threading.Timer(LOCAL_READ_TIMEOUT, expire)
+                timer.daemon = True
+                thread = threading.Thread(target=run, name='ariadne-tsa-client', daemon=True)
+                state = {'timer': timer, 'thread': thread, 'expired': False,
+                         'received': False, 'deadline': time.monotonic() + LOCAL_READ_TIMEOUT}
+                with self._clients_lock:
+                    self._clients[sock] = state
+                timer.start()
+                thread.start()
+
+            def query_received(self, sock):
+                with self._clients_lock:
+                    state = self._clients.get(sock)
+                    if state is None or state['expired'] or time.monotonic() >= state['deadline']:
+                        return False
+                    state['received'] = True
+                    state['timer'].cancel()
+                    # The upstream total deadline now owns the request budget.
+                    sock.settimeout(relay._timeout + LOCAL_READ_TIMEOUT)
+                    return True
+
+            def close_clients(self):
+                with self._clients_lock:
+                    clients = list(self._clients.items())
+                    for sock, state in clients:
+                        state['timer'].cancel()
+                        try:
+                            sock.shutdown(socket.SHUT_RDWR)
+                        except OSError:
+                            pass
+                end = time.monotonic() + 3.0
+                for _, state in clients:
+                    state['thread'].join(timeout=max(0.0, end - time.monotonic()))
 
         self._server = Server(('127.0.0.1', 0), Handler)
         self._thread = threading.Thread(target=lambda: self._server.serve_forever(poll_interval=.05),
@@ -173,7 +265,12 @@ class TimestampRelay:
 
     def __exit__(self, *exc):
         if self._server is not None:
+            self._closing.set()
             self._server.shutdown()
+            with self._upstream_lock:
+                for stop in self._upstream_stops:
+                    stop()
+            self._server.close_clients()
             self._server.server_close()
             self._thread.join(timeout=3)
             self._server = None

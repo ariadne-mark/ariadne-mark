@@ -136,9 +136,15 @@ result = sdk.verify(Path("output.mp4"))
 sdk.close()
 ```
 
-Each SDK owns lazy persistent workers for the profiles it actually uses. Create one SDK per product worker and
-reuse it. Shared-thread exports serialize access to the encoder and isolate
-per-export caches; start separate SDKs in separate processes for parallel jobs.
+Each SDK owns one lazy persistent Node worker shared by its video profiles.
+Create one SDK per application process after fork and reuse it. Export and video
+verification on that SDK acquire the same worker lock. The lock is held for an
+entire export or scan, with isolated per-export caches. Waiting for that lock is
+outside the scan's own time budget and currently has no separate timeout.
+Do not share an exporter SDK with a latency-sensitive public verifier. Run the
+verifier in a separate process with its own SDK; the deployment kit and stock
+product example already use this topology. Additional processes cost memory.
+See [CPU deployment](../operations/cpu-deployment.md#separate-export-and-verification).
 After a worker failure, the export fails before publication; a later export
 can create a fresh worker. Receipts contain model-call count, profile, total
 processing seconds, signed-file SHA-256 and verification attempts.

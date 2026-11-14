@@ -21,7 +21,7 @@ def trusted(alg, token=B):
 
 
 class TrustedRouting(unittest.TestCase):
-    def probe(self, claim, *, primary='positive', scope='current', video=True):
+    def probe(self, claim, *, primary='positive', scope='current', video=True, legacy='negative', marker_loaded=True):
         calls = []
 
         class Video:
@@ -45,7 +45,8 @@ class TrustedRouting(unittest.TestCase):
             algorithm = VS
             def decode_frames(self, frames):
                 calls.append(VS)
-                return [{'time': t, 'token': None} for _, t in frames], None
+                if legacy=='missing':raise ImportError('legacy missing')
+                return [{'time': t, 'token': A if legacy=='positive' else None} for _, t in frames], None
 
         with tempfile.TemporaryDirectory() as folder:
             p = Path(folder) / ('x.mp4' if video else 'x.png')
@@ -53,7 +54,7 @@ class TrustedRouting(unittest.TestCase):
             with patch('ariadne_mark.verification.media.inspect_c2pa', return_value=claim), \
                  patch('ariadne_mark.video.sample_frames', return_value=[(object(), 0.), (object(), 1.)]), \
                  patch('ariadne_mark.verification.media.open_image', return_value=object()):
-                r = verify_file(p, marker=Python(), video_marker=Video(), legacy_video_marker=Legacy(),
+                r = verify_file(p, marker=Python() if marker_loaded else None, video_marker=Video(), legacy_video_marker=Legacy(),
                                 verification_scope=scope)
         return r, calls
 
@@ -83,14 +84,33 @@ class TrustedRouting(unittest.TestCase):
 
     def test_trusted_legacy_claim_in_all_scope_scans_primary_and_claimed(self):
         r, calls = self.probe(trusted(VS), scope='all', primary='negative')
-        self.assertEqual(sorted(set(calls)), sorted({Q, VS}))
-        self.assertNotIn(P, calls)  # only *other* legacy schemes may be skipped
-        self.assertEqual(r['watermark']['declared_schemes'], [Q, VS])
+        self.assertEqual(sorted(set(calls)), sorted({Q, P, VS}))
+        self.assertEqual(r['watermark']['declared_schemes'], [P, Q, VS])
 
-    def test_trusted_primary_claim_keeps_the_fast_path(self):
+    def test_trusted_primary_claim_cannot_narrow_explicit_all(self):
         r, calls = self.probe(trusted(Q, A), scope='all')
-        self.assertEqual(calls, [Q])
-        self.assertEqual(r['watermark']['declared_schemes'], [Q])
+        self.assertEqual(set(calls), {P,Q,VS})
+        self.assertEqual(r['watermark']['declared_schemes'], [P,Q,VS])
+
+    def test_trusted_primary_claim_preserves_legacy_positive(self):
+        r,calls=self.probe(trusted(Q,B),scope='all',primary='negative',legacy='positive')
+        self.assertEqual(r['watermark']['token'],A)
+        self.assertTrue(r['token_mismatch'])
+        self.assertIn(VS,calls)
+
+    def test_trusted_primary_claim_missing_legacy_is_not_negative(self):
+        for marker_loaded,legacy,expected in [(True,'missing',VS),(False,'negative',P)]:
+            with self.subTest(expected=expected):
+                r,_=self.probe(trusted(Q),scope='all',primary='negative',legacy=legacy,marker_loaded=marker_loaded)
+                w=r['watermark']
+                self.assertEqual(w['status'],'not_checked')
+                self.assertIn(expected,[v['algorithm'] for v in w['unavailable_engines']])
+                self.assertTrue(set(w['completed_schemes']) <= set(w['declared_schemes']))
+
+    def test_explicit_custom_scope_is_not_narrowed(self):
+        r,calls=self.probe(trusted(Q),scope=[Q,VS],primary='negative',legacy='positive')
+        self.assertEqual(r['watermark']['declared_schemes'],[Q,VS])
+        self.assertEqual(set(calls),{Q,VS})
 
     def test_missing_primary_under_trusted_claim_is_incomplete(self):
         r, calls = self.probe(trusted(P), primary='missing')

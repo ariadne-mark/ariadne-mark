@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.3a4 (candidate, not published)
+
+- Bound authenticated TSA relay to four concurrent local handlers and a two-second absolute header/body deadline; close active clients on shutdown and suppress expected disconnect tracebacks.
+- Preserve explicit all/custom verification scope under trusted input claims, including unavailable historical-decoder reporting.
+- Document shared exporter/verifier lock waits, separate-process operation, local image/RECORD identity and external resolver discovery boundaries.
+- Keep Economy5s default, Economy2s, Resilient, payloads, strength, publication gates and synthetic-audio restrictions unchanged.
+
 ## 0.7.3a3 (candidate, not published)
 
 - Complete authenticated RFC 3161 timestamps on the unchanged pinned C2PA pair via a per-operation loopback relay and owner-only bearer file.

@@ -187,7 +187,7 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
     declared_schemes = media_scope(configured_schemes, video=video)
     signed_algorithm = c2pa.get("watermark_algorithm") if c2pa["status"] == "verified_claim" else None
     # An input signer is not an authority over the operator's independent scan.
-    # Only an explicitly trusted, non-development issuer may select a fast path.
+    # Trust authenticates a claim, not permission to narrow declared checks.
     trusted_route = c2pa.get("issuer_trust") == "trusted" and not c2pa.get("development_identity")
     algorithm = signed_algorithm if trusted_route else None
     # A known signed Python-Q MP4 also requires its historical decoder. For an
@@ -199,10 +199,8 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
     # The operator's own primary scheme is never removed by an input claim,
     # however trusted its issuer: a broad public trust store must not let a
     # third party switch off the scan that finds the operator's ID (P-01).
-    # A trusted claim may only drop *other* legacy schemes from this file.
+    # Explicit all/custom scope keeps every declared historical obligation.
     primary = tuple(s for s in declared_schemes if s == CURRENT_SCHEMES[1]) if video else declared_schemes
-    if algorithm in declared_schemes:
-        declared_schemes = tuple(dict.fromkeys((*primary, algorithm)))
     signed_out_of_scope = bool(algorithm and algorithm not in declared_schemes)
     watermark = {"status": "not_checked", "reason": "watermark_engine_not_loaded"}
     if marker is not None or video_marker is not None:
@@ -307,7 +305,7 @@ def verify_file(path: Path, *, marker=None, video_marker=None, legacy_video_mark
                         close = getattr(engine, "close", None)
                         if close:
                             close()
-            if "adobe.trustmark.Q.bch5" in declared_schemes and marker is None and algorithm in {None, "adobe.trustmark.Q.bch5"}:
+            if "adobe.trustmark.Q.bch5" in declared_schemes and marker is None:
                 unavailable.append({"algorithm": "adobe.trustmark.Q.bch5", "reason": "DecoderNotLoaded"})
             watermark = summarize_watermarks(observations, aggregates, video=video)
             if search_results and any(r["search"]["reason"] == "two_concordant_ids" for r in search_results):

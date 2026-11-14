@@ -57,8 +57,8 @@ class Routing(unittest.TestCase):
         r,calls=self.probe({'status':'verified_claim','issuer_trust':'trusted','development_identity':True,'watermark_algorithm':VS,'token':B})
         self.assertIn(Q,calls);self.assertEqual(r['watermark']['token'],A)
 
-    def test_trusted_fast_path_declares_only_its_actual_scheme(self):
-        r,calls=self.probe({'status':'verified_claim','issuer_trust':'trusted','watermark_algorithm':Q,'token':A},scope='all')
+    def test_trusted_current_scope_declares_only_primary_obligation(self):
+        r,calls=self.probe({'status':'verified_claim','issuer_trust':'trusted','watermark_algorithm':Q,'token':A},scope='current')
         self.assertEqual(calls,[Q]);self.assertEqual(r['watermark']['declared_schemes'],[Q])
 
     def test_missing_primary_and_successful_auxiliary_negative_is_incomplete(self):

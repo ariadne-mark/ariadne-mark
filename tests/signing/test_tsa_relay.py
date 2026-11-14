@@ -2,11 +2,13 @@
 import contextlib
 import io
 import os
+import socket
 from pathlib import Path
 import tempfile
 import threading
 import time
 import unittest
+from unittest.mock import patch
 import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -105,3 +107,76 @@ class RelayTests(unittest.TestCase):
             with self.assertRaises(ValueError):TimestampRelay(url,self.path)
         for seconds in [0,26,True,float('nan')]:
             with self.assertRaises(ValueError):TimestampRelay(self.upstream,self.path,timeout=seconds,development=True)
+
+    def test_local_header_and_body_drips_do_not_block_real_query(self):
+        # Every byte arrives within the inactivity timeout. Only a total
+        # deadline prevents indefinite slow-client occupation (review Q-01).
+        for phase in ['headers', 'body']:
+            with self.subTest(phase=phase), patch('ariadne_mark.signing.tsa_relay.LOCAL_READ_TIMEOUT', .6):
+                with TimestampRelay(self.upstream,self.path,development=True) as relay:
+                    sock=socket.create_connection(('127.0.0.1',relay._server.server_port),timeout=2)
+                    self.addCleanup(sock.close)
+                    initial=b'POST /unknown HTTP/1.0\r\nX-Slow: '
+                    if phase=='body':
+                        initial=(f'POST {relay._path} HTTP/1.0\r\nContent-Type: {QUERY_TYPE}\r\n'
+                                 'Content-Length: 100\r\n\r\n').encode()
+                    sock.sendall(initial)
+                    stopped=threading.Event()
+                    def drip():
+                        try:
+                            while not stopped.wait(.1):sock.sendall(b'x')
+                        except OSError:pass
+                    sender=threading.Thread(target=drip,daemon=True);sender.start()
+                    try:
+                        start=time.monotonic()
+                        self.assertEqual(self.request(relay.url)[0],200)
+                        self.assertLess(time.monotonic()-start,.55)
+                        # A slow client must be disconnected despite continued
+                        # bytes, and the next legitimate request must still work.
+                        self.assertEqual(sock.recv(4096),b'')
+                        self.assertLess(time.monotonic()-start,1.5)
+                        self.assertEqual(self.request(relay.url)[0],200)
+                    finally:
+                        stopped.set();sender.join(1);sock.close()
+
+    def test_local_capacity_is_bounded_and_shutdown_reclaims_clients(self):
+        from ariadne_mark.signing.tsa_relay import MAX_LOCAL_CLIENTS
+        captured=io.StringIO()
+        with contextlib.redirect_stderr(captured):
+            relay=TimestampRelay(self.upstream,self.path,development=True)
+            with relay:
+                sockets=[]
+                for _ in range(MAX_LOCAL_CLIENTS):
+                    sock=socket.create_connection(('127.0.0.1',relay._server.server_port),timeout=2)
+                    sockets.append(sock);self.addCleanup(sock.close)
+                    sock.sendall(b'POST / HTTP/1.0\r\nX: ')
+                end=time.monotonic()+1
+                while len(relay._server._clients)<MAX_LOCAL_CLIENTS and time.monotonic()<end:time.sleep(.01)
+                self.assertEqual(len(relay._server._clients),MAX_LOCAL_CLIENTS)
+                overflow=socket.create_connection(('127.0.0.1',relay._server.server_port),timeout=1)
+                try:self.assertEqual(overflow.recv(1),b'')
+                finally:overflow.close()
+                threads=[s['thread'] for s in relay._server._clients.values()]
+                start=time.monotonic()
+            self.assertLess(time.monotonic()-start,1.5)
+            self.assertTrue(all(not t.is_alive() for t in threads))
+            for sock in sockets:sock.close()
+        self.assertEqual(captured.getvalue(),'')
+
+    def test_disconnected_client_is_quiet(self):
+        captured=io.StringIO()
+        with contextlib.redirect_stderr(captured),TimestampRelay(self.upstream,self.path,development=True) as relay:
+            entered=threading.Event();release=threading.Event()
+            def delayed(body):
+                entered.set();release.wait(1)
+                return 200,b'response'
+            with patch.object(relay,'_forward',side_effect=delayed):
+                sock=socket.create_connection(('127.0.0.1',relay._server.server_port),timeout=2)
+                sock.sendall((f'POST {relay._path} HTTP/1.0\r\nContent-Type: {QUERY_TYPE}\r\n'
+                              'Content-Length: 1\r\n\r\nx').encode())
+                self.assertTrue(entered.wait(1))
+                sock.shutdown(socket.SHUT_RDWR);sock.close();release.set()
+                end=time.monotonic()+1
+                while relay._server._clients and time.monotonic()<end:time.sleep(.01)
+                self.assertEqual(relay._server._clients,{})
+        self.assertNotIn('Traceback',captured.getvalue())

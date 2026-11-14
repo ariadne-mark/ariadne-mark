@@ -1,6 +1,6 @@
 # Python CLI and verification reference
 
-SDK **0.7.3a3 candidate** · documentation updated **2026-11-14**.
+SDK **0.7.3a4 candidate** · documentation updated **2026-11-14**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.
@@ -114,11 +114,13 @@ For a declared legacy Python-Q MP4 the documented procedure is five uniformly
 requested positions. Missing required decoders or expired budgets never become a
 completed negative.
 
-Untrusted/development C2PA claims cannot restrict the independent operator scan.
-A trusted non-development issuer can only skip *other* legacy schemes: the
-operator's primary scheme (video-Q for MP4, Python-Q for images) is always
-scanned, because a public CA trust store also trusts third-party signers. If the
-trusted claim names a technique outside the operator scope, the primary result
+No input C2PA claim, including a trusted non-development issuer's claim, can
+narrow the operator's declared checks. Explicit `all` retains every historical
+scheme for that media; a custom list also retains its obligations. A broad public
+CA trust store does not authorize third-party signers to skip local history.
+Missing historical decoders are reported as incomplete coverage, even if the
+trusted claim names a current algorithm. If the trusted claim names a technique
+outside the operator scope, the primary result
 is kept, `signed_scheme_unchecked` names the claimed technique and a negative
 becomes `not_checked` (`signed_scheme_out_of_operator_scope`). The reported
 `signed_routing` makes the routing visible. `signed_id_observed` is true on an

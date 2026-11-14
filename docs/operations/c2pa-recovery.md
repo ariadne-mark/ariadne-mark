@@ -12,6 +12,11 @@ cross-vendor discovery. Before interoperability enrollment, confirm the owned
 namespace, stable public endpoint, contact and informational URL and submit an
 algorithm-list request. No enrollment or external agreement is made by the SDK.
 
+A stripped asset's opaque token does not identify a per-operator endpoint.
+Algorithm-list enrollment and resolver discovery are separate. See the
+[production discovery acceptance](resolver-discovery.md) before claiming that
+an unrelated verifier can locate the correct registry.
+
 ## Local storage and recovery
 
 When a registry is configured, final native `application/c2pa` bytes and their

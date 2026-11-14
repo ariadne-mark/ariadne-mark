@@ -4,16 +4,16 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer-alpha candidate · 0.7.3a3 (not yet published).** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer-alpha candidate · 0.7.3a4 (not yet published).** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 [Documentation hub](docs/index.md) · [EU guide](docs/compliance/eu-ai-act.md) ·
 [California guide](docs/compliance/california.md) · [Test protocols and evidence](docs/benchmarks/protocols.md)
 
 ## Candidate and previous published release
 
-This checkout contains the schema-2 candidate, **0.7.3a3**. Its installation and
+This checkout contains the schema-2 candidate, **0.7.3a4**. Its installation and
 verification-scope changes are described in [migration and known issues](docs/operations/release-0.7.3a0.md).
-For the latest routing and result semantics see [R4 changes](docs/operations/release-0.7.3a1.md) and [0.7.3a3 adoption changes](docs/operations/release-0.7.3a3.md).
+For the latest routing and result semantics see [R4 changes](docs/operations/release-0.7.3a1.md) and [0.7.3a4 review fixes](docs/operations/release-0.7.3a4.md).
 Use the wheel built from this checkout for candidate review. Do not overwrite
 the older published artifact. The release link below is the previous 0.7.2a1
 baseline, not this candidate.
@@ -40,7 +40,7 @@ bash FIRST_EXPORT.sh
 ## Quick start with Docker
 
 ```sh
-# From this reviewed 0.7.3a3 source checkout; candidate is not published yet.
+# From this reviewed 0.7.3a4 source checkout; candidate is not published yet.
 # --iidfile records the immutable image ID; no shared tag is created or moved.
 docker build --platform linux/amd64 --iidfile ariadne-image.id .
 IMAGE=$(cat ariadne-image.id)
@@ -96,7 +96,7 @@ The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free
 python3.12 -m venv .venv
 . .venv/bin/activate
 # Use the downloaded wheel, or use: python -m pip install --no-deps .
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a3-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a4-py3-none-any.whl
 # Explicit setup installs the pinned C2PA pair and CPU dependencies, then models.
 # FFmpeg/ffprobe and Node.js/npm must already be installed.
 ariadne setup media --fetch-models

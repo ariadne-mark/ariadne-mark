@@ -1,6 +1,6 @@
 # EU voluntary Code implementation map
 
-SDK **0.7.3a3 candidate** · baseline legal-source review **2026-11-10**.
+SDK **0.7.3a4 candidate** · baseline legal-source review **2026-11-10**.
 
 The source review date and dated evidence below remain historical; this header
 is not a new legal clearance or candidate qualification.

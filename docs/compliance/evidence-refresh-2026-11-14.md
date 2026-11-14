@@ -1,6 +1,6 @@
 # Legal and evidence refresh: 14 November 2026
 
-SDK **0.7.3a3 candidate**. This supplements the dated source review and
+SDK **0.7.3a4 candidate**. This supplements the dated source review and
 [requirements matrix](requirements-matrix.md), without certifying a preset
 or turning declared operator settings into verified facts.
 

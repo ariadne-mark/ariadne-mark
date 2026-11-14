@@ -13,8 +13,8 @@ Use the source archive and wheel from the same release manifest. The source
 archive includes Dockerfile, dependency locks, kit assets and test scripts.
 
 ```sh
-tar -xzf ariadne_mark-0.7.3a3.tar.gz
-cd ariadne_mark-0.7.3a3
+tar -xzf ariadne_mark-0.7.3a4.tar.gz
+cd ariadne_mark-0.7.3a4
 docker build --platform linux/amd64 --iidfile ariadne-image.id .
 IMAGE=$(cat ariadne-image.id)
 mkdir -p deployments
@@ -36,10 +36,17 @@ never pulls), asks the image for its SDK version and installed-file digest
 the one recorded by `kit init`. It writes `KIT_SDK_IMAGE=sha256:…` and
 `KIT_SDK_RECORD_SHA256` to `.env`. Compose then uses that ID, and `kit export` /
 `kit serve` refuse to run if the image reports another SDK version. A tag such
-as `ariadne-mark:0.7.3a3` can name a different object on a shared host; kits
+as `ariadne-mark:0.7.3a4` can name a different object on a shared host; kits
 created before pinning keep their tag and `kit check` warns
 `sdk_image_not_pinned`. To pin such a kit, add `KIT_SDK_VERSION=<version>` to
 its `.env` and run the script (copy it from a newly initialized kit).
+
+The local immutable image ID fixes which local object Compose runs. The SDK
+version and `KIT_SDK_RECORD_SHA256` are self-reported inventory, not independent
+proof of origin. Startup checks the version; it does not revalidate that RECORD
+digest or authenticate the image publisher. Verify downloaded wheel/sdist hashes
+against the exact CI release evidence before building. Do not substitute a tag
+or a self-reported digest for artifact provenance.
 
 `kit serve DIRECTORY` binds `127.0.0.1:8080` on a host; inside a container it
 binds `0.0.0.0` (the container's own network; Compose publishes only the TLS

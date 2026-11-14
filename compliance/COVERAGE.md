@@ -1,6 +1,6 @@
 # Implementation and operator coverage
 
-Current code: **0.7.3a3 candidate**. The baseline review below was performed
+Current code: **0.7.3a4 candidate**. The baseline review below was performed
 10 November 2026 against qualified SDK 0.7.2a1; it is not new candidate qualification.
 These 15 records are
 engineering/implementation controls, not 15 statutory duties. A component can

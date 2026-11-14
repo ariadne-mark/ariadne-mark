@@ -1,6 +1,6 @@
 # Configure an authenticated timestamp authority
 
-SDK **0.7.3a3 candidate** · updated **2026-11-14**.
+SDK **0.7.3a4 candidate** · updated **2026-11-14**.
 
 The pinned C2PA pair remains c2pa-python 0.38.3 / native 0.91.11. Its signer
 accepts a TSA URL but cannot attach an authorization header. Ariadne can now
@@ -64,7 +64,15 @@ production upstream endpoints always require HTTPS.
 
 - The relay binds only to `127.0.0.1` on an ephemeral port with an unpredictable
   request path, and is shut down after the signing operation. This is not
-  isolation from a privileged process on the same host.
+  isolation from other processes on the same host. An unprivileged local
+  process can connect to the port; a random path is not host isolation.
+- At most four local clients have handler threads. Excess connections are
+  closed immediately. A two-second absolute deadline covers the request line,
+  headers and complete body together, regardless of byte-by-byte activity.
+  Valid complete requests then use the configured upstream deadline. Shutdown
+  closes active local connections and interrupts established upstream sockets.
+  This bounds one slow client; it does not promise availability under sustained
+  hostile local connection flooding. Isolate the exporter process/host as needed.
 - Requests are bounded to 64 KiB and replies to 1 MiB. Redirects, automatic
   retries and environment proxy routing are disabled. Upstream TLS is verified.
 - The deadline interrupts slow response headers/bodies after connection;
@@ -74,7 +82,12 @@ production upstream endpoints always require HTTPS.
   export. A file created by a failed low-level signing call is removed; SDK
   publication does not write output, a success receipt or a registry row.
 - Public error messages, relay status records and object representations never
-  include the token. Protect host diagnostics and the private file separately.
+  include the token. Expected local disconnects do not print tracebacks.
+  Protect host diagnostics and the private file separately.
+- Credential files must be regular, not symlinks/FIFOs, and have no group/world
+  permission bits. The SDK does not require the file UID to equal the process
+  UID: root-owned/container-mounted secrets may legitimately differ. The host
+  deployment must enforce who can read or replace the secret.
 - A valid HTTPS connection does not establish timestamp-signer trust. Supply
   and independently verify the appropriate `config/tsa-roots.pem` and issuer
   roots. Keep provider, report, TSA-credential and TLS credentials separate.
