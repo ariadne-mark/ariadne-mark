@@ -38,7 +38,9 @@ class ResourceOwnershipTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             file=Path(folder)/'fixture.mp4';file.touch()
             with patch('ariadne_mark.videoq.VideoWatermarker',Temporary),patch('ariadne_mark.video.sample_frames',return_value=[(object(),0.)]),patch('ariadne_mark.verification.media.inspect_c2pa',return_value={'status':'verified_claim','issuer_trust':'trusted','watermark_algorithm':Temporary.algorithm}):
-                verify_file(file,marker=Legacy())
+                # Ownership is tested for this one injected decoder, not an
+                # implicit promise to run every historical payload scheme.
+                verify_file(file,marker=Legacy(),verification_scope=(Temporary.algorithm,))
         self.assertEqual(closed,[True])
     def test_caller_owned_decoder_is_retained(self):
         import tempfile
@@ -51,5 +53,5 @@ class ResourceOwnershipTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             file=Path(folder)/'fixture.mp4';file.touch()
             with patch('ariadne_mark.video.sample_frames',return_value=[(object(),0.)]),patch('ariadne_mark.verification.media.inspect_c2pa',return_value={'status':'verified_claim','issuer_trust':'trusted','watermark_algorithm':Supplied.algorithm}):
-                verify_file(file,video_marker=Supplied())
+                verify_file(file,video_marker=Supplied(),verification_scope=(Supplied.algorithm,))
         self.assertEqual(closed,[])

@@ -299,7 +299,7 @@ class FrameIdentityTests(unittest.TestCase):
             path.write_bytes(b'x')
             with patch('ariadne_mark.video.sample_frames', side_effect=sample), \
                  patch('ariadne_mark.verification.media.inspect_c2pa', return_value={**SIGNED_A, 'issuer_trust': 'trusted', 'watermark_algorithm': Q}):
-                report = verify_file(path, video_marker=Sampled())
+                report = verify_file(path, video_marker=Sampled(), verification_scope=(Q,))
         first, second = sample(None), sample(None, samples=20)
         union = {f.identity['pts'] for f in first + second}
         watermark = report['watermark']

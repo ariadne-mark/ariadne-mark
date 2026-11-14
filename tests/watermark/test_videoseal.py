@@ -92,13 +92,20 @@ class VideoRoutingTests(unittest.TestCase):
         self.assertEqual(result["watermark"]["status"], "not_checked")
         self.assertEqual(result["watermark"]["reason"], "incomplete_engine_coverage")
 
-    def test_signed_videoseal_dispatch_does_not_invoke_legacy_engine(self):
+    def test_signed_videoseal_keeps_all_declared_historical_decoders(self):
         token = "014d123456789abc"
+        reads=[]
         class Video:
             algorithm = "meta.videoseal.1.0.bch20"
             def decode_frames(self, frames): return ([{"time": 0, "token": None}], {"token": token})
         class Legacy:
-            def decode(self, image): raise AssertionError("unnecessary legacy detector")
+            algorithm = "adobe.trustmark.Q.bch5"
+            def decode(self, image):
+                reads.append(True)
+                return None
         result = self.verify({"status": "verified_claim", "issuer_trust": "trusted", "watermark_algorithm": Video.algorithm}, Video(), Legacy())
         self.assertEqual(result["watermark"]["token"], token)
-        self.assertEqual(result["watermark"]["engines_checked"], [Video.algorithm])
+        self.assertEqual(result["watermark"]["engines_checked"], [Video.algorithm,Legacy.algorithm])
+        self.assertEqual(reads,[True])
+        self.assertEqual(set(result["watermark"]["declared_schemes"]),
+                         {Video.algorithm,Legacy.algorithm,"adobe.trustmark.Q.variax-bch5"})

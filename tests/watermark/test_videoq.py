@@ -19,5 +19,5 @@ class NewVideoPolicyTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as folder:
    p=Path(folder)/'fixture.mp4';p.touch()
    with patch('ariadne_mark.video.sample_frames',side_effect=sample),patch('ariadne_mark.verification.media.inspect_c2pa',return_value={'status':'verified_claim','issuer_trust':'trusted','watermark_algorithm':ALGORITHM}):
-    result=verify_file(p,marker=Legacy(),video_marker=New())
+    result=verify_file(p,marker=Legacy(),video_marker=New(),verification_scope=(ALGORITHM,))
   self.assertEqual(sizes,[5,20]);self.assertEqual(result['watermark']['token'],token);self.assertEqual(len(result['watermark']['attempts']),2)
