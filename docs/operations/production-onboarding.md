@@ -1,6 +1,6 @@
 # Prepare your production deployment
 
-SDK **0.7.3a1 candidate** · documentation updated **2026-11-13**.
+SDK **0.7.3a2 candidate** · documentation updated **2026-11-14**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.

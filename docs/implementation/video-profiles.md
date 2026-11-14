@@ -90,8 +90,8 @@ compliance, copyright ownership or truth.
 Use Docker for the complete CPU bundle, including old-format compatibility:
 
 ```sh
-docker build --platform linux/amd64 -t ariadne-mark:local .
-docker run --rm --network none ariadne-mark:local models check
+docker build --platform linux/amd64 --iidfile ariadne-image.id .
+docker run --rm --network none "$(cat ariadne-image.id)" models check
 ```
 
 For a video-only installation, activate a Linux x86-64 / Python 3.12 virtualenv

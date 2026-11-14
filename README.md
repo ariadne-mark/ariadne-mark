@@ -4,16 +4,16 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Developer-alpha candidate · 0.7.3a1 (not yet published).** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Developer-alpha candidate · 0.7.3a2 (not yet published).** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 [Documentation hub](docs/index.md) · [EU guide](docs/compliance/eu-ai-act.md) ·
 [California guide](docs/compliance/california.md) · [Test protocols and evidence](docs/benchmarks/protocols.md)
 
 ## Candidate and previous published release
 
-This checkout contains the schema-2 candidate, **0.7.3a1**. Its installation and
+This checkout contains the schema-2 candidate, **0.7.3a2**. Its installation and
 verification-scope changes are described in [migration and known issues](docs/operations/release-0.7.3a0.md).
-For the latest routing and result semantics see [R4 changes](docs/operations/release-0.7.3a1.md).
+For the latest routing and result semantics see [R4 changes](docs/operations/release-0.7.3a1.md) and [0.7.3a2 adoption changes](docs/operations/release-0.7.3a2.md).
 Use the wheel built from this checkout for candidate review. Do not overwrite
 the older published artifact. The release link below is the previous 0.7.2a1
 baseline, not this candidate.
@@ -40,26 +40,34 @@ bash FIRST_EXPORT.sh
 ## Quick start with Docker
 
 ```sh
-# From this reviewed 0.7.3a1 source checkout; candidate is not published yet.
-docker build --platform linux/amd64 -t ariadne-mark:local -t ariadne-mark:0.7.3a1 .
+# From this reviewed 0.7.3a2 source checkout; candidate is not published yet.
+# --iidfile records the immutable image ID; no shared tag is created or moved.
+docker build --platform linux/amd64 --iidfile ariadne-image.id .
+IMAGE=$(cat ariadne-image.id)
 ```
+
+Plan disk space before building: on the qualification host the final image is
+about 3.2 GB and the build stage about 3.5 GB, plus BuildKit cache, so allow
+roughly 9–10 GB free while building (more if layers are not already cached).
+The wheel path below needs about 2.2 GB (venv 1.5 GB, models ~0.3 GB, Node
+~0.2 GB) and is the fallback for hosts that cannot hold the Docker build.
 
 The build downloads CPU dependencies and verifies pinned model files. Processing can then run without a network connection:
 
 ```sh
 # Create a local DEVELOPMENT identity. Production uses your own credentials.
 docker run --rm --network none --user "$(id -u):$(id -g)" \
-  -v "$PWD:/data" ariadne-mark:local init-dev .ariadne/dev
+  -v "$PWD:/data" "$IMAGE" init-dev .ariadne/dev
 
 # Put input.png in this directory. Supply its actual generator and creation time.
 docker run --rm --network none --user "$(id -u):$(id -g)" \
-  -v "$PWD:/data" ariadne-mark:local mark input.png output.png \
+  -v "$PWD:/data" "$IMAGE" mark input.png output.png \
   --publisher "Example Studio" --system "Example Generator" --system-version "1.0" \
   --created-at "2026-11-03T10:00:00Z" --identity .ariadne/dev --allow-dev \
   --registry .ariadne/registry.sqlite3
 
 docker run --rm --network none --user "$(id -u):$(id -g)" \
-  -v "$PWD:/data" ariadne-mark:local verify output.png \
+  -v "$PWD:/data" "$IMAGE" verify output.png \
   --registry .ariadne/registry.sqlite3
 ```
 
@@ -88,7 +96,7 @@ The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free
 python3.12 -m venv .venv
 . .venv/bin/activate
 # Use the downloaded wheel, or use: python -m pip install --no-deps .
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a1-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a2-py3-none-any.whl
 # Explicit setup installs the pinned C2PA pair and CPU dependencies, then models.
 # FFmpeg/ffprobe and Node.js/npm must already be installed.
 ariadne setup media --fetch-models
@@ -195,7 +203,7 @@ python scripts/check_requirements.py
 # Full real-engine suite in the built image, with networking disabled:
 docker run --rm --network none --cpus 2 --memory 6g \
   -e ARIADNE_MEDIA_TESTS=1 -w /app --entrypoint python \
-  ariadne-mark:local -m unittest discover -s tests -t . -v
+  "$IMAGE" -m unittest discover -s tests -t . -v
 ```
 
 The ordinary core suite skips media tests unless explicitly enabled. Release qualification runs the Python matrix and real-engine Docker suite in a maintainer-dispatched EC2 job for an exact commit. Automatic PR/push checks are notices and do not run SDK tests. [Reproducible benchmark](benchmarks/durability/README.md) · [0.7.2a1 qualification](docs/validation/0.7.2a1.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).

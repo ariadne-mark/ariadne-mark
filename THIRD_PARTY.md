@@ -1,4 +1,4 @@
-# Third-party components — 0.7.3a1 candidate
+# Third-party components — 0.7.3a2 candidate
 
 The wheel contains Ariadne Mark's code and a model checksum manifest, not model
 weights. It also contains the attributed Apache-2.0 vocabulary described below.

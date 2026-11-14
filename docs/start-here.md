@@ -1,6 +1,6 @@
 # Install and produce your first marked export
 
-SDK **0.7.3a1 candidate** · documentation updated **2026-11-13**.
+SDK **0.7.3a2 candidate** · documentation updated **2026-11-14**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.
@@ -27,7 +27,7 @@ provides an installation outside the source checkout:
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a1-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a2-py3-none-any.whl
 ariadne setup media --fetch-models
 ariadne runtime check
 ```

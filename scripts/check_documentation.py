@@ -10,7 +10,7 @@ summary=json.loads((root/'docs/validation/results/0.7.2a1-summary.json').read_te
 # The website publication snapshot is immutable evidence for the prior release,
 # not qualification of a new SDK candidate.
 assert manifest['sdk_version']==summary['sdk_version']=='0.7.2a1'
-assert version == '0.7.3a1'
+assert version == '0.7.3a2'
 assert (root/'docs/operations/release-0.7.3a0.md').is_file()
 assert manifest['tested_sdk_commit']==summary['commit']=='8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa'
 assert summary['ci_conclusion']=='success' and summary['full_media']=={'tests':217,'wall_s':357.287,'skipped':0}
