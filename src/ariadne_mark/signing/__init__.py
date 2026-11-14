@@ -22,6 +22,10 @@ class SigningIdentity:
     development: bool = False
     timestamp_url: str | None = None
 
+    def __post_init__(self):
+        if self.timestamp_url is not None:
+            validate_timestamp_url(self.timestamp_url)
+
     @classmethod
     def from_directory(cls, directory: Path, *, allow_dev: bool = False, timestamp_url=None):
         directory = Path(directory)
@@ -29,6 +33,25 @@ class SigningIdentity:
         if config.get("development") is not False and not allow_dev:
             raise AriadneError("Development identity requires explicit allow_dev / --allow-dev")
         return cls(directory / "certificate.pem", directory / "private.key", config.get("development") is not False, timestamp_url)
+
+
+def validate_timestamp_url(value):
+    """An RFC 3161 TSA endpoint: HTTPS, no credentials, query or fragment.
+
+    The pinned C2PA pair (c2pa-python 0.38.3 / native 0.91.11) sends the
+    timestamp request from its own HTTP client with bundled public roots and
+    no hook for request headers, so an authenticating TSA cannot be used and
+    secrets must never be placed in the URL. See production onboarding.
+    """
+    from urllib.parse import urlsplit
+    if not isinstance(value, str) or any(ord(c) < 33 or ord(c) == 127 for c in value):
+        raise ValueError('TSA URL must be text without whitespace')
+    url = urlsplit(value)
+    if url.scheme != 'https' or not url.hostname or url.username or url.password or url.query or url.fragment:
+        raise ValueError('TSA URL must be HTTPS without credentials, query or fragment; '
+                         'the pinned C2PA runtime cannot authenticate to a TSA')
+    _ = url.port  # reject invalid port syntax
+    return value
 
 
 def create_development_identity(directory: Path) -> None:
@@ -210,7 +233,14 @@ def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: 
             builder.set_intent(c2pa.C2paBuilderIntent.EDIT)
             with parent.open("rb") as stream:
                 builder.add_ingredient({"title": "Source material", "relationship": "parentOf"}, MIME[parent.suffix.lower()], stream)
-        return builder.sign_file(source, destination, signer)
+        try:
+            return builder.sign_file(source, destination, signer)
+        except Exception as exc:
+            # Native errors can echo endpoints or local paths; keep the cause
+            # chained for local debugging, never in the message (receipts,
+            # CLI JSON, worker IPC). Nothing has been published at this point.
+            stage = 'with a timestamp authority' if identity.timestamp_url else 'locally'
+            raise AriadneError(f'C2PA signing {stage} failed; no output published') from exc
 
 
 def read_manifest(path: Path, *, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None) -> dict:

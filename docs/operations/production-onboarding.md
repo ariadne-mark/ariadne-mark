@@ -134,6 +134,39 @@ Confirm a supported authenticated signing interface or separately qualify a
 restricted operator-owned egress adapter before selecting that route. This
 documentation does not provide or qualify such an adapter.
 
+### Why authentication is not available in this release
+
+This was checked against the official C2PA sources at the pinned tags, not
+inferred from the Python wrapper alone:
+
+- In native c2pa-rs 0.91.11 (the qualified pair with c2pa-python 0.38.3) the
+  RFC 3161 request is sent by `Signer::send_timestamp_request`, which creates a
+  fresh default `Context` (`sdk/src/signer.rs`, `crypto/time_stamp/provider.rs`).
+  Headers come only from `timestamp_request_headers()`, which none of the
+  signers creatable through the C API (`c2pa_signer_from_info`,
+  `c2pa_signer_create`, settings `local`/`remote`) implement. Its default HTTP
+  client uses bundled public web roots. There is therefore no supported way to
+  add an `Authorization` header, an API key or a private TLS root for the TSA
+  connection, and the SDK does not invent an HTTP proxy workaround.
+- c2pa-rs 0.92.0 (released 11 November 2026) passes the builder's `Context`
+  into `send_timestamp_request`. The C API already exposes a context HTTP
+  resolver (`c2pa_http_resolver_create`, `c2pa_context_builder_set_http_resolver`),
+  so on that version an application-supplied resolver would carry the TSA
+  request and could add credentials, a private trust store and timeouts.
+  Adopting it means a new qualified wrapper/native pair, which is a separate
+  qualification task; it is not part of this candidate.
+
+What the SDK enforces today: the TSA URL must be HTTPS without credentials,
+query or fragment (`SigningIdentity`, kit configuration), so a secret can never
+travel in a URL, receipt or log. A failed timestamp request (unreachable,
+refused, TLS failure, error response or an invalid token rejected by the native
+validator) fails the export with `C2PA signing with a timestamp authority
+failed; no output published`. The endpoint is not echoed; no media, receipt or
+registry row is written. Usable routes now are TSAs that accept unauthenticated
+RFC 3161 requests over HTTPS with a publicly trusted server certificate, with
+their roots supplied separately as `tsa-roots.pem`. No such service has been
+qualified by this project.
+
 The DigiCert probe sent only a synthetic random-hash request; its failed HTTPS
 connection is an observation from one host, not a finding that the vendor's
 service is generally unavailable. Do not downgrade the kit's HTTPS policy to
