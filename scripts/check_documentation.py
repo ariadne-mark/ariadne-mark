@@ -70,9 +70,11 @@ for p in sorted(paths):
 for p in paths:
  if p.is_file() and 'validation' not in p.parts and 'benchmarks' not in p.parts:
   text=p.read_text()
+  release_note=re.fullmatch(r'release-(0\.7\.[0-9]+a[0-9]+)\.md',p.name)
+  expected_header=release_note.group(1) if release_note else version
   # Anywhere in a line, not only at its start (P-04: '... · SDK **x** scope').
   for header in re.findall(r'\bSDK \*\*([^*]+)\*\*',text):
-   if header.split()[0] != version:errors.append(str(p.relative_to(root))+': stale active SDK header '+header)
+   if header.split()[0] != expected_header:errors.append(str(p.relative_to(root))+': stale active SDK header '+header)
   first_line=text.splitlines()[0] if text else ''
   heading_version=re.search(r'^# .* (?:—|-) (0\.7\.[0-9]+a[0-9]+)\s*$',first_line)
   if heading_version and heading_version.group(1)!=version and 'release-' not in p.name and p.name!='releases.md':
