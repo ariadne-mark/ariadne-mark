@@ -76,6 +76,9 @@ def main(argv=None) -> int:
     mark.add_argument("--identity", type=Path, required=True)
     mark.add_argument("--allow-dev", action="store_true")
     mark.add_argument("--timestamp-url", help="Optional TSA URL; explicitly enables timestamp network request")
+    mark.add_argument("--timestamp-credential-file", type=Path, help="Owner-only file with a TSA bearer token (e.g. SSL.com C2PA TSA)")
+    mark.add_argument("--timestamp-timeout", type=float, default=10.0, help="Seconds to wait for an authenticated TSA (relay)")
+    mark.add_argument("--timestamp-ca-bundle", type=Path, help="Optional CA bundle for the authenticated TSA's HTTPS endpoint")
     mark.add_argument("--visible", action="store_true", help="Add an AI-generated/AI-altered visible label")
     mark.add_argument("--video-profile", choices=["economy_5s", "economy_2s", "resilient", "fast"],
                       help="CPU video preset (default: economy_5s; fast is legacy)")
@@ -276,7 +279,9 @@ def main(argv=None) -> int:
                 return 0
             from ariadne_mark.signing import SigningIdentity
             from ariadne_mark.provenance import ProvenanceRecord, GenerativeSystem, MediaKind, Action
-            sdk.identity = SigningIdentity.from_directory(args.identity, allow_dev=args.allow_dev, timestamp_url=args.timestamp_url)
+            sdk.identity = SigningIdentity.from_directory(args.identity, allow_dev=args.allow_dev, timestamp_url=args.timestamp_url,
+                timestamp_credential_file=args.timestamp_credential_file, timestamp_timeout=args.timestamp_timeout,
+                timestamp_ca_bundle=args.timestamp_ca_bundle)
             record = ProvenanceRecord.create(
                 publisher=args.publisher, system=GenerativeSystem(args.system, args.system_version),
                 media_kind=MediaKind.VIDEO if args.source.suffix.lower() == ".mp4" else MediaKind.IMAGE,

@@ -80,10 +80,14 @@ def load(root):
     if not isinstance(value, dict):
         raise ValueError('Invalid kit schema')
     value.setdefault('verification_scope', 'all')  # Preserve scope of existing deployments.
+    # Authenticated TSA (optional; kits created before it simply lack the keys).
+    value.setdefault('timestamp_credential_file', None)
+    value.setdefault('timestamp_timeout', 10)
     if not isinstance(value['verification_scope'], str) or value['verification_scope'] not in {'all', 'current'}:
         raise ValueError('Invalid kit verification_scope')
     expected = {'verification_scope', 'schema_version', 'mode', 'verifier_url', 'timestamp_url',
-                'public_manifests', 'threads', 'max_upload_mb', 'verification_timeout'}
+                'public_manifests', 'threads', 'max_upload_mb', 'verification_timeout',
+                'timestamp_credential_file', 'timestamp_timeout'}
     if not isinstance(value, dict) or set(value) != expected or type(value['schema_version']) is not int or value['schema_version'] != 1:
         raise ValueError('Invalid kit schema')
     if not isinstance(value['mode'], str) or value['mode'] not in {'development', 'production'} or type(value['public_manifests']) is not bool:
@@ -98,6 +102,14 @@ def load(root):
         tsa = urlsplit(value['timestamp_url'])
         if tsa.scheme != 'https' or not tsa.hostname or tsa.username or tsa.password or tsa.fragment or tsa.query:
             raise ValueError('Timestamp URL must be HTTPS without credentials or query')
+    credential = value['timestamp_credential_file']
+    if credential is not None:
+        # A path inside the kit's private/tsa directory, never the token itself.
+        if (not isinstance(credential, str) or not credential.startswith('private/tsa/')
+                or '..' in Path(credential).parts or not value['timestamp_url']):
+            raise ValueError('timestamp_credential_file must be a path under private/tsa/ and needs timestamp_url')
+    if type(value['timestamp_timeout']) is not int or not 1 <= value['timestamp_timeout'] <= 60:
+        raise ValueError('Invalid kit limit: timestamp_timeout')
     profile = load_profile(root / 'config/product.json')
     if profile['sdk']['video_profile'] not in PROFILES:
         raise ValueError('Kit supports Economy5s, Economy2s and Resilient')
@@ -169,7 +181,7 @@ def initialize(directory, *, publisher, system, system_version, development=Fals
     # user-owned directory. Never overwrite an existing kit or key.
     _write(root / 'INIT_INCOMPLETE', 'Initialization did not finish. Do not deploy.\n')
     for name in ['config', 'registry', 'state', 'inputs', 'outputs', 'private',
-                 'private/provider', 'private/tls']:
+                 'private/provider', 'private/tls', 'private/tsa']:
         (root / name).mkdir(mode=0o700 if name.startswith('private') else 0o750)
     from ariadne_mark.reports import generate_report_key
     generate_report_key(root / 'private/reports')
@@ -184,7 +196,7 @@ def initialize(directory, *, publisher, system, system_version, development=Fals
     kit = {'schema_version': 1, 'mode': 'development' if development else 'production',
            'verifier_url': verifier_url, 'timestamp_url': None, 'public_manifests': public_manifests,
            'threads': 2, 'max_upload_mb': 128, 'verification_timeout': 180,
-           'verification_scope': 'current'}
+           'verification_scope': 'current', 'timestamp_credential_file': None, 'timestamp_timeout': 10}
     profile = template()
     profile.update(publisher=publisher, system={'name': system, 'version': system_version}, role='provider')
     profile['sdk'].update(audio_kind='none')
@@ -239,11 +251,13 @@ def check(root, *, runtime=False):
         needed.append('config/tsa-roots.pem')
         if not config['timestamp_url']:
             errors.append('Configure timestamp_url: the SDK currently requires a trusted TSA for production exports')
+    if config['timestamp_credential_file']:
+        needed.append(config['timestamp_credential_file'])
     for name in needed:
         path = root / name
         if not path.is_file() or path.is_symlink():
             errors.append('Missing regular file: ' + name)
-        elif name.endswith(('.key', 'key.pem')) and stat.S_IMODE(path.stat().st_mode) & 0o077:
+        elif (name.endswith(('.key', 'key.pem')) or name.startswith('private/tsa/')) and stat.S_IMODE(path.stat().st_mode) & 0o077:
             errors.append('Private key must not be group/world-readable: ' + name)
     if not errors:
         try:
@@ -252,6 +266,9 @@ def check(root, *, runtime=False):
                 allow_dev=config['mode'] == 'development', timestamp_url=config['timestamp_url'])
             if identity.development != (config['mode'] == 'development'):
                 raise ValueError('Signing identity and kit mode differ')
+            if config['timestamp_credential_file']:
+                from ariadne_mark.signing.tsa_relay import read_credential
+                read_credential(root / config['timestamp_credential_file'])  # format/permissions; value never reported
             if config['mode'] == 'production':
                 validate_trust_roots(root / 'config/issuer-roots.pem')
                 validate_trust_roots(root / 'config/tsa-roots.pem')
@@ -361,7 +378,9 @@ def export_batch(root, batch):
     from ariadne_mark.registry import Registry
     from ariadne_mark.watermark import LazyWatermarker
     from ariadne_mark.videoq import VideoWatermarker
-    identity = SigningIdentity.from_directory(root / 'private/provider', allow_dev=config['mode'] == 'development', timestamp_url=config['timestamp_url'])
+    identity = SigningIdentity.from_directory(root / 'private/provider', allow_dev=config['mode'] == 'development', timestamp_url=config['timestamp_url'],
+        timestamp_credential_file=(root / config['timestamp_credential_file']) if config['timestamp_credential_file'] else None,
+        timestamp_timeout=config['timestamp_timeout'])
     if identity.development != (config['mode'] == 'development'):
         raise ValueError('Signing identity and kit mode differ')
     with SDK(marker=LazyWatermarker(threads=config['threads']), identity=identity,

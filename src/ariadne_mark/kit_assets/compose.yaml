@@ -28,6 +28,8 @@ services:
         target: /kit/private/provider
         read_only: true
         bind: {create_host_path: false}
+      # Optional TSA bearer token file (config: timestamp_credential_file).
+      - ./private/tsa:/kit/private/tsa:ro
       - ./registry:/kit/registry
       - ./inputs:/kit/inputs:ro
       - ./outputs:/kit/outputs
