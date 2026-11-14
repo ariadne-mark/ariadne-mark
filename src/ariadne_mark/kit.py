@@ -110,6 +110,8 @@ def load(root):
             raise ValueError('timestamp_credential_file must be a path under private/tsa/ and needs timestamp_url')
     if type(value['timestamp_timeout']) is not int or not 1 <= value['timestamp_timeout'] <= 60:
         raise ValueError('Invalid kit limit: timestamp_timeout')
+    if credential and value['timestamp_timeout'] > 25:
+        raise ValueError('Authenticated TSA timeout must not exceed 25 seconds')
     profile = load_profile(root / 'config/product.json')
     if profile['sdk']['video_profile'] not in PROFILES:
         raise ValueError('Kit supports Economy5s, Economy2s and Resilient')

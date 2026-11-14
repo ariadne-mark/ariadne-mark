@@ -71,6 +71,29 @@ class BindTests(unittest.TestCase):
 
 @unittest.skipUnless(importlib.util.find_spec('cryptography'), 'requires reports extra')
 class InitPinTests(unittest.TestCase):
+    def test_tsa_credential_is_optional_private_and_checked_without_disclosure(self):
+        import json
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder)/'bundle'
+            kit.initialize(root,publisher='Fixture Studio',system='Fixture Generator',system_version='1',development=True)
+            config_path=root/'config/kit.json';config=json.loads(config_path.read_text())
+            # Old kits without the new fields remain readable.
+            config.pop('timestamp_credential_file');config.pop('timestamp_timeout')
+            config_path.write_text(json.dumps(config));kit.load(root)
+            config.update(timestamp_url='https://tsa.invalid/ecc',timestamp_credential_file='private/tsa/token',timestamp_timeout=5)
+            config_path.write_text(json.dumps(config));credential=root/'private/tsa/token'
+            credential.write_text('offline-fixture-token');credential.chmod(0o600)
+            checked=kit.check(root)
+            self.assertEqual(checked['errors'],[],checked)
+            self.assertNotIn('offline-fixture-token',str(checked))
+            credential.chmod(0o644)
+            self.assertTrue(kit.check(root)['errors'])
+            credential.chmod(0o600);credential.write_text('')
+            self.assertTrue(kit.check(root)['errors'])
+            config['timestamp_credential_file']='private/tsa/../../token'
+            config_path.write_text(json.dumps(config))
+            self.assertTrue(kit.check(root)['errors'])
+
     def test_new_kit_requires_an_image_pin_and_ships_the_pin_script(self):
         from ariadne_mark.version import sdk_version
         with tempfile.TemporaryDirectory() as folder:

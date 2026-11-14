@@ -34,6 +34,8 @@ class SigningIdentity:
             raise ValueError('A TSA credential file requires a TSA URL')
         if (type(self.timestamp_timeout) not in (int, float) or not 0 < self.timestamp_timeout <= 60):
             raise ValueError('TSA timeout must be between 0 and 60 seconds')
+        if self.timestamp_credential_file is not None and self.timestamp_timeout > 25:
+            raise ValueError('Authenticated TSA timeout must not exceed 25 seconds')
 
     def __repr__(self):
         return (f'SigningIdentity(development={self.development}, timestamp_url={self.timestamp_url!r}, '
@@ -56,8 +58,8 @@ def validate_timestamp_url(value, *, allow_loopback_http=False):
 
     The pinned C2PA pair (c2pa-python 0.38.3 / native 0.91.11) sends the
     timestamp request from its own HTTP client with bundled public roots and
-    no hook for request headers, so an authenticating TSA cannot be used and
-    secrets must never be placed in the URL. See production onboarding.
+    no hook for request headers. Authenticated TSAs use the optional local
+    credential relay; secrets must never be placed in the URL.
     """
     from urllib.parse import urlsplit
     if not isinstance(value, str) or any(ord(c) < 33 or ord(c) == 127 for c in value):
@@ -69,8 +71,7 @@ def validate_timestamp_url(value, *, allow_loopback_http=False):
     loopback = url.hostname in {'127.0.0.1', '::1', 'localhost'}
     scheme_ok = url.scheme == 'https' or (allow_loopback_http and url.scheme == 'http' and loopback)
     if not scheme_ok or not url.hostname or url.username or url.password or url.query or url.fragment:
-        raise ValueError('TSA URL must be HTTPS without credentials, query or fragment; '
-                         'the pinned C2PA runtime cannot authenticate to a TSA')
+        raise ValueError('TSA URL must be HTTPS without credentials, query or fragment')
     _ = url.port  # reject invalid port syntax
     return value
 
@@ -257,7 +258,8 @@ def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: 
             from ariadne_mark.signing.tsa_relay import TimestampRelay
             relay = stack.enter_context(TimestampRelay(identity.timestamp_url, identity.timestamp_credential_file,
                                                        timeout=identity.timestamp_timeout,
-                                                       ca_bundle=identity.timestamp_ca_bundle))
+                                                       ca_bundle=identity.timestamp_ca_bundle,
+                                                       development=identity.development))
             tsa_url = relay.url
         return _sign_with(c2pa, manifest, source, destination, identity, parent, tsa_url, tsa_trust_anchors)
 
