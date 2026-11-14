@@ -55,3 +55,17 @@ class TimestampFailureTests(unittest.TestCase):
             with registry.connect() as db:
                 self.assertEqual(db.execute('SELECT count(*) FROM assets').fetchone()[0], 0)
             self.assertEqual([p.name for p in root.iterdir() if p.name.startswith('.ariadne-')], [])
+
+    def test_low_level_sign_file_removes_its_failed_output(self):
+        from PIL import Image
+        from ariadne_mark.signing import create_development_identity, sign_file
+        from tests.provenance.test_records import example_record
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            create_development_identity(root / 'id')
+            identity = SigningIdentity.from_directory(root / 'id', allow_dev=True,
+                                                      timestamp_url='https://127.0.0.1:9/tsa')
+            Image.new('RGB', (512, 512)).save(root / 'in.png')
+            with self.assertRaisesRegex(AriadneError, 'no output published'):
+                sign_file(root / 'in.png', root / 'out.png', example_record(), '014d123456789abc', identity)
+            self.assertFalse((root / 'out.png').exists())

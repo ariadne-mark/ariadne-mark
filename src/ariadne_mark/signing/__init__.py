@@ -233,9 +233,15 @@ def sign_file(source: Path, destination: Path, record: ProvenanceRecord, token: 
             builder.set_intent(c2pa.C2paBuilderIntent.EDIT)
             with parent.open("rb") as stream:
                 builder.add_ingredient({"title": "Source material", "relationship": "parentOf"}, MIME[parent.suffix.lower()], stream)
+        existed = Path(destination).exists()
         try:
             return builder.sign_file(source, destination, signer)
         except Exception as exc:
+            # The native builder can leave its output behind after a failed
+            # timestamp call (observed: TSA timeout). Never leave an unsigned or
+            # partially signed file at a path this call created.
+            if not existed:
+                Path(destination).unlink(missing_ok=True)
             # Native errors can echo endpoints or local paths; keep the cause
             # chained for local debugging, never in the message (receipts,
             # CLI JSON, worker IPC). Nothing has been published at this point.
