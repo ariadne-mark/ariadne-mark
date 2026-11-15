@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-11-15",
+  "currency": "USD",
+  "workload": {
+    "images_per_day": 1000,
+    "videos_per_day": 300,
+    "days": 30,
+    "renditions_per_item": 1,
+    "export_attempts_per_rendition": 1
+  },
+  "computed_base": {
+    "image_exports": 30000,
+    "video_exports": 9000,
+    "exports": 39000,
+    "year_365_days": 474500
+  },
+  "operator_inputs": {
+    "image_full_job_cpu_seconds": null,
+    "video_full_job_cpu_seconds_by_profile": {
+      "economy_5s": null,
+      "economy_2s": null,
+      "resilient": null
+    },
+    "positive_checks_per_day": null,
+    "negative_checks_per_day": null,
+    "positive_full_job_cpu_seconds": null,
+    "negative_full_job_cpu_seconds": null,
+    "exporter_allocated_hours_month": null,
+    "verifier_allocated_hours_month": null,
+    "instance_price_per_hour": null,
+    "storage_gb_month": null,
+    "storage_price_gb_month": null,
+    "cdn_egress_gb": null,
+    "cdn_price_per_gb": null,
+    "registry_backup_cost_month": null,
+    "domain_tls_cost_month": null,
+    "ca_cost_month": null,
+    "tsa_total_cost_month": null,
+    "operator_hours_month": null,
+    "operator_rate_per_hour": null,
+    "conformance_one_time_cost": null
+  },
+  "vendor_reference": {
+    "ssl_free": {
+      "certificate_years": 1,
+      "included_timestamps_per_year": 2500,
+      "base_certificate_usd": 0,
+      "excess_timestamp_unit_usd": null,
+      "source": "https://www.ssl.com/products/content-authenticity/content-credentials/c2pa/"
+    },
+    "ssl_premium": {
+      "certificate_usd_year": 500,
+      "included_timestamps_per_year": 10000,
+      "excess_timestamp_unit_usd": null,
+      "source": "https://www.ssl.com/products/content-authenticity/content-credentials/c2pa/"
+    },
+    "trufo_starter": {
+      "base_usd_month": 120,
+      "included_signatures_month": 1000,
+      "excess_signature_usd": 0.03,
+      "included_watermark_id_units_month": 300,
+      "watermark_overage_usd": null,
+      "signature_component_usd_at_base_workload": 1260,
+      "source": "https://trufo.ai/pricing"
+    },
+    "trufo_business": {
+      "base_usd_month": 1200,
+      "included_signatures_month": 10000,
+      "excess_signature_usd": 0.01,
+      "included_watermark_id_units_month": 3000,
+      "watermark_overage_usd": null,
+      "signature_component_usd_at_base_workload": 1490,
+      "source": "https://trufo.ai/pricing"
+    },
+    "lightsail_hosting_reference": {
+      "linux_public_ipv4_usd_month": 12,
+      "memory_gb": 2,
+      "vcpus_burstable": 2,
+      "ssd_gb": 60,
+      "transfer_tb": 3,
+      "qualified_workload_capacity": null,
+      "source": "https://aws.amazon.com/lightsail/pricing/"
+    }
+  },
+  "method": "Unknown is null, not zero. Public list-price signature components are not full quotes; watermark units/video billing, tax, discounts, promotions and operator capacity require confirmation. No monetary total is derived from Python SELF-only CPU measurements."
+}

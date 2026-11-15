@@ -34,6 +34,20 @@ docker run --rm --network none --cpus 2 --memory 512m --read-only -v "$root:/rev
   scripts/check_installed_payload.py /artifacts /review > "$out/logs/package-parity.json"
 docker run --rm --network none --cpus 2 --memory 512m --read-only -v "$root:/review:ro" -w /review \
   --entrypoint python "$image" scripts/check_documentation.py > "$out/logs/documentation.json"
+docker run --rm --network none --cpus 2 --memory 512m --read-only -v "$root:/review:ro" -w /review \
+  --entrypoint python "$image" scripts/check_client_docs.py > "$out/logs/client-docs.json"
+private_work="$root/.client-journey-private"
+mkdir -p "$private_work"
+# Sample code is separate from immutable SDK examples/runtime. Exercise it against
+# the installed public wheel, with no SDK checkout on Python's import path.
+docker run --rm --network none --cpus 2 --memory 4g --read-only --tmpfs /tmp:rw,noexec,nosuid,size=768m \
+  --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$root:/review:ro" -v "$private_work:/results" -w /tmp \
+  --entrypoint python "$image" /review/scripts/ci_client_journey.py /results/client-journey \
+  > "$out/logs/client-journey.log" 2>&1
+mkdir -p "$out/client-journey"
+cp "$private_work/client-journey/summary.json" "$private_work/client-journey/events.jsonl" "$private_work/client-journey/corpus.json" "$out/client-journey/"
+cp -R "$private_work/client-journey/logs" "$out/client-journey/logs"
+# Identity, report private key, database and media stay outside uploaded artifacts.
 python3 scripts/check_requirements.py > "$out/logs/requirements.log"
 python3 scripts/check_runtime_locks.py > "$out/logs/runtime-locks.log"
 docker run --rm --network none --entrypoint python "$image" -m pip check > "$out/logs/pip-check.log"

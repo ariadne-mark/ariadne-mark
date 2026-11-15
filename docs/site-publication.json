@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "docs_edition": "2026-11-14",
+  "docs_edition": "2026-11-15",
   "sdk_version": "0.7.3a4",
   "tested_sdk_commit": "49578688710a8bae2373aaf9d47ff9521f566d4c",
   "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/43598162234",
@@ -216,6 +216,11 @@
       "route": "/evidence/releases/0-7-3a4/",
       "source": "docs/validation/0.7.3a4-results.md",
       "section": "Evidence"
+    },
+    {
+      "route": "/guides/first-integration/",
+      "source": "docs/implementation/own-files.md",
+      "section": "Install and integrate"
     }
   ],
   "assets": [
@@ -262,6 +267,18 @@
     {
       "route": "/documentation-assets/0.7.3a4-artifacts.json",
       "source": "docs/validation/results/0.7.3a4-artifacts.json"
+    },
+    {
+      "route": "/documentation-assets/export_jobs.py",
+      "source": "docs/examples/export_jobs.py"
+    },
+    {
+      "route": "/documentation-assets/jobs.example.json",
+      "source": "docs/examples/jobs.example.json"
+    },
+    {
+      "route": "/documentation-assets/cost-workload.json",
+      "source": "docs/examples/cost-workload.json"
     }
   ],
   "rules": [

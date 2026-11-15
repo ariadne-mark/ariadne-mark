@@ -2,6 +2,10 @@
 
 Use one persistent SDK per product worker process. Provision models during deployment, create the SDK after the process starts, reuse it for jobs and close it during shutdown. Processing is synchronous: run it in your existing background job queue rather than blocking a web request. Python is the native SDK; other backends can invoke the CLI. The public HTTP service is for verification, not an unbounded public marking API.
 
+
+For one tested route from these samples to your own files, use the
+[image + silent-video integration walkthrough](own-files.md).
+
 ## A video job
 
 ```python
@@ -33,13 +37,13 @@ sdk.close()
 
 Create the development directory with `ariadne init-dev .ariadne/dev` in a provisioned environment. Keep it out of version control. `--allow-dev` is explicit because that identity is not a production credential. Never deploy its private key in the verifier.
 
-Use `video_profile="economy_2s"` or `"resilient"` on the constructor to set a worker default, or on `mark()` to select a single export. Product JSON configuration can select `sdk.video_profile`; a per-export override must agree with that product configuration. Only requested profile workers are loaded. Public verification can reuse an already resident compatible decoder regardless of its encoding preset.
+Use `video_profile="economy_2s"` or `"resilient"` on the constructor to set a worker default, or on `mark()` to select a single export. Product JSON configuration can select `sdk.video_profile`; a per-export override must agree with that product configuration. Requested profiles share one resident Node worker per SDK. Public verification reuses its compatible decoder across encoding presets.
 
 ## Publication and retries
 
 `SDK.mark()` writes a private candidate, applies the selected visual watermark/visible disclosure, encodes/remuxes, signs C2PA and checks the actual signed output. Economy checks every occupied watermark window; Resilient checks five uniform positions. On failure it publishes neither final media nor a success receipt. Registry entry and fsynced receipt precede final media publication; the media's existence is the completion marker.
 
-Use a fresh output path per job and your own idempotency key. The SDK does not overwrite an existing output. Manage retries and orphan cleanup at the product level. The [stock-product example](../../examples/stock_product/README.md) includes a queue and bounded retries. Shared-thread exports serialize a single profile's model access; use separate product processes for parallel throughput. Multiple active profile workers use additional memory.
+Use a fresh output path per job and your own idempotency key. The SDK does not overwrite an existing output. Manage retries and orphan cleanup at the product level. The [stock-product example](../../examples/stock_product/README.md) includes a queue and bounded retries. The shared Node worker serializes the whole encode/decode session across profiles; waiting for its lock is separate from the scan budget. Use separate product processes for parallel throughput and budget memory per process, including Node and FFmpeg.
 
 ## Audio, images and source facts
 
