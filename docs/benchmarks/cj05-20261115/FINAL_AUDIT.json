@@ -1,0 +1,113 @@
+{
+  "status": "passed",
+  "primary": {
+    "status": "passed",
+    "failures": 0,
+    "distinct_operations": 423,
+    "export_cells": 23,
+    "negative_non_not_found": [
+      {
+        "case": "v1080p_15_ntsc",
+        "status": "not_checked",
+        "reason": "incomplete_video_search",
+        "interpretation": "Keep incomplete or unexpected result distinct from a completed clean negative"
+      },
+      {
+        "case": "v1080p_15_ntsc",
+        "status": "not_checked",
+        "reason": "incomplete_video_search",
+        "interpretation": "Keep incomplete or unexpected result distinct from a completed clean negative"
+      },
+      {
+        "case": "v1080p_15_ntsc",
+        "status": "not_checked",
+        "reason": "incomplete_video_search",
+        "interpretation": "Keep incomplete or unexpected result distinct from a completed clean negative"
+      },
+      {
+        "case": "v1080p_15_ntsc",
+        "status": "not_checked",
+        "reason": "incomplete_video_search",
+        "interpretation": "Keep incomplete or unexpected result distinct from a completed clean negative"
+      }
+    ],
+    "protocol": "CJ-05-20261115-v1",
+    "runtime_unchanged": true
+  },
+  "mixed": {
+    "status": "passed",
+    "marks": 7,
+    "positive_verifications": 3,
+    "clean_negative": 1,
+    "node_pids_by_stage": [
+      {
+        "stage": "first_image",
+        "node_pids": []
+      },
+      {
+        "stage": "first_video_engine",
+        "node_pids": [
+          313455
+        ]
+      },
+      {
+        "stage": "warm_image",
+        "node_pids": [
+          313455
+        ]
+      },
+      {
+        "stage": "warm_video",
+        "node_pids": [
+          313455
+        ]
+      },
+      {
+        "stage": "switch_economy2",
+        "node_pids": [
+          313455
+        ]
+      },
+      {
+        "stage": "large_image",
+        "node_pids": [
+          313455
+        ]
+      },
+      {
+        "stage": "switch_resilient",
+        "node_pids": [
+          313455
+        ]
+      }
+    ],
+    "one_shared_node_across_profiles": true,
+    "scope": "Supplementary mixed resident process; not independent verifier/public HTTP workload"
+  },
+  "idle": {
+    "status": "passed",
+    "purpose": "Resident SDK after both modalities; twenty 250ms sleep requests, no media work in this interval; IPC/measurement included as upper-bound idle overhead",
+    "wall_s": 5.084904314018786,
+    "full_cgroup_cpu_s": 0.005154,
+    "memory_start_mib": 951.03515625,
+    "memory_end_mib": 950.88671875,
+    "max_kernel_peak_mib": 951.03515625
+  },
+  "primary_data_rows": 338,
+  "shutdown_rows": 85,
+  "corpus_inputs_sha256_unchanged": 10,
+  "unique_record_ids": 423,
+  "legacy_model_hash_matches": true,
+  "same_fd_memory_peak_reset_calibrated": true,
+  "full_cpu_accounting_checked": true,
+  "frozen_harness_hashes_match": true,
+  "existing_services_preserved": {
+    "ariadne-06-verifier-preview": "62cfb9af9e80",
+    "ariadne-stock-web-1": "458b5643cfdf",
+    "ariadne-stock-worker-1": "edaaa89ad92b",
+    "ariadne-stock-verifier-1": "adab2f33cd6e"
+  },
+  "owned_containers_remaining": 0,
+  "sdk_or_modes_changed": false,
+  "scope": "Integrity/method audit; incomplete negative outcomes, if present, remain classified separately in analysis"
+}

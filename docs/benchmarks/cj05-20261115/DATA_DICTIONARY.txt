@@ -1,0 +1,74 @@
+CJ-05 data dictionary
+
+Identity and scope
+- group: matrix / all_scope_control / budget_control / speed_control.
+- case: engineering-fixture identifier; exact dimensions, time base, preparation
+  commands and source SHA-256 are in CORPUS.json.
+- profile: economy_5s, economy_2s, resilient, image; not_applicable for unmarked input.
+- scope: current (new-issuer scheme) or explicit all control (legacy included).
+- temperature: process_model_cold = first job in fresh SDK/container;
+  resident_warm = subsequent job. Dependencies provisioned, OS caches not evicted.
+- id: exact raw record and per-operation timeline filename.
+
+Time and CPU
+- wall_s: host request-to-response time including small IPC/JSON overhead.
+- sdk_call_s: measured SDK method only; first-job initialization separately sdk_init_s.
+- worker_operation_s: complete worker-side job including initialization/result prep.
+- total_cgroup_cpu_s: canonical cpu.stat usage delta for every process/thread in
+  this container, including live Node, native libraries, reaped children.
+- python_process_cpu_s: Python process SELF, including native PyAV/C2PA/Torch work;
+  not exclusively interpreted Python bytecode.
+- live_node_cpu_s: diagnostic process CPU delta using PID + starttime identity.
+- reaped_child_cpu_s: diagnostic exited-child CPU. Never add shutdown lifetime
+  reaped Node counters to per-job totals a second time.
+- cpu_accounting_difference_s: cgroup total minus SELF + reaped + live child deltas.
+  Minor clock-tick/serialization differences are expected; raw counters retained.
+- average_cpu_cores: total_cgroup_cpu_s / wall_s, not a percentage of the whole VM.
+- cold_inclusive_*: spawn-to-first-response accounting including container startup
+  and controller setup intervals; not install/download/build latency.
+- receipt_encoder_inference_*: SDK receipt's narrow video-embedding counters;
+  not a complete CPU or wall breakdown of decode/encode/gate/signing work.
+
+Memory (MiB = 2^20 bytes)
+- memory_peak_mib: canonical cgroup kernel memory.peak reset/read on the SAME FD
+  for this request. Charged memory includes anonymous/native pages and charged
+  page cache; it is not RSS, the 4096 MiB cap or global physical RAM attributable
+  to every shared page. Shared pages charged elsewhere need not appear here.
+- memory_start/end_mib: cgroup memory.current at request boundaries.
+- sampled_anon/file_charge_peak_mib: independent sampled maxima from memory.stat;
+  maxima need not occur at the same instant and must not simply be added.
+- sampled_cgroup_peak_mib: maximum memory.current observation, normally 100 ms.
+- sampled_rss_sum_peak_mib: sampled sum of process RSS; shared mappings can count
+  multiple times. Role RSS maxima are also non-coincident diagnostics.
+- sampling_enabled=false: no periodic sampling; endpoint snapshots and kernel
+  peak/CPU deltas remain. Sampled fields then mean endpoints only, not 100 ms data.
+
+Host and I/O
+- observer_cpu_s: host observer's own process CPU, outside measured container.
+  It competes for host resources and is checked by a no-sampler control.
+- host_steal_percent, host_busy_percent: aggregate host tick deltas for the request.
+- throttled_s/periods: kernel cgroup CPU quota counters, not wall delay estimates.
+- io_read/write_bytes: summed cgroup io.stat device deltas. Raw per-device values
+  remain in timelines. They are not user-level payload bytes or guaranteed unique
+  physical I/O across stacked devices; page-cache hits may not cause block I/O.
+
+Verdicts
+- accepted_export: SDK accepted the full export/read-back gate.
+- correct_id: returned ID equals the expected export's ID (assessed AFTER verify).
+- completed_negative: watermark.status=not_found on a clean fixture.
+- incomplete: watermark.status=not_checked; never evidence of absence.
+- wrong_id / unexpected_id / operational_error: retained adverse outcomes.
+- API completion (n_ok) is distinct from semantic outcome.
+- Metadata-loss positive proves ID/record recovery, not the authenticity of a
+  modified copy. Development signature validity is distinct from issuer trust.
+
+Statistics
+- Warm median/min/max over three sequential observations of one source per cell.
+  IDs/files differ for exports and positives; negative repeats use the same clean
+  source. They are timing repeats, not independent content-population samples.
+- Cold n=1 per cell. No p95, SLA, population accuracy/FPR or legal cadence claim.
+- Mixed/idle controls and earlier client pilot are separate, not pooled into
+  primary medians. For runtime CLI vs PyAV library versions see RUNTIME.json.
+- Exception: the separate 60-second budget control has one cold and one warm
+  observation, not three warm repeats; its summary n is explicit. It is a limit
+  probe and does not estimate warm timing spread.

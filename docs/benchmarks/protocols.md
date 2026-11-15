@@ -117,6 +117,13 @@ small matrix. The early-stop verifier is not a whole-video mixed-source audit.
 
 ## P6 Performance and resource use
 
+Executed examples: [CJ-05 0.7.3a4](0.7.3a4-performance-2026-11-15.md) and
+[the earlier client-journey pilot](0.7.3a4-integration-pilot-2026-11-15.md).
+CJ-05 froze its own shorter repeat schedule (one cold, three warm per cell)
+before execution; it is not the larger repeat schedule recommended below and
+does not estimate cold-start variance or production tail latency.
+
+
 Measure the same source files/settings on one idle qualified machine, with modes
 run sequentially. Separate setup/downloads, cold process/model startup, resident
 worker export, positive verification, negative full scan and optional recovery.

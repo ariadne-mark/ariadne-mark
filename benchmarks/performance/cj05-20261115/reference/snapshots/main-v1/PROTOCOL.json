@@ -1,0 +1,38 @@
+{
+  "id": "CJ-05-20261115-v1",
+  "status": "frozen_before_campaign; validate instrumentation before main runs",
+  "sdk": "0.7.3a4",
+  "qualified_source": "49578688710a8bae2373aaf9d47ff9521f566d4c",
+  "public_main": "be742d0c83421a567562a37aff3a605e88b0ea09",
+  "image_id": "sha256:1a4dd358bcf698df654daaac631a26d3bc874104de5108bc94ce941c33a49980",
+  "limits": {"cpus": 2, "memory_gib": 4, "sample_interval_seconds": 0.1, "minimum_free_disk_gib": 5},
+  "cold": "Fresh container/Python/SDK/model process with already-provisioned dependencies and models; OS/filesystem caches not evicted. Report container startup separately and first operation inclusive SDK imports/model load.",
+  "warm": "Three subsequent jobs in the same SDK process, different output IDs/files for exports and positives, same source for clean negative scans. No concurrency.",
+  "corpus": {
+    "images": ["1024x683 PNG", "2048x1152 JPEG"],
+    "videos": [
+      {"id":"v720_5_24","size":"1280x720","duration_s":5,"fps":"24"},
+      {"id":"v720_10_30","size":"1280x720","duration_s":10,"fps":"30"},
+      {"id":"v720_15_ntsc","size":"1280x720","duration_s":15,"fps":"30000/1001"},
+      {"id":"v1080p_5_24","size":"1080x1920","duration_s":5,"fps":"24"},
+      {"id":"v1080_10_30","size":"1920x1080","duration_s":10,"fps":"30"},
+      {"id":"v1080p_15_ntsc","size":"1080x1920","duration_s":15,"fps":"30000/1001"}
+    ],
+    "source": "Own deterministic Pillow/FFmpeg engineering fixtures; no population realism, durability or production workload claim. Full commands, seeds, metadata and SHA256 retained. Existing client pilot remains a separate narrow data set."
+  },
+  "operations": ["SDK.mark complete export/sign/read-back", "independent SDK.verify positive", "independent SDK.verify metadata-loss positive", "independent SDK.verify clean negative"],
+  "profiles": ["economy_5s", "economy_2s", "resilient"],
+  "primary_verification_scope": "current, matching recommended new-issuer integration; explicitly not an across-legacy negative",
+  "additional_control": "720p10s: default all vs current verification on intact positive, metadata-loss positive and clean negative, with pinned legacy engine provisioned",
+  "measurement": {
+    "canonical_cpu": "host cgroup v2 cpu.stat usage/user/system deltas across each complete operation, including all processes and exited children",
+    "canonical_memory": "same-FD resettable cgroup memory.peak if instrumentation calibration succeeds; total charged memory including resident state/page cache, plus sampled memory.current anon/file and summed RSS (shared mappings may double-count)",
+    "diagnostics": "process PID/starttime/role CPU and RSS samples; root self CPU and reaped-child CPU are diagnostic, not substitutes for cgroup total",
+    "host": "Host CPU/steal/load/memory and observer CPU recorded; unrelated services retained",
+    "negative": "Keep not_found separate from not_checked/timeouts/conflicts; no ID or schedule hints to detector",
+    "boundary": "Host request-to-response wall includes minimal IPC/serialization; worker SDK-call wall separately; cold-inclusive container wall/CPU separately"
+  },
+  "fixtures": "Development identity; no real production TSA/network latency, CA enrollment or public trust qualification",
+  "log_policy": "Append raw measurements/events immediately; checkpoint after each operation; preserve failed attempts. Private keys/registry/media excluded from public handoff.",
+  "invariants": ["No SDK/runtime/model patch", "Mode names/cadence/strength/default unchanged", "No host cache eviction", "No concurrency with other qualification jobs: shared flock", "Existing services/website/indexing unchanged"]
+}

@@ -1,0 +1,84 @@
+{
+  "python": "3.12.16 (main, Oct 28 2026, 02:01:20) [GCC 14.2.0]",
+  "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.41",
+  "packages": {
+    "ariadne-mark": "0.7.3a4",
+    "av": "16.0.1",
+    "Pillow": "13.0.0",
+    "trustmark": "0.9.2",
+    "torch": "2.14.1+cpu",
+    "numpy": "2.5.4",
+    "c2pa-python": "0.38.3"
+  },
+  "pyav_ffmpeg_libraries": {
+    "libavutil": [
+      60,
+      8,
+      100
+    ],
+    "libavcodec": [
+      62,
+      11,
+      100
+    ],
+    "libavformat": [
+      62,
+      3,
+      100
+    ],
+    "libavdevice": [
+      62,
+      1,
+      100
+    ],
+    "libavfilter": [
+      11,
+      4,
+      100
+    ],
+    "libswscale": [
+      9,
+      1,
+      100
+    ],
+    "libswresample": [
+      6,
+      1,
+      100
+    ]
+  },
+  "image": "sha256:1a4dd358bcf698df654daaac631a26d3bc874104de5108bc94ce941c33a49980",
+  "node": "v24.22.2",
+  "ffmpeg_cli": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers",
+  "c2pa_qualification": {
+    "status": "qualified",
+    "reason": null,
+    "expected": {
+      "python_package": "0.38.3",
+      "native_version": "0.91.11",
+      "native_sha256": "d046de02d826e90bc3c6d8896faa2b04ca280638960b69283bb5ce404280f0a8",
+      "platform": "Linux x86-64 / Python 3.12"
+    },
+    "python_package": "0.38.3",
+    "native_version": "0.91.11",
+    "native_sha256": "d046de02d826e90bc3c6d8896faa2b04ca280638960b69283bb5ce404280f0a8"
+  },
+  "machine": {
+    "kernel_release": "7.0.0-1014-aws",
+    "architecture": "x86_64",
+    "logical_cpus": 2,
+    "instance_type": "m6a.large",
+    "region": "us-west-2"
+  },
+  "post_run_host_memory_inventory_bytes": {
+    "MemTotal": 8107843584,
+    "SwapTotal": 0,
+    "SwapFree": 0
+  },
+  "docker_image_reported_size_bytes": 826399543,
+  "notes": [
+    "Collected after all timing; importing metadata/PyAV only, no SDK inference.",
+    "FFmpeg CLI and PyAV-linked FFmpeg versions are distinct and are reported separately.",
+    "Docker image size is not unique disk space, install traffic or RAM."
+  ]
+}

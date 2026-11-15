@@ -1,0 +1,22 @@
+{
+  "campaign_status": "passed",
+  "data_rows": 338,
+  "shutdown_rows": 85,
+  "outcome_counts": {
+    "accepted_export": 96,
+    "correct_id": 196,
+    "completed_negative": 40,
+    "incomplete": 6
+  },
+  "failures_recorded": [],
+  "unexpected_outcomes": [],
+  "max_cpu_accounting_abs_difference_s": 0.019886000000013837,
+  "max_observer_cpu_fraction_wall": 0.02023532133857381,
+  "max_host_steal_percent": 0.24691358024691357,
+  "max_charged_memory_peak_mib": 1328.7109375,
+  "memory_limit_mib": 4096,
+  "protocol": "CJ-05-20261115-v1 + AMENDMENT1",
+  "cold_n": 1,
+  "warm_n": 3,
+  "corpus": "engineering fixtures, not a population or representative quality/durability/FPR sample"
+}
