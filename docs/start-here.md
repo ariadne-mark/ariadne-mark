@@ -10,6 +10,10 @@ The supported media runtime is Linux x86-64/Python 3.12 on CPU. The record/profi
 core also supports Python 3.11–3.14. Synthetic audio and text marking are outside
 this visual kit; AAC may be preserved as original audio.
 
+
+For one tested route from these samples to your own files, use the
+[image + silent-video integration walkthrough](implementation/own-files.md).
+
 ## Get one complete result first
 
 Download [Release 0.7.3a4](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4), starting with `START_HERE.txt`.
@@ -17,6 +21,10 @@ Download [Release 0.7.3a4](https://github.com/ariadne-mark/ariadne-mark/releases
 three-video-mode walkthrough. Inspect it before running. The default Docker
 build needs about 10 GB free; the wheel path uses less disk when its system
 prerequisites are already installed.
+
+The release archive's bundled README describes its build-time state. For current
+installation and publication status, follow release `START_HERE.txt` and this page;
+the archived text is preserved with its original hashes.
 
 The immutable runtime/source is `49578688710a8bae2373aaf9d47ff9521f566d4c`; subsequent documentation changes do
 not replace those tested package bytes. [Qualification](validation/0.7.3a4-results.md)

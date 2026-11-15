@@ -1,12 +1,46 @@
 # Prepare your production deployment
 
-SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-14**.
+SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-15**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.
 
 Use the qualified kit as a reference deployment and assign an owner for each
 step below. A development init is a local evaluation, not a production setup.
+
+## Dev to production: the critical path
+
+| Step | Owner | External access | Result | Acceptance |
+| --- | --- | --- | --- | --- |
+| 1. Prove your own export | App engineer | Public release downloads during provisioning | Own image and silent video, receipt and independent read-back | Follow the [single integration route](../implementation/own-files.md); no unmarked fallback |
+| 2. Map your product's duties | Founder/product lead, legal reviewer as needed | [EU](../compliance/eu-ai-act.md) / [California](../compliance/california.md) primary sources | Written role, markets, placement date, modalities and disclosure plan | Resolve applicable matrix rows and remaining operator actions; no assumption that installing code certifies the app |
+| 3. Choose public trust and signing arrangements | Product operator | C2PA conformance/enrollment and CA, when choosing that public-trust route | Eligible product/operator, compatible signer chain/key and renewal terms | Confirm the CA's actual issuance/key interface works with local ES256 PEM loading; no HSM/cloud-signing adapter is supplied |
+| 4. Provision credentials and timestamp capacity | Operator/security owner | Real CA identity and HTTPS TSA; bearer token if required | Protected provider key, issuer roots, independent TSA roots and configured URL/token | `kit check --runtime` succeeds; actual production export validates timestamp and signer chain; fixture TSA is insufficient |
+| 5. Publish verifier and recovery | Service operator | Domain, DNS/TLS, hosting | Public HTTPS upload UI/API, reviewed public fields, report key and persistent registry | Check from outside the host; compare downloaded bytes/ID, verify signed report using pinned key, exercise feedback and cleanup |
+| 6. Validate actual delivery and failures | App engineer + operator | Own app/CDN and chosen services | Evidence for final renditions, expected transforms, negative/incomplete results and outages | Export failures do not publish; capacity/back pressure, restore and renewal rehearsed; record known limits |
+| 7. Enable and maintain | Product owner | Monitoring and vendor accounts | Budget, runbook and evidence archive | Assign incident, key rotation, feedback and law/version review owners |
+
+**Available now:** source/wheel, development identities, three unchanged modes,
+local integration, verifier/registry, signed reports and offline test evidence.
+**External remaining step:** a real eligible operator/product must obtain its own
+signing and timestamp credentials. Ariadne's development test certificate cannot
+complete that step. No live CA/TSA interoperability trace for your identity is
+claimed. When credentials are available, retain a sanitized export, independent
+validator output, exact versions, trust-list date and failure/retry evidence.
+
+A valid signature verifies the manifest and file binding. A locally trusted root
+is your verifier configuration; public C2PA trust adds separate ecosystem enrollment
+and product conformance. Neither is a declaration that all statutory duties are
+met. The SDK's per-export trusted timestamp gate is engineering policy. Applicable
+law, the voluntary Code and this implementation are mapped separately in the
+[requirements matrix](../compliance/requirements-matrix.md).
+
+Primary onboarding references rechecked **15 November 2026**:
+[CAI conformance guide](https://opensource.contentauthenticity.org/docs/conformance/conformance-impl-guide/)
+and [SSL.com issuance process](https://www.ssl.com/products/content-authenticity/content-credentials/c2pa/).
+Confirm key protection and CA terms for your selected product/assurance level;
+support for a local key format does not establish that your deployment satisfies
+a conformance security requirement. Do not send private keys in an issue/report.
 
 ## Credentials and trust
 
@@ -77,7 +111,7 @@ Review anonymous feedback and documented failures. Plan key/report-key rotation,
 revocation and backward detection of earlier formats.
 
 Record the results in the [operator evidence template](../compliance/operator-evidence-template.md).
-[Release qualification](../validation/0.7.2a1-results.md) used development credentials;
+[Current release qualification](../validation/0.7.3a4-results.md) used development credentials;
 no real production identity/TSA deployment or long-running public load test is claimed.
 
 ## A concrete certificate route

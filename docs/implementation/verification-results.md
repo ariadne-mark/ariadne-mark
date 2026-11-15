@@ -53,7 +53,7 @@ transformed, unmarked and corrupted files; see [release evidence](../validation/
 A valid C2PA binding covers its signed asset; that is separate from the extent
 to which watermark IDs can be recovered across a video's timeline.
 
-## Several IDs, frame identity and scope (report schema 2, unreleased)
+## Several IDs, frame identity and scope (report schema 2, shipped in 0.7.3a4)
 
 - `watermark.status=multiple_ids`: two or more distinct IDs were read
   (individually or by aggregation). Every ID stays in `watermark.ids` with

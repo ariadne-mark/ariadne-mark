@@ -11,7 +11,7 @@
       "provision": "50(2)",
       "requirement": "Machine-readable marking and detection",
       "mechanism": "C2PA + watermark + verifier",
-      "evidence": "217 installed tests; kit fresh exports",
+      "evidence": "current 0.7.3a4 qualification, 341 installed-media tests; kit fresh exports",
       "remaining_action": "Actual output coverage and modality applicability",
       "owner": "shared",
       "source_id": "EU-50",

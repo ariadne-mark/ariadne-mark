@@ -74,7 +74,7 @@ time range, stop reason) and `whole_file_examined`; an ID applies only to the
 positions where it was read. With several IDs, `recovery.status=per_id` gives one
 registry result per confirmed ID, bound to the schemes that read it.
 
-Report `schema_version` 2 (unreleased, after 0.7.2a1): the former watermark
+Report `schema_version` 2 (shipped in 0.7.3a4): the former watermark
 `invalid` with reason `multiple_tokens`/`conflicting_ids` is now
 `multiple_ids` with `watermark.ids`. Single-ID results keep their fields.
 

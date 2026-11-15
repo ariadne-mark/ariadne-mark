@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "publisher": "Your public studio name",
+  "system": {"name": "Your generator", "version": "1.0"},
+  "jobs": [
+    {"job_id": "image-001", "source": "inputs/your-image.png", "destination": "staging/image-001.png", "generated_at": "REPLACE_WITH_ACTUAL_IMAGE_GENERATION_TIME_WITH_TIMEZONE"},
+    {"job_id": "video-001", "source": "inputs/your-silent-video.mp4", "destination": "staging/video-001.mp4", "generated_at": "REPLACE_WITH_ACTUAL_VIDEO_GENERATION_TIME_WITH_TIMEZONE", "audio_kind": "none", "video_profile": "economy_5s"}
+  ]
+}

@@ -98,7 +98,7 @@ For a video-only installation, activate a Linux x86-64 / Python 3.12 virtualenv
 with FFmpeg/ffprobe and Node/npm available, then use the installed wheel:
 
 ```sh
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.2a1-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a4-py3-none-any.whl
 ariadne setup video --fetch-models
 ariadne runtime check
 ```
@@ -112,7 +112,7 @@ Provisioning is explicit and uses the packaged npm lockfile plus SHA-256 model
 and source checks. Runtime requests never download code/models. The dependency
 cache is `~/.cache/ariadne-mark/video-v1`, configurable by `ARIADNE_VIDEO_DATA`.
 Docker preprovisions it under `/opt/ariadne-video`, readable by the runtime user.
-The qualified 0.7.2a1 media environment uses Node24, Linux x86-64/Python3.12,
+The qualified 0.7.3a4 media environment uses Node24, Linux x86-64/Python3.12,
 PyAV 16.0.1 and c2pa-python 0.38.3 / native 0.91.11. Runtime preflight
 checks that actual C2PA pair before media operations and HTTP startup; other media platforms are not qualified.
 
@@ -271,7 +271,9 @@ are rejected using descriptors and decoded-frame properties.
 
 ## Current qualification and interpretation
 
-[0.7.2a1 results](../validation/0.7.2a1-results.md) confirm distinct schedules on
+Current [0.7.3a4 qualification](../validation/0.7.3a4-results.md) passed 341/341 installed-media tests, with zero skips.
+
+Historical [0.7.2a1 results](../validation/0.7.2a1-results.md) confirm distinct schedules on
 a 6 s/12 fps fixture (Economy5s: 4 selected frames, Economy2s: 6, Resilient: 72).
 This is integration evidence, not a new speed/durability benchmark. Follow the
 [protocols](../benchmarks/protocols.md) and [evidence index](../benchmarks/evidence-index.md)
