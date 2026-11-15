@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "child_roles_observed": [
+    "node",
+    "ffmpeg"
+  ],
+  "cpu_reference": "self+reaped children, all calibration children exit before response",
+  "cpu_cgroup_s": 2.999017,
+  "cpu_reference_s": 2.998646,
+  "memory_active_peak_bytes": 218353664,
+  "memory_idle_reset_peak_bytes": 12480512,
+  "memory_per_operation_peak_reset_verified": true
+}

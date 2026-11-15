@@ -41,6 +41,8 @@ choose a mode for your delivery workflow and retain evidence of your implementat
 
 - [Previous published baseline qualification](validation/0.7.2a1-results.md).
 - [Testing protocols](benchmarks/protocols.md) and [versioned evidence index](benchmarks/evidence-index.md).
+- [Current CPU performance and resources](benchmarks/0.7.3a4-performance-2026-11-15.md): cold/warm exports and independent positive/negative scans, with raw measurements.
+- [Model-assisted integration pilot](benchmarks/0.7.3a4-integration-pilot-2026-11-15.md): what the narrow first-adopter exercise established.
 - [Result terminology](reference/glossary.md).
 
 The qualified SDK commit is `8c6fda81b27c5c6c0c9539bbbc3daef7e285b1fa`. Documentation can be updated separately;

@@ -1,0 +1,2 @@
+98564e1b9677bbb6f91ff485159a1ca3977ed2d1efb470b0b6af815774fd61d9  snapshots/mixed-v1.py
+0625f29e965e262f83e435b85f114871954f88e76fe3e3a0e9398be5dc40cf5c  snapshots/AMENDMENT-2.json
