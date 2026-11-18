@@ -1,6 +1,6 @@
 # Terms and evidence boundaries
 
-SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-18**.
+SDK **0.7.3b1 public beta** · documentation updated **2026-11-18**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.

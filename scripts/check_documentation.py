@@ -6,10 +6,15 @@ root=Path(__file__).resolve().parents[1]
 errors=[];warnings=[];checked_links=0;python_blocks=0;shell_blocks=0
 manifest=json.loads((root/'docs/site-publication.json').read_text())
 version=tomllib.loads((root/'pyproject.toml').read_text())['project']['version']
-summary=json.loads((root/f"docs/validation/results/{manifest['sdk_version']}-summary.json").read_text())
-assert manifest['sdk_version']==summary['sdk_version']==version=='0.7.3a4'
-assert manifest['tested_sdk_commit']==summary['commit']=='49578688710a8bae2373aaf9d47ff9521f566d4c'
-assert summary['ci_conclusion']=='success' and summary['full_media']=={'tests':341,'wall_s':410.349,'skipped':0}
+qualified_version=manifest.get('qualified_sdk_version',manifest['sdk_version'])
+summary=json.loads((root/f"docs/validation/results/{qualified_version}-summary.json").read_text())
+assert manifest['sdk_version']==version
+assert summary['sdk_version']==qualified_version
+assert manifest['tested_sdk_commit']==summary['commit']
+assert manifest['ci_url']==summary['ci_url']
+assert summary['ci_conclusion']=='success'
+assert summary['full_media']['tests']>0 and summary['full_media']['skipped']==0
+assert summary['full_media']['wall_s']>0
 assert summary['video_profiles']==['economy_5s','economy_2s','resilient']
 paths=set()
 for item in manifest['pages']+manifest['assets']:
@@ -66,13 +71,13 @@ for p in sorted(paths):
 for p in paths:
  if p.is_file() and 'validation' not in p.parts and 'benchmarks' not in p.parts:
   text=p.read_text()
-  release_note=re.fullmatch(r'release-(0\.7\.[0-9]+a[0-9]+)\.md',p.name)
+  release_note=re.fullmatch(r'release-(0\.7\.[0-9]+(?:a|b|rc)[0-9]+)\.md',p.name)
   expected_header=release_note.group(1) if release_note else version
   # Anywhere in a line, not only at its start (P-04: '... · SDK **x** scope').
   for header in re.findall(r'\bSDK \*\*([^*]+)\*\*',text):
    if header.split()[0] != expected_header:errors.append(str(p.relative_to(root))+': stale active SDK header '+header)
   first_line=text.splitlines()[0] if text else ''
-  heading_version=re.search(r'^# .* (?:—|-) (0\.7\.[0-9]+a[0-9]+)\s*$',first_line)
+  heading_version=re.search(r'^# .* (?:—|-) (0\.7\.[0-9]+(?:a|b|rc)[0-9]+)\s*$',first_line)
   if heading_version and heading_version.group(1)!=version and 'release-' not in p.name and p.name!='releases.md':
    errors.append(str(p.relative_to(root))+': stale versioned title '+heading_version.group(1))
   first=text.splitlines()[0] if text else ''
@@ -96,7 +101,8 @@ for line in (root/'docs/compliance/source-excerpts.md').read_text().splitlines()
  m=re.search(r'\[.+?\]\((https?://[^)]+)\).*?“([^”]+)”',line)
  if m:quote_words[m[1]]=quote_words.get(m[1],0)+len(m[2].split())
 if any(n>25 for n in quote_words.values()):errors.append('Excerpt quota exceeded')
-result={'ok':not errors,'sdk_version':version,'published_snapshot_qualified_commit':summary['commit'],
+result={'ok':not errors,'sdk_version':version,'qualified_sdk_version':qualified_version,
+ 'published_snapshot_qualified_commit':summary['commit'],
  'active_markdown_files':len(paths),'local_links_checked':checked_links,'python_blocks_syntax_checked':python_blocks,
  'shell_blocks_syntax_checked':shell_blocks,'publication_pages':len(manifest['pages']),'publication_assets':len(manifest['assets']),
  'legal_matrix_rows':len(legal['rows']),'excerpt_words_by_source':quote_words,'errors':errors,'warnings':warnings,

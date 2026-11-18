@@ -1,8 +1,10 @@
 include Dockerfile compose.yaml .dockerignore THIRD_PARTY.md CHANGELOG.md CONTRIBUTING.md SECURITY.md CODE_OF_CONDUCT.md
 recursive-include docs *.md *.txt *.json *.csv
+include docs/examples/export_jobs.py
 recursive-include compliance *.md *.json
 recursive-include scripts *.py *.sh *.mjs
 recursive-include benchmarks *.md *.txt *.py *.json *.jsonl
+include benchmarks/delivery-20261118/RESULTS.csv benchmarks/delivery-20261118/raw-reports-and-scripts.tar.gz
 recursive-include examples *.py *.md *.txt *.json *.html *.yaml *.yml
 include examples/stock_product/Dockerfile examples/stock_product/.dockerignore
 recursive-include tests *.py *.md

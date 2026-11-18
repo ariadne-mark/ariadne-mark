@@ -1,6 +1,6 @@
 # Requirements to implementation and evidence
 
-SDK **0.7.3a4 developer alpha** · baseline legal-source review **2026-11-10**.
+SDK **0.7.3b1 public beta** · baseline legal-source review **2026-11-10**.
 
 The source review date and dated evidence below remain historical; this header
 is not a new legal clearance or candidate qualification.
@@ -12,7 +12,7 @@ and [California guidance](california.md) with the source/role conditions.
 
 | ID / source | Requirement | Included measure and evidence | Remaining action / owner |
 | --- | --- | --- | --- |
-| [EU-01 50(2)](https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50) (law) | Machine-readable marking and detection | C2PA + watermark + verifier. Evidence: current 0.7.3a4 qualification, 341 installed-media tests; kit fresh exports ([implementation](../../src/ariadne_mark/pipeline/__init__.py), [record](../../tests/integration/test_media.py)) | Actual output coverage and modality applicability — shared |
+| [EU-01 50(2)](https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50) (law) | Machine-readable marking and detection | C2PA + watermark + verifier. Evidence: 0.7.3a4 qualification, 341 installed-media tests; kit fresh exports ([implementation](../../src/ariadne_mark/pipeline/__init__.py), [record](../../tests/integration/test_media.py)) | Actual output coverage and modality applicability — shared |
 | [EU-02 50(2)](https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50) (law) | Effectiveness, reliability, robustness, interoperability | Layered scheme and versioned protocols. Evidence: Scoped historical transforms + external C2PA read ([implementation](../../src/ariadne_mark/verification/media.py), [record](../../tests/integration/test_economy.py)) | Representative delivery/error-rate assessment; known failures — shared |
 | [EU-03 111(4)](https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-111) (law) | Specific provider transition by placement date | Date-aware product planner. Evidence: Date-boundary regressions ([implementation](../../src/ariadne_mark/profiles/__init__.py), [record](../../tests/compliance/test_profiles.py)) | Actual placement date and exception facts — operator |
 | [EU-04 50(4)-(5)](https://ai-act-service-desk.ec.europa.eu/en/ai-act/article-50) (law) | Applicable deepfake disclosure and accessibility | Optional baked-in label. Evidence: Reference component tests only ([implementation](../../src/ariadne_mark/cli.py), [record](../../tests/disclosure)) | Product wording, placement, audience and accessibility — operator |
@@ -36,7 +36,7 @@ and [California guidance](california.md) with the source/role conditions.
 
 ## Evidence and use
 
-Current [0.7.3a4 qualification](../validation/0.7.3a4-results.md) binds the
+The [0.7.3a4 qualification](../validation/0.7.3a4-results.md) binds the
 published wheel/source hashes to **341/341 media tests, zero skips**, the core
 matrix and clean installations. It is development-runtime evidence, not a live
 production certificate/TSA qualification.

@@ -1,11 +1,12 @@
 {
   "schema_version": 1,
   "docs_edition": "2026-11-18",
-  "sdk_version": "0.7.3a4",
+  "sdk_version": "0.7.3b1",
+  "qualified_sdk_version": "0.7.3a4",
   "tested_sdk_commit": "49578688710a8bae2373aaf9d47ff9521f566d4c",
   "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/43598162234",
   "canonical_origin": "https://ariadnemark.xyz",
-  "scope": "Public developer-alpha documentation; immutable qualified0.7.3a4 packages and separately versioned docs",
+  "scope": "0.7.3b1 beta documentation candidate; qualification references the published 0.7.3a4 build until the beta is qualified",
   "pages": [
     {
       "route": "/docs/",

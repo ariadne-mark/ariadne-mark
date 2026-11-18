@@ -1,6 +1,6 @@
 # Prepare your production deployment
 
-SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-18**.
+SDK **0.7.3b1 public beta** · documentation updated **2026-11-18**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.
@@ -131,7 +131,7 @@ Review anonymous feedback and documented failures. Plan key/report-key rotation,
 revocation and backward detection of earlier formats.
 
 Record the results in the [operator evidence template](../compliance/operator-evidence-template.md).
-[Current release qualification](../validation/0.7.3a4-results.md) used development credentials;
+[0.7.3a4 qualification](../validation/0.7.3a4-results.md) used development credentials;
 no real production identity/TSA deployment or long-running public load test is claimed.
 
 ## A concrete certificate route

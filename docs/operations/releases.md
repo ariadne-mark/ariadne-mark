@@ -1,11 +1,11 @@
-# Public alpha release qualification
+# SDK release qualification
 
-The first public alpha distributes Ariadne's wheel and source archive, plus a
+The public SDK release distributes Ariadne's wheel and source archive, plus a
 Docker build recipe. A prebuilt combined Docker binary and PyPI publishing are
 separate release channels. The SDK provides technical measures and requirements
 planning; it does not return a product-wide compliance certificate.
 
-## Required before publishing the alpha
+## Required before publishing a release
 
 1. Resolve applicable dependency security updates and record scanner coverage,
    skipped packages and native findings; preserve upstream licensing notices.
@@ -20,7 +20,7 @@ planning; it does not return a product-wide compliance certificate.
 6. Publish versioned artifacts, scope, benchmark context and security reporting
    links, tied to the tested commit. Do not silently replace release bytes.
 
-## Does not block this scoped alpha
+## Separate deployment and distribution work
 
 A centrally hosted verifier, paid support/SLA, public certificate enrollment,
 new media formats, cross-provider routing and a new broad benchmark campaign

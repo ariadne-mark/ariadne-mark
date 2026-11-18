@@ -13,8 +13,8 @@ Use the source archive and wheel from the same release manifest. The source
 archive includes Dockerfile, dependency locks, kit assets and test scripts.
 
 ```sh
-tar -xzf ariadne_mark-0.7.3a4.tar.gz
-cd ariadne_mark-0.7.3a4
+tar -xzf ariadne_mark-0.7.3b1.tar.gz
+cd ariadne_mark-0.7.3b1
 docker build --platform linux/amd64 --iidfile ariadne-image.id .
 IMAGE=$(cat ariadne-image.id)
 mkdir -p deployments

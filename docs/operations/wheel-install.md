@@ -2,12 +2,12 @@
 
 Qualified environment: Linux x86-64, Python 3.12, FFmpeg/ffprobe and Node.js/npm.
 Use a new virtualenv. The Docker recipe provisions the system prerequisites.
-Download the exact wheel and SHA256SUMS from [Release 0.7.3a4](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4); verify the downloaded wheel hash before installation.
+Download the exact wheel and SHA256SUMS from [Release 0.7.3b1](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3b1); verify the downloaded wheel hash before installation.
 
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a4-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3b1-py3-none-any.whl
 ariadne setup media --fetch-models
 ariadne runtime check
 ```
