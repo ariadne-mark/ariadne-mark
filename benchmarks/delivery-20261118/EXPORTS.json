@@ -1,0 +1,130 @@
+[
+  {
+    "scene": "face",
+    "kind": "image",
+    "profile": "image",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/face/image/marked.png",
+    "sha256": "a50fe215dbda501621eec35c026e6a1b7968af2d265cf50daddb332f2b89e8e4",
+    "token": "014d6d5c231174b2"
+  },
+  {
+    "scene": "face",
+    "kind": "video",
+    "profile": "economy_5s",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/face/economy_5s/marked.mp4",
+    "sha256": "86f5aa0f0efd5f037ffef70b1bc815ea0acc45e1b8049afc9af5bede91bcd9bf",
+    "token": "014d5d32a5f665c9"
+  },
+  {
+    "scene": "face",
+    "kind": "video",
+    "profile": "economy_2s",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/face/economy_2s/marked.mp4",
+    "sha256": "5adbe2adb19d5afaef811e5ea05a1b2cc21484b54f690802c4a82ceed35989c8",
+    "token": "014d6d96acf77dca"
+  },
+  {
+    "scene": "face",
+    "kind": "video",
+    "profile": "resilient",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/face/resilient/marked.mp4",
+    "sha256": "cf5c4da10a9c6d9b7128b3ba91f5d23e3dea2e62a074e00b6b8ad2776a29b353",
+    "token": "014d1297d3710054"
+  },
+  {
+    "scene": "crowd",
+    "kind": "image",
+    "profile": "image",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/crowd/image/marked.png",
+    "sha256": "a159a79ce886a8f74f238522955428421154df58a3b0859c7b8bb402a700a6e2",
+    "token": "014d463fbd447047"
+  },
+  {
+    "scene": "crowd",
+    "kind": "video",
+    "profile": "economy_5s",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/crowd/economy_5s/marked.mp4",
+    "sha256": "8fdba56f4c8e5ac1845a7966e123ef7f271f063d81ce5cfa90a5fb11930ec6b5",
+    "token": "014d1d4316749ecf"
+  },
+  {
+    "scene": "crowd",
+    "kind": "video",
+    "profile": "economy_2s",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/crowd/economy_2s/marked.mp4",
+    "sha256": "07f5da0c6222f6bec27ecbcb9ca6becbf09d70690e9308e1a39a2dfeb828900e",
+    "token": "014daa6a4b4e23a8"
+  },
+  {
+    "scene": "crowd",
+    "kind": "video",
+    "profile": "resilient",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/crowd/resilient/marked.mp4",
+    "sha256": "e1a770255c15654af45f764bff6c72aef0f78cd392259870eae8771dae2ff221",
+    "token": "014d074a902264df"
+  },
+  {
+    "scene": "mixkit-1164",
+    "kind": "image",
+    "profile": "image",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/mixkit-1164/image/marked.png",
+    "sha256": "3d1a97b4ac13fde102769e390bc466ae50baa9a4cc565f10b2d932ef0cd58cc3",
+    "token": "014dceaf25836a5b"
+  },
+  {
+    "scene": "mixkit-1164",
+    "kind": "video",
+    "profile": "economy_5s",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/mixkit-1164/economy_5s/marked.mp4",
+    "sha256": "2ab2bab166192269750604c119a7e00d4337a6e71c1c9fb04da18e6077f8654e",
+    "token": "014dee4e75074389"
+  },
+  {
+    "scene": "mixkit-1164",
+    "kind": "video",
+    "profile": "economy_2s",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/mixkit-1164/economy_2s/marked.mp4",
+    "sha256": "78ef42976759321c6f965940247390a8017759e02b36fc5cda992fd26976e208",
+    "token": "014d22a7b1d6e370"
+  },
+  {
+    "scene": "mixkit-1164",
+    "kind": "video",
+    "profile": "resilient",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/mixkit-1164/resilient/marked.mp4",
+    "sha256": "f4ffc464884826c097fe20f40a0defb87407e2eb59ee3e34f7a886f9f636bf0f",
+    "token": "014d5ad60059f992"
+  },
+  {
+    "scene": "mixkit-5016",
+    "kind": "image",
+    "profile": "image",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/mixkit-5016/image/marked.png",
+    "sha256": "2046c1f18f524e558e5a1425158049e1e784311a56d1433239ff209c801c39f7",
+    "token": "014dcb740ac79980"
+  },
+  {
+    "scene": "mixkit-5016",
+    "kind": "video",
+    "profile": "economy_5s",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/mixkit-5016/economy_5s/marked.mp4",
+    "sha256": "5e0e1b9c9af320c846d078f264a6a5af40f0f1b67ddcf48d1765a7cc61e11d68",
+    "token": "014de6d613726295"
+  },
+  {
+    "scene": "mixkit-5016",
+    "kind": "video",
+    "profile": "economy_2s",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/mixkit-5016/economy_2s/marked.mp4",
+    "sha256": "3557a3ed99958a89c7a95963a257825e8365f18351bea7371e95ef590c740a9b",
+    "token": "014d39f677c041d0"
+  },
+  {
+    "scene": "mixkit-5016",
+    "kind": "video",
+    "profile": "resilient",
+    "file": "/home/ubuntu/ariadne-review-followup-20261118/data/artifacts/mixkit-5016/resilient/marked.mp4",
+    "sha256": "7e1511ec2f33592689b227979eb94c752ef8835c46fd57f864816edb0d821254",
+    "token": "014d2a60204c14b3"
+  }
+]

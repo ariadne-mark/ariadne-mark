@@ -1,12 +1,32 @@
 # Prepare your production deployment
 
-SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-15**.
+SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-18**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.
 
 Use the qualified kit as a reference deployment and assign an owner for each
 step below. A development init is a local evaluation, not a production setup.
+
+## Production at a glance
+
+| You need | What to prepare | Where to start |
+| --- | --- | --- |
+| A supported worker | Linux x86-64 / Python 3.12, runtime and models; size CPU, memory and queue for your own files | [Measured worker resources](../benchmarks/0.7.3a4-performance-2026-11-15.md) |
+| Your signing identity | A compatible ES256 certificate/key, issuer roots and an owner for enrollment and renewal | [Credentials and trust](#credentials-and-trust) |
+| Timestamp capacity | A reachable HTTPS TSA, its trust roots, actual quota and any required authentication | [Authenticated TSA setup](authenticated-timestamping.md) |
+| A checkable export | Public verifier when required, persistent registry and reviewed public fields | [Verifier deployment](verifier-quickstart.md) |
+| Delivery evidence | Verify files downloaded through your own app/CDN after expected transformations | [Final renditions](../implementation/final-renditions.md) |
+| An operating budget | CPU/hosting, storage, certificate, timestamp requests and operational time | [Workload and cost worksheet](../guides/cost.md) |
+
+Start with one representative image and video. Keep their exact downloaded
+bytes, receipt and verification result. Then repeat through your real delivery
+path. The remainder of this page provides the settings and acceptance checks.
+
+The monthly cost is workload-specific: **compute + hosting/storage + certificate
+amortization + timestamp service/overage + operations**. Fill the cost worksheet
+with your own throughput and supplier terms; an unknown TSA quote is an input
+to obtain, not a zero-cost assumption. No all-in service price is supplied.
 
 ## Dev to production: the critical path
 

@@ -1,11 +1,13 @@
 # Reproduce and interpret marking verification tests
 
-SDK **0.7.2a1** · documentation review **2026-11-10**.
+SDK **0.7.3a4** · documentation review **2026-11-18**.
 
 Use these protocols for a versioned SDK release or a product-specific delivery
 chain. Run SDK/model/media work on the designated Linux test server; do not run
 it on the maintainer Mac. Record exact inputs, software and failures before
 summarising results. A procedure below is not a claim that a new campaign ran.
+
+The [18 November current-release delivery observations](0.7.3a4-delivery-2026-11-18.md) apply these recording rules to four retained stock scenes and the three unchanged video profiles.
 
 ## Common record
 

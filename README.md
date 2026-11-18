@@ -8,20 +8,24 @@ A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and 
 
 [Documentation hub](docs/index.md) · [EU guide](docs/compliance/eu-ai-act.md) ·
 [California guide](docs/compliance/california.md) · [Test protocols and evidence](docs/benchmarks/protocols.md) ·
-[CPU performance and resources](docs/benchmarks/0.7.3a4-performance-2026-11-15.md)
+[CPU performance and resources](docs/benchmarks/0.7.3a4-performance-2026-11-15.md) ·
+[Current delivery-transform tests](docs/benchmarks/0.7.3a4-delivery-2026-11-18.md)
 
 ## Download and get a first result
 
 [Release 0.7.3a4](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4) contains the qualified wheel/source, exact hashes,
 runtime inventory and real image/video examples with signed verification reports.
+Try a [complete signed image](https://ariadnemark.xyz/verify/?sample=full-image)
+or [video](https://ariadnemark.xyz/verify/?sample=full-video) in the public verifier,
+or inspect the [independent C2PA evidence](https://ariadnemark.xyz/evidence/c2pa/).
 The tested source is `49578688710a8bae2373aaf9d47ff9521f566d4c`; [EC2 qualification](https://github.com/ariadne-mark/ariadne-mark/actions/runs/43598162234) passed
 341 installed-media tests with zero skips, the four-version core matrix,
 clean media/video installs and the connected HTTPS kit.
 
 This is a GitHub release; no PyPI package or prebuilt combined Docker binary is
 published. Documentation can evolve separately from the immutable packages.
-The source README inside the qualified artifacts records their candidate build
-stage; this page describes their subsequent publication. Prior
+The README inside the unchanged release archive records its build-time state.
+Use the walkthrough below or the [current Quickstart](docs/start-here.md) for installation. Prior
 [0.7.2a1 artifacts](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1)
 remain historical evidence.
 
@@ -33,15 +37,16 @@ curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.3a4
 bash FIRST_EXPORT.sh
 ```
 
-The walkthrough verifies downloads, builds the source recipe and exports an
+The Docker source-build walkthrough verifies downloads, builds the source recipe and exports an
 image and Economy5s, Economy2s and Resilient video. It uses development
 credentials and deterministic engineering fixtures. Allow about 10 GB free for
 the Docker build. For an existing Python 3.12 backend, use the lighter
 [wheel installation](docs/operations/wheel-install.md) below.
 
-[Production identity and timestamps](docs/operations/production-onboarding.md) ·
+[Production setup at a glance](docs/operations/production-onboarding.md#production-at-a-glance) ·
 [Node.js / Next.js / mobile backend](docs/guides/nodejs-nextjs.md) ·
-[Commercial use](docs/operations/licensing.md) · [Troubleshooting](docs/operations/troubleshooting.md)
+[Commercial use](docs/operations/licensing.md) · [Troubleshooting](docs/operations/troubleshooting.md) ·
+[ComfyUI export nodes](https://github.com/ariadne-mark/ComfyUI-Ariadne-Mark)
 
 ## Quick start with Docker
 
@@ -212,7 +217,7 @@ docker run --rm --network none --cpus 2 --memory 6g \
   "$IMAGE" -m unittest discover -s tests -t . -v
 ```
 
-The ordinary core suite skips media tests unless explicitly enabled. Release qualification runs the Python matrix and real-engine Docker suite in a maintainer-dispatched EC2 job for an exact commit. Automatic PR/push checks are notices and do not run SDK tests. [Reproducible benchmark](benchmarks/durability/README.md) · [0.7.2a1 qualification](docs/validation/0.7.2a1.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+The ordinary core suite skips media tests unless explicitly enabled. Release qualification runs the Python matrix and real-engine Docker suite in a maintainer-dispatched EC2 job for an exact commit. Automatic PR/push checks are notices and do not run SDK tests. [Reproducible benchmark](benchmarks/durability/README.md) · [Current 0.7.3a4 qualification](docs/validation/0.7.3a4-results.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
 
 [Public alpha checklist](docs/operations/public-alpha-checklist.md).
 
@@ -277,5 +282,5 @@ readiness, certificate enrollment, endpoint availability or legal compliance.
 Kit recovery acceptance covers metadata removal without re-encoding (PNG
 re-save and MP4 remux); recompression/crop recovery is not guaranteed. The
 six-second acceptance fixture distinguishes Economy5s and Economy2s cadence.
-See [0.7.2a1 qualification](docs/validation/0.7.2a1.md) and
+See [Current 0.7.3a4 qualification](docs/validation/0.7.3a4-results.md) and
 [deployment scope](docs/operations/deployment-kit.md).

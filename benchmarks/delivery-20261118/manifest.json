@@ -1,0 +1,73 @@
+{
+  "edition": "2026-11-18",
+  "sdk": "0.7.3a4",
+  "runtime_source": "49578688710a8bae2373aaf9d47ff9521f566d4c",
+  "files": [
+    {
+      "file": "AUDIT.json",
+      "sha256": "0b202cf7199f57de147058525e2d9bd4b018bff4cb8f38082c5f3d9aefcf7d09",
+      "bytes": 634
+    },
+    {
+      "file": "CORPUS.json",
+      "sha256": "f570540ab89be11cedef5a53b0715c89e75f673569bc31bce94895f6b708a8a9",
+      "bytes": 13439
+    },
+    {
+      "file": "EXPORTS.json",
+      "sha256": "cc2430b9dec92488bc2755ae1b1e7b01627db644b7857bd4f1709b761422418e",
+      "bytes": 4827
+    },
+    {
+      "file": "PROTOCOL.json",
+      "sha256": "963f4fa2533c442b741752906f550eb8090022e9c0ee97931cfae61fb92be71f",
+      "bytes": 966
+    },
+    {
+      "file": "RESULTS.csv",
+      "sha256": "7490313761875a7f9724cb026077f8472ba5f86a0eaafdec3bbf230a733458ff",
+      "bytes": 27980
+    },
+    {
+      "file": "RESULTS.json",
+      "sha256": "1feb3e288d58d0a6afa377261b0e1b33b5fe831d281af587c3b5535beb64f1b5",
+      "bytes": 63639
+    },
+    {
+      "file": "SUMMARY.json",
+      "sha256": "9e0a4e9dbc099918a8a4cdd563c4bcd54ca1b26cb51c8edc07b900898d21a056",
+      "bytes": 276
+    },
+    {
+      "file": "audit_delivery.py",
+      "sha256": "2c48647fe77a487a710811367b3688c182c75a070e87700d4401de23527cc8a5",
+      "bytes": 3028
+    },
+    {
+      "file": "raw-reports-and-scripts.tar.gz",
+      "sha256": "bde1edaf4cb5799709f01e91bc400e3aff8d4a6639fdf75024858e8222e1ed7e",
+      "bytes": 1204151
+    },
+    {
+      "file": "scripts/__pycache__/observe.cpython-312.pyc",
+      "sha256": "1984bf604e04363c2a2480ed58dcec2a9ec150a041bb803345e78894d5af8d73",
+      "bytes": 29099
+    },
+    {
+      "file": "scripts/campaign.py",
+      "sha256": "0f4690033de6e4376fcb88789140b60af482c5acf6c2dc1cd3b951a2c544eac3",
+      "bytes": 8877
+    },
+    {
+      "file": "scripts/observe.py",
+      "sha256": "1457b5514f824ee0a6cffd7d7e1c4a85ac3746ce753f9f7ee7d78ad84635e26b",
+      "bytes": 13038
+    },
+    {
+      "file": "scripts/worker.py",
+      "sha256": "b3dc4a227c5d4ae00921c3ab33523c5cf2d0d4614e95ea755ab14e6b0984614d",
+      "bytes": 4365
+    }
+  ],
+  "scope": "Data and exact executed harness, no media masters or signing keys"
+}

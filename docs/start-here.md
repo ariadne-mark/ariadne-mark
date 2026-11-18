@@ -1,6 +1,6 @@
 # Install and produce your first marked export
 
-SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-14**.
+SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-18**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.
@@ -16,15 +16,26 @@ For one tested route from these samples to your own files, use the
 
 ## Get one complete result first
 
-Download [Release 0.7.3a4](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4), starting with `START_HERE.txt`.
-`FIRST_EXPORT.sh` verifies the SDK/sample artifacts and runs the image plus
-three-video-mode walkthrough. Inspect it before running. The default Docker
-build needs about 10 GB free; the wheel path uses less disk when its system
-prerequisites are already installed.
+On **Linux x86-64**, with Docker Engine, curl, tar and sha256sum installed:
 
-The release archive's bundled README describes its build-time state. For current
-installation and publication status, follow release `START_HERE.txt` and this page;
-the archived text is preserved with its original hashes.
+```sh
+curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.3a4/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
+# Inspect FIRST_EXPORT.sh before running it.
+bash FIRST_EXPORT.sh
+```
+
+This is the recommended **Docker source-build walkthrough**. It downloads the
+checked release files, builds the image, and exports and verifies an image plus
+Economy5s, Economy2s and Resilient video. Allow about **10 GB free disk** for the
+build. It creates a new `ariadne-first-run` directory and uses development
+credentials for evaluation. It does not configure production identity.
+
+The [ready release](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4)
+also includes `START_HERE.txt`, the wheel, samples and hashes. No prebuilt combined
+Docker image is distributed. Use the lighter wheel path below when you already
+have the system prerequisites. The package README is retained as historical
+build information; **this page and the release walkthrough are the current
+installation path for this SDK version**.
 
 The immutable runtime/source is `49578688710a8bae2373aaf9d47ff9521f566d4c`; subsequent documentation changes do
 not replace those tested package bytes. [Qualification](validation/0.7.3a4-results.md)
@@ -32,9 +43,9 @@ and [migration notes](operations/release-0.7.3a0.md) describe the exact scope.
 
 ## Choose an installation
 
-The [source README](../README.md#quick-start-with-docker) contains the Docker
-build commands for the matching qualified source archive. The [wheel guide](operations/wheel-install.md)
-provides an installation outside the source checkout:
+Use the walkthrough above for Docker. For an existing Python backend, the
+[wheel guide](operations/wheel-install.md) provides an installation outside the
+source checkout:
 
 ```sh
 python3.12 -m venv .venv

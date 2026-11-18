@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "sdk": "0.7.3a4",
+  "raw_reports_checked": 96,
+  "export_receipts_checked": 16,
+  "unchanged_signature_and_id_controls": 16,
+  "per_cell_scenes": 4,
+  "expected_ids_bound_to_export_receipts": true,
+  "unconfirmed_not_counted_as_recovered": true,
+  "negative_and_incomplete_separated": true,
+  "outcomes": {
+    "correct_id": 78,
+    "completed_negative": 17,
+    "single_observation": 1
+  },
+  "results_sha256": "1feb3e288d58d0a6afa377261b0e1b33b5fe831d281af587c3b5535beb64f1b5",
+  "scope": "Static consistency audit against raw SDK reports/receipts; no population performance estimate or legal certification"
+}
