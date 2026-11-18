@@ -1,4 +1,4 @@
-# Supported scope — 0.7.3a4 developer alpha
+# Supported scope — 0.7.3b1 public beta
 
 | Area | Supported | Boundary |
 | --- | --- | --- |

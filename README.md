@@ -4,27 +4,27 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Public developer alpha · 0.7.3a4.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Public beta · 0.7.3b1.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 [Documentation hub](docs/index.md) · [EU guide](docs/compliance/eu-ai-act.md) ·
 [California guide](docs/compliance/california.md) · [Test protocols and evidence](docs/benchmarks/protocols.md) ·
 [CPU performance and resources](docs/benchmarks/0.7.3a4-performance-2026-11-15.md) ·
-[Current delivery-transform tests](docs/benchmarks/0.7.3a4-delivery-2026-11-18.md)
+[0.7.3a4 delivery-transform tests](docs/benchmarks/0.7.3a4-delivery-2026-11-18.md)
 
 ## Download and get a first result
 
-[Release 0.7.3a4](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4) contains the qualified wheel/source, exact hashes,
+[Release 0.7.3b1](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3b1) contains the qualified wheel/source, exact hashes,
 runtime inventory and real image/video examples with signed verification reports.
 Try a [complete signed image](https://ariadnemark.xyz/verify/?sample=full-image)
 or [video](https://ariadnemark.xyz/verify/?sample=full-video) in the public verifier,
 or inspect the [independent C2PA evidence](https://ariadnemark.xyz/evidence/c2pa/).
-The tested source is `49578688710a8bae2373aaf9d47ff9521f566d4c`; [EC2 qualification](https://github.com/ariadne-mark/ariadne-mark/actions/runs/43598162234) passed
-341 installed-media tests with zero skips, the four-version core matrix,
-clean media/video installs and the connected HTTPS kit.
+See the release manifest and CI link on the release page for the exact beta
+source and package checks. [0.7.3a4 qualification](docs/validation/0.7.3a4-results.md)
+records the previous build.
 
 This is a GitHub release; no PyPI package or prebuilt combined Docker binary is
 published. Documentation can evolve separately from the immutable packages.
-The README inside the unchanged release archive records its build-time state.
+Release archives retain the build-time README.
 Use the walkthrough below or the [current Quickstart](docs/start-here.md) for installation. Prior
 [0.7.2a1 artifacts](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1)
 remain historical evidence.
@@ -32,7 +32,7 @@ remain historical evidence.
 With Linux x86-64, Docker Engine, curl, tar and sha256sum:
 
 ```sh
-curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.3a4/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
+curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.3b1/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
 # Inspect the script; it creates a new ariadne-first-run directory.
 bash FIRST_EXPORT.sh
 ```
@@ -52,7 +52,7 @@ existing Python 3.12 backend, use the lighter
 ## Quick start with Docker
 
 ```sh
-# From the downloaded 0.7.3a4 source archive or its qualified source checkout.
+# From the downloaded source archive or its qualified source checkout.
 # --iidfile records the immutable image ID; no shared tag is created or moved.
 docker build --platform linux/amd64 --iidfile ariadne-image.id .
 IMAGE=$(cat ariadne-image.id)
@@ -108,7 +108,7 @@ The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free
 python3.12 -m venv .venv
 . .venv/bin/activate
 # Use the downloaded wheel, or use: python -m pip install --no-deps .
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a4-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3b1-py3-none-any.whl
 # Explicit setup installs the pinned C2PA pair and CPU dependencies, then models.
 # FFmpeg/ffprobe and Node.js/npm must already be installed.
 ariadne setup media --fetch-models
@@ -218,9 +218,9 @@ docker run --rm --network none --cpus 2 --memory 6g \
   "$IMAGE" -m unittest discover -s tests -t . -v
 ```
 
-The ordinary core suite skips media tests unless explicitly enabled. Release qualification runs the Python matrix and real-engine Docker suite in a maintainer-dispatched EC2 job for an exact commit. Automatic PR/push checks are notices and do not run SDK tests. [Reproducible benchmark](benchmarks/durability/README.md) · [Current 0.7.3a4 qualification](docs/validation/0.7.3a4-results.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
+The ordinary core suite skips media tests unless explicitly enabled. Release qualification runs the Python matrix and real-engine Docker suite in a maintainer-dispatched EC2 job for an exact commit. Automatic PR checks verify that the exact revision has retained EC2 qualification evidence. [Reproducible benchmark](benchmarks/durability/README.md) · [0.7.3a4 qualification](docs/validation/0.7.3a4-results.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
 
-[Public alpha checklist](docs/operations/public-alpha-checklist.md).
+[Release qualification checklist](docs/operations/releases.md).
 
 ## Contribute
 
@@ -273,7 +273,7 @@ voluntary guidance, technical measures and operator duties. Economy's adequacy f
 an actual EU/California product remains an assessment question, particularly the
 California removal-resistance criterion. This SDK does not supply a compliance certificate.
 
-### Developer-alpha boundaries
+### Supported deployment scope
 
 One deployment kit serves one publisher/system/version pair; use separate kits
 for other model versions. Generation timestamps more than five minutes ahead
@@ -283,5 +283,5 @@ readiness, certificate enrollment, endpoint availability or legal compliance.
 Kit recovery acceptance covers metadata removal without re-encoding (PNG
 re-save and MP4 remux); recompression/crop recovery is not guaranteed. The
 six-second acceptance fixture distinguishes Economy5s and Economy2s cadence.
-See [Current 0.7.3a4 qualification](docs/validation/0.7.3a4-results.md) and
+See [0.7.3a4 qualification](docs/validation/0.7.3a4-results.md) and
 [deployment scope](docs/operations/deployment-kit.md).

@@ -1,6 +1,6 @@
 # Versioned test and benchmark evidence
 
-Current SDK **0.7.3a4** · evidence index updated **2026-11-18**.
+Historical measurements on SDK **0.7.3a4** · evidence index updated **2026-11-18**.
 Historical rows retain their original SDK versions, dates and scope.
 
 Use this index to select the right evidence for a claim. Engineering tests,

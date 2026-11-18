@@ -6,10 +6,11 @@ import re
 
 root=Path(__file__).resolve().parents[1]
 m=json.loads((root/'docs/site-publication.json').read_text());version=m['sdk_version']
+qualified_version=m.get('qualified_sdk_version',version)
 active=['docs/start-here.md','docs/operations/wheel-install.md','docs/implementation/video-profiles.md','docs/README.ru.md']
 for name in active:
     text=(root/name).read_text()
-    wheels=re.findall(r'ariadne_mark-(0\.[0-9.]+a[0-9]+)-py3-none-any\.whl',text)
+    wheels=re.findall(r'ariadne_mark-([0-9]+(?:\.[0-9]+)*(?:(?:a|b|rc)[0-9]+)?)-py3-none-any\.whl',text)
     assert wheels and all(x==version for x in wheels),(name,wheels,version)
 report_ast=ast.parse((root/'src/ariadne_mark/verification/media.py').read_text())
 schema=next(n.value.value for n in ast.walk(report_ast) if isinstance(n,ast.Assign)
@@ -21,7 +22,7 @@ text=(root/'docs/implementation/integration.md').read_text()
 assert 'share one resident Node worker per SDK' in text
 assert 'Multiple active profile workers' not in text
 legal=json.loads((root/'docs/compliance/requirements-matrix.json').read_text())
-assert str(json.loads((root/f'docs/validation/results/{version}-summary.json').read_text())['full_media']['tests']) in legal['rows'][0]['evidence']
+assert str(json.loads((root/f'docs/validation/results/{qualified_version}-summary.json').read_text())['full_media']['tests']) in legal['rows'][0]['evidence']
 cost=json.loads((root/'docs/examples/cost-workload.json').read_text());w=cost['workload'];n=w['days']*(w['images_per_day']+w['videos_per_day'])
 assert n==cost['computed_base']['exports']==39000
 assert 365*(w['images_per_day']+w['videos_per_day'])==cost['computed_base']['year_365_days']==474500

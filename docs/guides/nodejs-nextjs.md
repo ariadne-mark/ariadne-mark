@@ -1,6 +1,6 @@
 # Use Ariadne from Node.js, Next.js or a mobile backend
 
-Ariadne Mark 0.7.3a4 is a Python/CLI media backend for Linux x86-64. It is not
+Ariadne Mark 0.7.3b1 is a Python/CLI media backend for Linux x86-64. It is not
 an npm marking package or an on-device iOS/Android SDK. Your web/mobile product
 submits a generation job; an owned backend worker marks the final file before
 your normal object-store/CDN publication step.

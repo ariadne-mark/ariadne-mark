@@ -1,6 +1,6 @@
 # Install and produce your first marked export
 
-SDK **0.7.3a4 developer alpha** · documentation updated **2026-11-18**.
+SDK **0.7.3b1 public beta** · documentation updated **2026-11-18**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.
@@ -19,7 +19,7 @@ For one tested route from these samples to your own files, use the
 On **Linux x86-64**, with Docker Engine, curl, tar and sha256sum installed:
 
 ```sh
-curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.3a4/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
+curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.3b1/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
 # Inspect FIRST_EXPORT.sh before running it.
 bash FIRST_EXPORT.sh
 ```
@@ -30,16 +30,16 @@ Economy5s, Economy2s and Resilient video. `FIRST_EXPORT.sh` requires at least
 **10 GiB free disk space** (about 10.74 GB) before it starts. It creates a new
 `ariadne-first-run` directory and uses development credentials for evaluation. It does not configure production identity.
 
-The [ready release](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4)
+The [ready release](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3b1)
 also includes `START_HERE.txt`, the wheel, samples and hashes. No prebuilt combined
 Docker image is distributed. Use the lighter wheel path below when you already
 have the system prerequisites. The package README is retained as historical
 build information; **this page and the release walkthrough are the current
 installation path for this SDK version**.
 
-The immutable runtime/source is `49578688710a8bae2373aaf9d47ff9521f566d4c`; subsequent documentation changes do
-not replace those tested package bytes. [Qualification](validation/0.7.3a4-results.md)
-and [migration notes](operations/release-0.7.3a0.md) describe the exact scope.
+The release page includes the exact source, checksums and CI for these
+packages. [Previous qualification](validation/0.7.3a4-results.md) and
+[migration notes](operations/release-0.7.3a0.md) cover the earlier build.
 
 ## Choose an installation
 
@@ -50,7 +50,7 @@ source checkout:
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a4-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3b1-py3-none-any.whl
 ariadne setup media --fetch-models
 ariadne runtime check
 ```

@@ -12,6 +12,7 @@ import socket
 import subprocess
 import sys
 import time
+import tomllib
 import urllib.error
 import urllib.request
 
@@ -42,7 +43,8 @@ spec = importlib.util.spec_from_file_location('export_jobs', source / 'docs/exam
 example = importlib.util.module_from_spec(spec); spec.loader.exec_module(example)
 import ariadne_mark
 from importlib.metadata import version
-assert version('ariadne-mark') == '0.7.3a4'
+sdk_version = version('ariadne-mark')
+assert sdk_version == tomllib.loads((source / 'pyproject.toml').read_text())['project']['version']
 assert not Path(ariadne_mark.__file__).resolve().is_relative_to(source)
 emit('runtime', version=version('ariadne-mark'), module=ariadne_mark.__file__, source_checkout_imported=False)
 from PIL import Image
@@ -149,7 +151,7 @@ finally:
     try:server.wait(timeout=20)
     except subprocess.TimeoutExpired:server.kill();server.wait(timeout=10)
     stdout.close();stderr.close()
-summary=dict(status='passed',sdk_version='0.7.3a4',exports=9,independent_http_registry_jws=9,
+summary=dict(status='passed',sdk_version=sdk_version,exports=9,independent_http_registry_jws=9,
     per_source_generation_times=4,profiles=['economy_5s','economy_2s','resilient'],
     default='economy_5s',preflight_rejections=5,overwrite_refused=True,wrong_asset_report_rejected=True,
     clean_image_negative=True,platform='Linux x86-64 CPU on owned EC2',

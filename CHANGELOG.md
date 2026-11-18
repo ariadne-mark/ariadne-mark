@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.3b1 (public beta)
+
+- Promote the visual-media SDK to beta on the same 0.7.3 release line.
+- Align package, OpenAPI and installation documentation versions.
+- Keep Economy5s as default and Economy2s and Resilient available.
+- Retain historical test and benchmark results with their original versions.
+
 ## 0.7.3a4 (public developer alpha)
 
 - Bound authenticated TSA relay to four concurrent local handlers and a two-second absolute header/body deadline; close active clients on shutdown and suppress expected disconnect tracebacks.

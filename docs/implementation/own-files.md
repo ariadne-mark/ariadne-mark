@@ -1,6 +1,6 @@
 # From the first export to your own image and silent video
 
-Use this single route for **0.7.3a4**, Linux x86-64/Python 3.12, CPU. It covers
+Use this single route for **0.7.3b1**, Linux x86-64/Python 3.12, CPU. It covers
 newly generated JPEG/PNG and final silent SDR MP4. Bring the file's real generation
 time and public publisher/system/version. Audio generation and credentialed inputs
 need a different workflow; see [formats](../operations/support.md) and
@@ -8,7 +8,7 @@ need a different workflow; see [formats](../operations/support.md) and
 
 ## 1. Provision once and prove the installation
 
-Download [Release 0.7.3a4](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4),
+Download [Release 0.7.3b1](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3b1),
 read `START_HERE.txt`, then run its `FIRST_EXPORT.sh`. It checks artifact hashes
 and demonstrates an image and all three video modes. Its Docker route **builds
 from source**; there is no published ready-made Docker image to pull. Allow
@@ -124,7 +124,7 @@ and [cost worksheet](../guides/cost.md) before enabling user traffic.
 
 ## Evidence for this example
 
-Server acceptance exercises the published 0.7.3a4 runtime with JPEG, PNG, 720p/24fps
+Prior server acceptance exercised the 0.7.3a4 runtime with JPEG, PNG, 720p/24fps
 and portrait 1080p/29.97fps silent MP4, all three modes, individual source times,
 independent HTTP/registry/JWS verification and rejected malformed jobs. The script
 is [in the repository](https://github.com/ariadne-mark/ariadne-mark/blob/main/scripts/ci_client_journey.py). These deterministic

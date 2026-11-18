@@ -98,7 +98,7 @@ For a video-only installation, activate a Linux x86-64 / Python 3.12 virtualenv
 with FFmpeg/ffprobe and Node/npm available, then use the installed wheel:
 
 ```sh
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.3a4-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3b1-py3-none-any.whl
 ariadne setup video --fetch-models
 ariadne runtime check
 ```
@@ -271,7 +271,7 @@ are rejected using descriptors and decoded-frame properties.
 
 ## Current qualification and interpretation
 
-Current [0.7.3a4 qualification](../validation/0.7.3a4-results.md) passed 341/341 installed-media tests, with zero skips.
+The [0.7.3a4 qualification](../validation/0.7.3a4-results.md) passed 341/341 installed-media tests, with zero skips.
 
 Historical [0.7.2a1 results](../validation/0.7.2a1-results.md) confirm distinct schedules on
 a 6 s/12 fps fixture (Economy5s: 4 selected frames, Economy2s: 6, Resilient: 72).
