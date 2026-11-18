@@ -2,11 +2,10 @@
   "schema_version": 1,
   "docs_edition": "2026-11-18",
   "sdk_version": "0.7.3b1",
-  "qualified_sdk_version": "0.7.3a4",
-  "tested_sdk_commit": "49578688710a8bae2373aaf9d47ff9521f566d4c",
-  "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/43598162234",
+  "tested_sdk_commit": "2453c83d5dbfb8f272704609b88f9814a4f39799",
+  "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/44302448483",
   "canonical_origin": "https://ariadnemark.xyz",
-  "scope": "0.7.3b1 beta documentation candidate; qualification references the published 0.7.3a4 build until the beta is qualified",
+  "scope": "Public beta documentation with exact-source qualification and immutable packages",
   "pages": [
     {
       "route": "/docs/",
@@ -227,6 +226,11 @@
       "route": "/evidence/delivery/0-7-3a4/",
       "source": "docs/benchmarks/0.7.3a4-delivery-2026-11-18.md",
       "section": "Evidence and tests"
+    },
+    {
+      "route": "/evidence/releases/0-7-3b1/",
+      "source": "docs/validation/0.7.3b1-results.md",
+      "section": "Evidence"
     }
   ],
   "assets": [
@@ -285,6 +289,14 @@
     {
       "route": "/documentation-assets/cost-workload.json",
       "source": "docs/examples/cost-workload.json"
+    },
+    {
+      "route": "/documentation-assets/0.7.3b1-summary.json",
+      "source": "docs/validation/results/0.7.3b1-summary.json"
+    },
+    {
+      "route": "/documentation-assets/0.7.3b1-artifacts.json",
+      "source": "docs/validation/results/0.7.3b1-artifacts.json"
     }
   ],
   "rules": [
