@@ -1,0 +1,17 @@
+{
+  "status": "completed",
+  "exports": 16,
+  "observations": 96,
+  "outcomes": {
+    "correct_id": 78,
+    "completed_negative": 17,
+    "single_observation": 1
+  },
+  "errors": 0,
+  "sdk": "0.7.3a4",
+  "profiles": [
+    "economy_5s",
+    "economy_2s",
+    "resilient"
+  ]
+}

@@ -1,6 +1,6 @@
 # Versioned test and benchmark evidence
 
-Current SDK **0.7.3a4** · evidence index updated **2026-11-15**.
+Current SDK **0.7.3a4** · evidence index updated **2026-11-18**.
 Historical rows retain their original SDK versions, dates and scope.
 
 Use this index to select the right evidence for a claim. Engineering tests,
@@ -10,6 +10,7 @@ things. Historical measurements are not relabelled as current-release results.
 | Record | Actual scope | Supported conclusion | Boundary |
 | --- | --- | --- | --- |
 | [0.7.3a4 qualification](../validation/0.7.3a4-results.md) | Exact-source release qualification and immutable package hashes | Installed release workflow passed the recorded checks | Development identity/public trust and production enrollment are separate |
+| [0.7.3a4 delivery transforms](0.7.3a4-delivery-2026-11-18.md) | Four stock scenes, image/video exports, metadata loss, recompression, resize, crop and excerpt checks | Per-scenario expected-ID observations on the unchanged release | One ID per scene/profile; not platform round trips, attack resistance or population recovery probabilities |
 | [0.7.3a4 CJ-05 performance](0.7.3a4-performance-2026-11-15.md) | Matched image/video exports; independent positive, metadata-loss and clean scans; cgroup CPU/peak, scope/sampler/idle controls | Full-resource engineering baseline on m6a.large | Cold n=1/warm n=3 per cell, synthetic fixtures, no population/SLA or legal-cadence claim |
 | [0.7.3a4 integration pilot](0.7.3a4-integration-pilot-2026-11-15.md) | Model-assisted first integration, 11 exports, read-back/recovery, signed HTTP and restart | Small application can connect released components without changing SDK | Not external adoption; original SELF CPU/maxrss are incomplete; no production CA/TSA |
 | [0.7.2a1 qualification](../validation/0.7.2a1-results.md) | 217 installed-media tests, core matrix, clean installs, kit/HTTPS/reports/registry, external c2patool | That versioned packaged workflow passed those checks on Linux CPU | Development identities; no current population durability or throughput benchmark |
@@ -21,7 +22,7 @@ things. Historical measurements are not relabelled as current-release results.
 | [Legacy VideoSeal](../validation/0.3.0a0.md) | Older CPU encoder/stock corpus | Compatibility/history of old format | Not the current default engine |
 | [Spatial research](../research/spatial-recovery-2026-11-06.md) | Geometry recovery feasibility | Research rationale and measured limitations | Experimental cropdetect is not silently enabled in the release verifier |
 
-## Current cadence integration observation
+## Historical cadence fixture (0.7.2a1)
 
 The 0.7.2a1 6 s/12 fps fixture has 72 frames. Economy5s marked 4 frames in two
 windows; Economy2s 6 frames in three; Resilient all 72. This distinguishes the

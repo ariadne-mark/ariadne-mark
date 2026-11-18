@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-18",
+  "sdk": "0.7.3a4",
+  "runtime_source": "49578688710a8bae2373aaf9d47ff9521f566d4c",
+  "image": "sha256:1a4dd358bcf698df654daaac631a26d3bc874104de5108bc94ce941c33a49980",
+  "threads": 2,
+  "container_memory_gib": 4,
+  "scenes": [
+    "face",
+    "crowd",
+    "mixkit-1164",
+    "mixkit-5016"
+  ],
+  "repeats": 1,
+  "profiles": [
+    "economy_5s",
+    "economy_2s",
+    "resilient"
+  ],
+  "video_transforms": [
+    "unchanged",
+    "metadata_removed",
+    "h264_crf28",
+    "resize_480_crf23",
+    "trim_0.2_for_3s",
+    "center_crop_9_16"
+  ],
+  "image_transforms": [
+    "unchanged",
+    "metadata_removed",
+    "jpeg_q90",
+    "jpeg_q75",
+    "resize_768_jpeg85",
+    "center_crop_80pct"
+  ],
+  "scope": "Four retained stock scenes; one new watermark ID per scene/profile; not actual AI generation, named-social-platform testing, population estimates or legal pass criteria. Masters are not redistributed.",
+  "minimum_free_disk_gib": 5
+}

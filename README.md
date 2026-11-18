@@ -8,7 +8,8 @@ A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and 
 
 [Documentation hub](docs/index.md) · [EU guide](docs/compliance/eu-ai-act.md) ·
 [California guide](docs/compliance/california.md) · [Test protocols and evidence](docs/benchmarks/protocols.md) ·
-[CPU performance and resources](docs/benchmarks/0.7.3a4-performance-2026-11-15.md)
+[CPU performance and resources](docs/benchmarks/0.7.3a4-performance-2026-11-15.md) ·
+[Current delivery-transform tests](docs/benchmarks/0.7.3a4-delivery-2026-11-18.md)
 
 ## Download and get a first result
 
@@ -44,7 +45,8 @@ the Docker build. For an existing Python 3.12 backend, use the lighter
 
 [Production setup at a glance](docs/operations/production-onboarding.md#production-at-a-glance) ·
 [Node.js / Next.js / mobile backend](docs/guides/nodejs-nextjs.md) ·
-[Commercial use](docs/operations/licensing.md) · [Troubleshooting](docs/operations/troubleshooting.md)
+[Commercial use](docs/operations/licensing.md) · [Troubleshooting](docs/operations/troubleshooting.md) ·
+[ComfyUI export nodes](https://github.com/ariadne-mark/ComfyUI-Ariadne-Mark)
 
 ## Quick start with Docker
 
