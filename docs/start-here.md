@@ -26,9 +26,9 @@ bash FIRST_EXPORT.sh
 
 This is the recommended **Docker source-build walkthrough**. It downloads the
 checked release files, builds the image, and exports and verifies an image plus
-Economy5s, Economy2s and Resilient video. Allow about **10 GB free disk** for the
-build. It creates a new `ariadne-first-run` directory and uses development
-credentials for evaluation. It does not configure production identity.
+Economy5s, Economy2s and Resilient video. `FIRST_EXPORT.sh` requires at least
+**10 GiB free disk space** (about 10.74 GB) before it starts. It creates a new
+`ariadne-first-run` directory and uses development credentials for evaluation. It does not configure production identity.
 
 The [ready release](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3a4)
 also includes `START_HERE.txt`, the wheel, samples and hashes. No prebuilt combined

@@ -39,8 +39,9 @@ bash FIRST_EXPORT.sh
 
 The Docker source-build walkthrough verifies downloads, builds the source recipe and exports an
 image and Economy5s, Economy2s and Resilient video. It uses development
-credentials and deterministic engineering fixtures. Allow about 10 GB free for
-the Docker build. For an existing Python 3.12 backend, use the lighter
+credentials and deterministic engineering fixtures. `FIRST_EXPORT.sh` requires
+at least **10 GiB free disk space** (about 10.74 GB) before it starts. For an
+existing Python 3.12 backend, use the lighter
 [wheel installation](docs/operations/wheel-install.md) below.
 
 [Production setup at a glance](docs/operations/production-onboarding.md#production-at-a-glance) ·
