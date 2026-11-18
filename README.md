@@ -18,8 +18,7 @@ runtime inventory and real image/video examples with signed verification reports
 Try a [complete signed image](https://ariadnemark.xyz/verify/?sample=full-image)
 or [video](https://ariadnemark.xyz/verify/?sample=full-video) in the public verifier,
 or inspect the [independent C2PA evidence](https://ariadnemark.xyz/evidence/c2pa/).
-See the release manifest and CI link on the release page for the exact beta
-source and package checks. [0.7.3a4 qualification](docs/validation/0.7.3a4-results.md)
+[Beta qualification](docs/validation/0.7.3b1-results.md) records the exact source and package checks. [0.7.3a4 qualification](docs/validation/0.7.3a4-results.md)
 records the previous build.
 
 This is a GitHub release; no PyPI package or prebuilt combined Docker binary is

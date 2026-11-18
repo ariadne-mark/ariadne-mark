@@ -1,0 +1,20 @@
+{
+  "sdk_version": "0.7.3b1",
+  "commit": "2453c83d5dbfb8f272704609b88f9814a4f39799",
+  "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/44302448483",
+  "ci_conclusion": "success",
+  "full_media": {
+    "tests": 341,
+    "wall_s": 401.438,
+    "skipped": 0
+  },
+  "platform": "Owned Linux x86-64 CPU EC2, Python 3.12 media environment",
+  "video_profiles": [
+    "economy_5s",
+    "economy_2s",
+    "resilient"
+  ],
+  "public_release": "https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3b1",
+  "sample_creation_sdk_version": "0.7.3a4",
+  "scope": "Exact-source packaging, offline media, core matrix, fresh installed wheels, HTTPS kit and verifier checks. Signed public examples retain the original creation version. Performance and durability observations retain their versions."
+}

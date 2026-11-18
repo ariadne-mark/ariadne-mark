@@ -60,6 +60,7 @@ Historical validation pages describe their original versions, datasets and machi
 - [Troubleshooting](operations/troubleshooting.md)
 - [Downloadable SDK sample exports](benchmarks/samples.md)
 
+- [0.7.3b1 beta qualification](validation/0.7.3b1-results.md).
 - [0.7.3a4 review fixes: bounded relay and independent all-scope checks](operations/release-0.7.3a4.md).
 - [0.7.3a3 adoption fixes](operations/release-0.7.3a3.md).
 - [0.7.3a1 candidate fixes and remaining qualification](operations/release-0.7.3a1.md).

@@ -37,8 +37,7 @@ have the system prerequisites. The package README is retained as historical
 build information; **this page and the release walkthrough are the current
 installation path for this SDK version**.
 
-The release page includes the exact source, checksums and CI for these
-packages. [Previous qualification](validation/0.7.3a4-results.md) and
+[Beta qualification](validation/0.7.3b1-results.md) records the exact source, checksums and CI for these packages. [Previous qualification](validation/0.7.3a4-results.md) and
 [migration notes](operations/release-0.7.3a0.md) cover the earlier build.
 
 ## Choose an installation

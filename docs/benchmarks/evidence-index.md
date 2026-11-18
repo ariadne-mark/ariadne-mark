@@ -9,6 +9,7 @@ things. Historical measurements are not relabelled as current-release results.
 
 | Record | Actual scope | Supported conclusion | Boundary |
 | --- | --- | --- | --- |
+| [0.7.3b1 qualification](../validation/0.7.3b1-results.md) | Exact-source beta qualification and published hashes | Installed release workflow passed all recorded checks | Engineering scope and supported runtime |
 | [0.7.3a4 qualification](../validation/0.7.3a4-results.md) | Exact-source release qualification and immutable package hashes | Installed release workflow passed the recorded checks | Development identity/public trust and production enrollment are separate |
 | [0.7.3a4 delivery transforms](0.7.3a4-delivery-2026-11-18.md) | Four stock scenes, image/video exports, metadata loss, recompression, resize, crop and excerpt checks | Per-scenario expected-ID observations on the unchanged release | One ID per scene/profile; not platform round trips, attack resistance or population recovery probabilities |
 | [0.7.3a4 CJ-05 performance](0.7.3a4-performance-2026-11-15.md) | Matched image/video exports; independent positive, metadata-loss and clean scans; cgroup CPU/peak, scope/sampler/idle controls | Full-resource engineering baseline on m6a.large | Cold n=1/warm n=3 per cell, synthetic fixtures, no population/SLA or legal-cadence claim |
