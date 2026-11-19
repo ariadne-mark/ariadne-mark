@@ -3,11 +3,11 @@
   "locks": {
     "media": {
       "filename": "media-runtime-linux-py312.lock",
-      "sha256": "65cafb753d74708834e5021562b876e379e1aad67b9e54ff97e1e0638570e75b"
+      "sha256": "c53ce43393a5c326b925273d46018db3e7393ae6caa573ff1278955982c370d7"
     },
     "video": {
       "filename": "video-runtime-linux-py312.lock",
-      "sha256": "cf806625c51cf7e148b92f592373e018f37140a6e58f8f2dde06381d1a38b517"
+      "sha256": "2d2208b2d4c95929d6fd6a523f17c3c29fb6fb9ffeadc096c2f6fabe07185a28"
     }
   }
 }

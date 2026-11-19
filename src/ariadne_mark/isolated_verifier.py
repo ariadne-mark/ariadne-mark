@@ -34,8 +34,8 @@ class IsolatedVerifier:
         schemes = normalize_scope(verification_scope)
         self.verification_scope = schemes
         self._config = {'verification_schemes': list(schemes), 'threads': threads, 'registry': str(Path(registry).resolve()) if registry else None,
-                        'trust_anchors': str(self.trust_anchors.resolve()) if self.trust_anchors else None,
-                        'tsa_trust_anchors': str(self.tsa_trust_anchors.resolve()) if self.tsa_trust_anchors else None}
+                        'trust_anchors': str(self.trust_anchors.absolute()) if self.trust_anchors else None,
+                        'tsa_trust_anchors': str(self.tsa_trust_anchors.absolute()) if self.tsa_trust_anchors else None}
         self._builtin_worker = _command is None
         self._command = _command or [sys.executable, '-m', 'ariadne_mark.verifier_worker']
         self._lock = threading.RLock()

@@ -1,6 +1,6 @@
 # Software licences attribution and redistribution
 
-SDK **0.7.3b1 public beta** · documentation updated **2026-11-14**.
+SDK **0.7.3b2 security candidate** · documentation updated **2026-11-14**.
 
 Versioned benchmark and legal-source review dates below remain historical evidence;
 they are not a new qualification or legal approval of this candidate.

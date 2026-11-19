@@ -1,36 +1,47 @@
-FROM node:24-bookworm-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dcaf34dc9749addbf383b1920c AS node
-FROM python:3.12-slim-trixie@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30 AS dependencies
-COPY --from=node /usr/local/bin/node /usr/local/bin/node
-COPY --from=node /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
-RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg ca-certificates libstdc++6 \
-    && rm -rf /var/lib/apt/lists/*
-COPY src/ariadne_mark/bootstrap_c2pa.py src/ariadne_mark/c2pa-bootstrap.json src/ariadne_mark/bootstrap-linux-py312.lock /bootstrap/
-RUN python /bootstrap/bootstrap_c2pa.py --allow-system --cache-dir /opt/bootstrap-cache
-COPY requirements/media-linux-py312.lock /requirements/media-linux-py312.lock
-RUN python -m pip install --no-cache-dir --require-hashes --no-build-isolation -r /requirements/media-linux-py312.lock
-ENV ARIADNE_VIDEO_DATA=/opt/ariadne-video
-WORKDIR /app
-FROM dependencies AS build
-COPY . /app
-# Public source must remain readable even from a checkout created with umask077.
-# Ownership remains root; the unprivileged runtime user gains no write access.
-RUN chmod -R a+rX /app && python scripts/build_release.py && ariadne models fetch --engine media && python -m pip check
+FROM python:3.12-slim-trixie@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30 AS ffmpeg-build
+ARG FFMPEG_BUILD_JOBS=2
+RUN --mount=type=bind,source=scripts/build_ffmpeg.sh,target=/tmp/build_ffmpeg.sh,readonly \
+    apt-get update && apt-get install -y --no-install-recommends build-essential ca-certificates \
+        curl gnupg libx264-dev nasm pkg-config xz-utils zlib1g-dev \
+    && bash /tmp/build_ffmpeg.sh
 
-FROM python:3.12-slim-trixie@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30 AS runtime
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg ca-certificates libstdc++6 \
-    && rm -rf /var/lib/apt/lists/*
-COPY --from=node /usr/local/bin/node /usr/local/bin/node
-RUN rm -rf /usr/local/lib/python3.12/site-packages/*
-COPY --from=build /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=build /usr/local/bin/ariadne /usr/local/bin/ariadne
-COPY --from=build /opt/ariadne-video /opt/ariadne-video
-COPY --from=build /opt/dist /opt/dist
-COPY --from=build /app /app
+FROM node:24-bookworm-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dcaf34dc9749addbf383b1920c AS node
+FROM python:3.12-slim-trixie@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30 AS packaged
+
+COPY --from=ffmpeg-build /opt/ffmpeg /opt/ffmpeg
 ENV ARIADNE_VIDEO_DATA=/opt/ariadne-video
-RUN useradd --create-home --uid 10001 ariadne && mkdir /data /state && chown ariadne:ariadne /data /state
-USER ariadne
 WORKDIR /data
+RUN --mount=type=bind,from=node,source=/usr/local,target=/build-node,readonly \
+    --mount=type=bind,source=.,target=/input,readonly \
+    set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends ca-certificates libstdc++6 libx264-164 zlib1g apt libapt-pkg7.0; \
+    rm -rf /var/lib/apt/lists/*; \
+    ln -s /opt/ffmpeg/bin/ffmpeg /usr/local/bin/ffmpeg; \
+    ln -s /opt/ffmpeg/bin/ffprobe /usr/local/bin/ffprobe; \
+    install /build-node/bin/node /usr/local/bin/node; \
+    ln -s /build-node/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm; \
+    mkdir /app; cp -a /input/. /app; chmod -R a+rX /app; cd /app; \
+    python src/ariadne_mark/bootstrap_c2pa.py --allow-system --cache-dir /tmp/c2pa-bootstrap; \
+    rm -rf /tmp/c2pa-bootstrap; \
+    python -m pip install --no-cache-dir --require-hashes --no-build-isolation -r requirements/media-linux-py312.lock; \
+    python scripts/build_release.py; \
+    ariadne models fetch --engine media; \
+    python -m pip check; \
+    bash scripts/check_ffmpeg_runtime.sh; \
+    rm /usr/local/bin/npm; \
+    useradd --create-home --uid 10001 ariadne; \
+    mkdir /state; chown ariadne:ariadne /data /state
+
+# The build target also provisions a fresh, isolated wheel install for CI.
+FROM packaged AS build
+RUN --mount=type=bind,from=node,source=/usr/local/lib/node_modules/npm,target=/build-npm,readonly \
+    mkdir -p /usr/local/lib/node_modules/npm \
+    && cp -a /build-npm/. /usr/local/lib/node_modules/npm/ \
+    && ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm
+
+FROM packaged AS runtime
+USER ariadne
 EXPOSE 8080
 ENTRYPOINT ["ariadne"]
 CMD ["--help"]

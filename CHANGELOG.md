@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.3b2 (security candidate)
+
+- Updated the qualified Linux/Python 3.12 wheel to PyAV 19.0.2 with FFmpeg 9.0.2. The Python 3.11 media extras resolve to PyAV 18.1.0.
+- Build container FFmpeg and ffprobe from the signed release source without XML or network support. Keep the supported media formats and watermark profiles.
+
 ## 0.7.3b1 (public beta)
 
 - Promote the visual-media SDK to beta on the same 0.7.3 release line.

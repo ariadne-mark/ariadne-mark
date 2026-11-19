@@ -115,7 +115,7 @@ def public_report(report, sources=()):
     redacted = []
     c2pa = report.get('c2pa', {})
     if c2pa:
-        allowed = ['status', 'signature', 'issuer_trust', 'timestamp_trust', 'credential_time',
+        allowed = ['status', 'signature', 'asset_binding', 'issuer_trust', 'timestamp_trust', 'credential_time',
                    'revocation', 'reason', 'manifest_id', 'claim_scope', 'record_scope', 'ingredient_count',
                    'watermark_algorithm', 'token']
         result['c2pa'] = {k: deepcopy(c2pa[k]) for k in allowed if k in c2pa}

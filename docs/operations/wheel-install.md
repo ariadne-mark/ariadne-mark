@@ -1,13 +1,15 @@
 # Install media from a wheel
 
 Qualified environment: Linux x86-64, Python 3.12, FFmpeg/ffprobe and Node.js/npm.
+
+The 0.7.3b2 candidate pins PyAV 19.0.2 and its FFmpeg 9.0.2 binaries on the qualified Linux runtime. The media extras on Python 3.11 select PyAV 18.1.0. For native installations, `ffmpeg` and `ffprobe` are resolved from `PATH` independently of PyAV. Use the matching container or an updated host toolchain. The [container build](../../scripts/build_ffmpeg.sh) builds the tools from the signed FFmpeg release with local file/pipe support and without the XML library or network protocols.
 Use a new virtualenv. The Docker recipe provisions the system prerequisites.
-Download the exact wheel and SHA256SUMS from [Release 0.7.3b1](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3b1); verify the downloaded wheel hash before installation.
+Download the exact wheel and SHA256SUMS from [Release 0.7.3b2](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3b2); verify the downloaded wheel hash before installation.
 
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.3b1-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3b2-py3-none-any.whl
 ariadne setup media --fetch-models
 ariadne runtime check
 ```

@@ -58,7 +58,7 @@ media-операции и запуск verifier; core-конструктор б�
 сохранены. Короткий ролик может потерять единственное окно после обрезки;
 его длительность сама по себе не означает провал свежей маркировки.
 
-Установка из wheel: `pip install --no-deps /path/to/ariadne_mark-0.7.3b1-py3-none-any.whl`,
+Установка из wheel: `pip install --no-deps /path/to/ariadne_mark-0.7.3b2-py3-none-any.whl`,
 затем `ariadne setup media --fetch-models` в Linux x86-64 / Python 3.12 virtualenv
 с установленными FFmpeg/ffprobe и Node/npm. Для видео без Torch/NumPy/Python
 TrustMark: `ariadne setup video --fetch-models`. Установщик использует hash-lock

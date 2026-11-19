@@ -14,9 +14,9 @@ their SHA-256 hashes; runtime processing can be offline.
 | PyTorch CPU | 2.14.1+cpu | https://pytorch.org/ | BSD-style; use the official CPU wheel index |
 | torchvision CPU | 0.29.1+cpu | https://github.com/pytorch/vision | BSD-3-Clause |
 | Pillow | 13.0.0 | https://python-pillow.org/ | MIT-CMU |
-| PyAV | 16.0.1 | https://github.com/PyAV-Org/PyAV | BSD-3-Clause; bundled FFmpeg libraries have separate terms |
+| PyAV | 19.0.2 on qualified Python 3.12. The Python 3.11 extra selects 18.1.0 | https://github.com/PyAV-Org/PyAV | BSD-3-Clause; bundled FFmpeg libraries have separate terms |
 | cryptography | 50.0.2 | https://github.com/pyca/cryptography | Apache-2.0 OR BSD-3-Clause |
-| FFmpeg / libx264 | Debian package in Python 3.12 slim-trixie | https://ffmpeg.org/ | LGPL/GPL components depending on build; libx264 is GPL. Do not describe a combined container as Apache-only |
+| FFmpeg / libx264 | Signed FFmpeg 9.0.2 release and Debian libx264-164 | https://ffmpeg.org/ | LGPL/GPL components depending on build; libx264 is GPL. Do not describe a combined container as Apache-only |
 
 TrustMark model hashes live in [models.json](src/ariadne_mark/watermark/models.json).
 Downloads come from the location embedded in the pinned official TrustMark
@@ -55,7 +55,8 @@ and native release bytes; origin and SHA-256 are recorded in the locally built
 wheel. C2PA Python 0.38.3 is not currently available from PyPI.
 
 The Docker recipe is provided as source. A combined prebuilt Docker binary is
-a separate distribution: the tested Debian FFmpeg reports GPLv2-or-later and
+a separate distribution. The container CLI reports GPLv2-or-later and ships
+the signed FFmpeg source archive and licence under `/opt/ffmpeg/source`.
 PyAV's bundled codec libraries have their own terms. Before distributing such
 an image, supply applicable notices and corresponding source/build information
 for its exact GPL components. No combined Docker binary is included in the
@@ -71,7 +72,7 @@ for scanner coverage and remaining native advisories.
 
 PyAV wheels carry separate FFmpeg/codec binaries, including GPL-bearing x264
 and x265 builds; the SDK's encoder uses PyAV's libx264 in-process. Inventory
-those binaries independently of Debian's CLI FFmpeg. Applicable obligations
+those binaries independently of the separately built CLI FFmpeg. Applicable obligations
 apply to redistribution of a bundled venv as well as a container. Ariadne's
 wheel does not contain those binaries; it includes this third-party notice.
 The exact bootstrap/media package graph is hash-locked for Linux x86-64 and

@@ -25,13 +25,18 @@ function render(report) {
   lastReport = report; $('result').hidden = false;
   $('result-label').textContent = report.label || 'Unable to complete verification';
   const c = report.c2pa || {}, w = report.watermark || {}, r = report.recovery || {};
-  $('credential').textContent = messages[c.status] || 'No supported credential result';
+  const manifestMessages = {verified_claim: 'Manifest validated', invalid: 'Manifest invalid',
+    expired_credential: 'Manifest could not be validated because its signing credential expired'};
+  $('credential').textContent = manifestMessages[c.status] || messages[c.status] || 'No supported credential result';
   $('trust').textContent = c.development_identity ? 'Development identity; not a production credential.' : c.issuer_trust === 'trusted' ? 'Issuer validated against this verifier’s trust configuration.' : 'Issuer trust has not been established.';
   $('watermark').textContent = messages[w.status] || 'Watermark check unavailable';
   const search = w.search;
   $('search').textContent = search ? `${search.frames_decoded} frames examined. ${search.file_exhausted ? 'The scan reached the end of the file.' : search.reason === 'two_concordant_ids' ? 'Stopped after two matching ID reads; whole-video coverage is not established.' : 'The search did not exhaust the file.'}` : 'Detection is limited to supported watermark schemes.';
   $('interpretation').textContent = w.status === 'multiple_ids' ? 'Each ID applies only to the positions where it was read. No single source is established for the whole file.' : w.status === 'not_checked' ? 'This is an incomplete check, not evidence that the file is unmarked.' : w.status === 'single_observation' ? 'The detector saw an ID once, but could not confirm it.' : w.status === 'not_found' ? 'No supported mark was recovered. This does not establish human origin.' : w.token && c.status !== 'verified_claim' ? 'The ID is recoverable. It does not authenticate the source of this copy.' : 'Read the credential and watermark evidence separately. Neither establishes factual truth.';
   $('provenance').replaceChildren();
+  const evidenceMessages = {valid: 'Valid', invalid: 'Invalid', not_checked: 'Not checked'};
+  addField('C2PA cryptographic signature', evidenceMessages[c.signature]);
+  addField('C2PA binding to this file', evidenceMessages[c.asset_binding]);
   const record = c.record && c.record.publisher ? c.record : r.record || c.record || {};
   addField('Watermark ID', w.token);
   (w.ids || []).forEach(e => addField(e.status === 'confirmed' ? 'Watermark ID (confirmed)' : 'Watermark ID (unconfirmed)',

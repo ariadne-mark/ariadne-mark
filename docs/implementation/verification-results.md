@@ -87,3 +87,14 @@ to which watermark IDs can be recovered across a video's timeline.
 
 Semantics follow the B06 contract (observations retained, conclusions may be
 revised). This is not a whole-file attribution or a coverage percentage.
+
+## Embedded C2PA evidence in media reports
+
+The media report exposes independent results under `c2pa`. `status`
+is the overall decision for the active manifest. `signature` describes
+cryptographic validation of the claim, and `asset_binding` describes the hash
+binding to the uploaded file. Both checks can read `valid` on an invalid
+manifest, for example when a required assertion is missing. `issuer_trust`
+and `timestamp_trust` describe their own trust checks. Only
+`status=verified_claim` lets an embedded Ariadne claim drive trusted routing or
+authorizes the display of reviewed publisher details.
