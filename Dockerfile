@@ -1,4 +1,4 @@
-FROM python:3.12-slim-trixie@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30 AS ffmpeg-build
+FROM python:3.15-slim-trixie@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928 AS ffmpeg-build
 ARG FFMPEG_BUILD_JOBS=2
 RUN --mount=type=bind,source=scripts/build_ffmpeg.sh,target=/tmp/build_ffmpeg.sh,readonly \
     apt-get update && apt-get install -y --no-install-recommends build-essential ca-certificates \
@@ -6,7 +6,7 @@ RUN --mount=type=bind,source=scripts/build_ffmpeg.sh,target=/tmp/build_ffmpeg.sh
     && bash /tmp/build_ffmpeg.sh
 
 FROM node:24-bookworm-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dcaf34dc9749addbf383b1920c AS node
-FROM python:3.12-slim-trixie@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30 AS packaged
+FROM python:3.15-slim-trixie@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928 AS packaged
 
 COPY --from=ffmpeg-build /opt/ffmpeg /opt/ffmpeg
 ENV ARIADNE_VIDEO_DATA=/opt/ariadne-video
