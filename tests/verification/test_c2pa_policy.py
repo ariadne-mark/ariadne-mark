@@ -30,6 +30,24 @@ class C2paPolicyTests(unittest.TestCase):
         report = self.check(native_result(["claimSignature.validated", "assertion.bmffHash.match"], ["new.failure.code"]))
         self.assertEqual(report["status"], "invalid")
 
+    def test_invalid_manifest_preserves_independent_evidence(self):
+        from ariadne_mark.public_verifier import public_report
+        good = ["claimSignature.validated", "assertion.bmffHash.match", "signingCredential.trusted"]
+        report = self.check(native_result(good, ["assertion.action.softBindingMissing"]))
+        public = public_report({"c2pa": report})["c2pa"]
+        self.assertEqual(public["status"], "invalid")
+        self.assertEqual(public["signature"], "valid")
+        self.assertEqual(public["asset_binding"], "valid")
+        self.assertEqual(public["issuer_trust"], "trusted")
+
+    def test_binding_failure_is_separate_from_a_signature_failure(self):
+        report = self.check(native_result(["claimSignature.validated"], ["assertion.dataHash.mismatch"]))
+        self.assertEqual((report["status"], report["signature"], report["asset_binding"]),
+                         ("invalid", "valid", "invalid"))
+        report = self.check(native_result(["assertion.dataHash.match"], ["claimSignature.mismatch"]))
+        self.assertEqual((report["status"], report["signature"], report["asset_binding"]),
+                         ("invalid", "invalid", "valid"))
+
     def test_external_credential_is_not_labelled_provenance_unavailable(self):
         from ariadne_mark.verification.media import _verification_result
         claim = self.check(native_result(['claimSignature.validated', 'assertion.dataHash.match']))

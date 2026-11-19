@@ -1,4 +1,4 @@
-# Supported scope — 0.7.3b1 public beta
+# Supported scope — 0.7.3b2 security candidate
 
 | Area | Supported | Boundary |
 | --- | --- | --- |

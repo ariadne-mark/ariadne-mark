@@ -1,6 +1,6 @@
 # Configure an authenticated timestamp authority
 
-SDK **0.7.3b1 public beta** · updated **2026-11-14**.
+SDK **0.7.3b2 security candidate** · updated **2026-11-14**.
 
 The pinned C2PA pair remains c2pa-python 0.38.3 / native 0.91.11. Its signer
 accepts a TSA URL but cannot attach an authorization header. Ariadne can now

@@ -10,28 +10,40 @@ from ariadne_mark.signing import ASSERTION, MIME, read_manifest
 from ariadne_mark.watermark import valid_token
 
 
+BINDING_MATCH = {"assertion.dataHash.match", "assertion.bmffHash.match", "assertion.boxesHash.match"}
+BINDING_FAILURE = {"claim.hardBindings.missing", "claim.hardBindings.multiple",
+                   "assertion.dataHash.mismatch", "assertion.dataHash.malformed",
+                   "assertion.bmffHash.mismatch", "assertion.bmffHash.malformed",
+                   "assertion.boxesHash.mismatch", "assertion.boxesHash.malformed"}
+SIGNATURE_FAILURE = {"claimSignature.mismatch", "claimSignature.missing"}
+
+
 def inspect_c2pa(path: Path, *, trust_anchors: Path | None = None, tsa_trust_anchors: Path | None = None) -> dict:
     try:
         raw = read_manifest(path, trust_anchors=trust_anchors, tsa_trust_anchors=tsa_trust_anchors)
     except C2paRuntimeMismatch as exc:
         return {"status": "not_checked", "reason": "c2pa_runtime_unqualified",
-                "signature": "not_checked", "issuer_trust": "not_checked", "runtime": exc.report}
+                "signature": "not_checked", "asset_binding": "not_checked",
+                "issuer_trust": "not_checked", "runtime": exc.report}
     except Exception as exc:
         try:
             from c2pa import C2paError
             absent = isinstance(exc, C2paError.ManifestNotFound)
+            bad_signature = isinstance(exc, getattr(C2paError, "InvalidSignature", ()))
             malformed = isinstance(exc, tuple(getattr(C2paError, name) for name in
                 ("InvalidAsset", "InvalidClaim", "InvalidContent", "InvalidSignature", "AssertionDecoding")
                 if hasattr(C2paError, name)))
         except ImportError:
-            absent = malformed = False
+            absent = malformed = bad_signature = False
         if absent:
-            return {"status": "not_found", "signature": "not_checked", "issuer_trust": "not_checked"}
+            return {"status": "not_found", "signature": "not_checked",
+                    "asset_binding": "not_checked", "issuer_trust": "not_checked"}
         # Runtime failures, allocation failures and unknown native errors never
         # become a successful negative or a claim that a signature was forged.
         return {"status": "invalid" if malformed else "not_checked",
                 "reason": "malformed_c2pa" if malformed else "c2pa_read_failed",
-                "signature": "invalid" if malformed else "not_checked", "issuer_trust": "not_checked"}
+                "signature": "invalid" if bad_signature else "not_checked",
+                "asset_binding": "not_checked", "issuer_trust": "not_checked"}
     active = raw.get("validation_results", {}).get("activeManifest", {})
     successes = {item.get("code") for item in active.get("success", [])}
     failures = {item.get("code") for item in active.get("failure", [])}
@@ -44,14 +56,26 @@ def inspect_c2pa(path: Path, *, trust_anchors: Path | None = None, tsa_trust_anc
     # Native validation decides validity at a trusted timestamp. Never suppress
     # expiry merely because a timestamp digest validated (an untrusted TSA can
     # issue any time). An unresolved expiry is not labelled content tampering.
-    binding = {"assertion.dataHash.match", "assertion.bmffHash.match", "assertion.boxesHash.match"}
-    valid = not substantive and "claimSignature.validated" in successes and bool(binding & successes)
+    signature = ("invalid" if SIGNATURE_FAILURE & failures else
+                 "valid" if "claimSignature.validated" in successes else "not_checked")
+    asset_binding = ("invalid" if BINDING_FAILURE & failures else
+                     "valid" if BINDING_MATCH & successes else "not_checked")
+    valid = not substantive and signature == "valid" and asset_binding == "valid"
+    issuer_trust = "not_checked"
+    if "signingCredential.untrusted" in failures:
+        issuer_trust = "untrusted"
+    elif "signingCredential.trusted" in successes and not any(
+            code and code.startswith("signingCredential.") for code in failures):
+        issuer_trust = "trusted"
+    elif valid:
+        issuer_trust = "untrusted"
     result = {
         "status": "verified_claim" if valid else "expired_credential" if expired_only else "invalid",
-        "signature": "valid" if valid else "not_checked" if expired_only else "invalid",
+        "signature": signature,
+        "asset_binding": asset_binding,
         "timestamp_trust": "trusted" if timestamp_trusted else "untrusted" if "timeStamp.validated" in successes else "not_present_or_invalid",
         "credential_time": "expired_without_trusted_signing_time" if expired_only else "valid" if valid else "not_verified",
-        "issuer_trust": ("trusted" if "signingCredential.trusted" in successes else "untrusted") if valid else "not_checked",
+        "issuer_trust": issuer_trust,
         "validation_codes": sorted(x for x in successes | failures | informational if x),
         "revocation": "not_checked_offline",
     }
@@ -448,11 +472,11 @@ def _registry_recovery(path, token, schemes, registry, digest, *, trust_anchors=
 
 
 def _verification_result(path, c2pa, watermark, *, registry, video, trust_anchors=None, tsa_trust_anchors=None):
-    if c2pa.get("record"):
+    if c2pa.get("record") and c2pa["status"] == "verified_claim":
         c2pa["record_scope"] = ("development_signer_claim" if c2pa.get("development_identity") else
                                 "trusted_signer_claim" if c2pa.get("issuer_trust") == "trusted" else
                                 "claimed_by_untrusted_signer")
-    signed_token = c2pa.get("token")
+    signed_token = c2pa.get("token") if c2pa["status"] == "verified_claim" else None
     for entry in watermark.get("ids", []):
         entry["matches_signed_claim"] = (entry["token"] == signed_token) if signed_token else None
     digest_value = []

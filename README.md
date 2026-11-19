@@ -4,7 +4,7 @@
 
 A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
 
-**Public beta · 0.7.3b1.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+**Public beta · 0.7.3b2.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
 
 [Documentation hub](docs/index.md) · [EU guide](docs/compliance/eu-ai-act.md) ·
 [California guide](docs/compliance/california.md) · [Test protocols and evidence](docs/benchmarks/protocols.md) ·
@@ -13,13 +13,13 @@ A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and 
 
 ## Download and get a first result
 
-[Release 0.7.3b1](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3b1) contains the qualified wheel/source, exact hashes,
+[Release 0.7.3b2](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3b2) contains the qualified wheel/source, exact hashes,
 runtime inventory and real image/video examples with signed verification reports.
 Try a [complete signed image](https://ariadnemark.xyz/verify/?sample=full-image)
 or [video](https://ariadnemark.xyz/verify/?sample=full-video) in the public verifier,
 or inspect the [independent C2PA evidence](https://ariadnemark.xyz/evidence/c2pa/).
-[Beta qualification](docs/validation/0.7.3b1-results.md) records the exact source and package checks. [0.7.3a4 qualification](docs/validation/0.7.3a4-results.md)
-records the previous build.
+The release assets record the exact source and package checks. [0.7.3b1 qualification](docs/validation/0.7.3b1-results.md) and [0.7.3a4 qualification](docs/validation/0.7.3a4-results.md)
+record previous builds.
 
 This is a GitHub release; no PyPI package or prebuilt combined Docker binary is
 published. Documentation can evolve separately from the immutable packages.
@@ -31,7 +31,7 @@ remain historical evidence.
 With Linux x86-64, Docker Engine, curl, tar and sha256sum:
 
 ```sh
-curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.3b1/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
+curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.3b2/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
 # Inspect the script; it creates a new ariadne-first-run directory.
 bash FIRST_EXPORT.sh
 ```
@@ -107,7 +107,7 @@ The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free
 python3.12 -m venv .venv
 . .venv/bin/activate
 # Use the downloaded wheel, or use: python -m pip install --no-deps .
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.3b1-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3b2-py3-none-any.whl
 # Explicit setup installs the pinned C2PA pair and CPU dependencies, then models.
 # FFmpeg/ffprobe and Node.js/npm must already be installed.
 ariadne setup media --fetch-models

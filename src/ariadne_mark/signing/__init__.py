@@ -204,6 +204,14 @@ def context(trust_anchors: Path | None = None, *, tsa_trust_anchors: Path | None
         "builder": {"thumbnail": {"enabled": False}},
     }
     anchors = []
+    if trust_anchors and tsa_trust_anchors:
+        trust_anchors, tsa_trust_anchors = Path(trust_anchors), Path(tsa_trust_anchors)
+        if trust_anchors.parent == tsa_trust_anchors.parent:
+            # Pin one directory for this context when the operator atomically
+            # switches a symlink to an updated pair of trust lists.
+            snapshot = trust_anchors.parent.resolve()
+            trust_anchors = snapshot / trust_anchors.name
+            tsa_trust_anchors = snapshot / tsa_trust_anchors.name
     if trust_anchors:
         anchors.append({"trust_anchors": Path(trust_anchors).read_text(),
                         "trust_kind": "manifest", "trust_uri": "ariadne:operator:manifest"})
@@ -211,8 +219,7 @@ def context(trust_anchors: Path | None = None, *, tsa_trust_anchors: Path | None
         anchors.append({"trust_anchors": Path(tsa_trust_anchors).read_text(),
                         "trust_kind": "tsa", "trust_uri": "ariadne:operator:tsa"})
     if anchors:
-        # Native overlays merge these lists with built-in roots. A signer root
-        # is never silently promoted to timestamp-authority trust.
+        # Keep manifest and timestamp anchors in separate native trust kinds.
         settings["trust"] = {"anchors": anchors}
     return c2pa.Context.from_dict(settings)
 

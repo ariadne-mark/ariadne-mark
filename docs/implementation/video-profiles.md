@@ -98,7 +98,7 @@ For a video-only installation, activate a Linux x86-64 / Python 3.12 virtualenv
 with FFmpeg/ffprobe and Node/npm available, then use the installed wheel:
 
 ```sh
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.3b1-py3-none-any.whl
+python -m pip install --no-deps /path/to/ariadne_mark-0.7.3b2-py3-none-any.whl
 ariadne setup video --fetch-models
 ariadne runtime check
 ```
