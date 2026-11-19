@@ -5,7 +5,7 @@ RUN --mount=type=bind,source=scripts/build_ffmpeg.sh,target=/tmp/build_ffmpeg.sh
         curl gnupg libx264-dev nasm pkg-config xz-utils zlib1g-dev \
     && bash /tmp/build_ffmpeg.sh
 
-FROM node:24-bookworm-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dcaf34dc9749addbf383b1920c AS node
+FROM node:26-bookworm-slim@sha256:5df79989ed685e09f0a98019db4cebfb22fb9df1a53c0161664a011f7ff6b0f1 AS node
 FROM python:3.12-slim-trixie@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30 AS packaged
 
 COPY --from=ffmpeg-build /opt/ffmpeg /opt/ffmpeg
