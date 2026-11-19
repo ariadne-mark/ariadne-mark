@@ -1,286 +1,92 @@
 # Ariadne Mark
 
-**Open-source watermarking, provenance and verification for AI-generated images and video.**
+**Free, open-source labeling and verification for AI-generated images and video.**
 
-A local Python SDK and CLI that adds a recoverable ID (TrustMark for images and Economy/Resilient video), signs C2PA provenance, and checks the final exported file. Includes a self-hosted verifier and an optional SQLite recovery registry. No account, API key or hosted service is required.
+Add an invisible watermark and signed [C2PA](https://c2pa.org/) Content Credentials to media at export. Verify the resulting file independently. If metadata is missing, the verifier can use a recovered watermark ID to look up a record that was stored in a connected registry. Ariadne Mark runs on your infrastructure as a Python SDK and CLI, with a self-hosted verifier and an optional recovery registry.
 
-**Public beta · 0.7.3b2.** JPEG/PNG images and SDR H.264 MP4 video are implemented. This is technical tooling for content-labeling workflows, not a certificate of legal compliance. See [supported formats and limits](docs/operations/support.md) and [requirements coverage](compliance/COVERAGE.md).
+[**Try the image demo**](https://ariadnemark.xyz/try/) · [**Verify a signed video**](https://ariadnemark.xyz/verify/?sample=full-video) · [**Quickstart**](docs/start-here.md) · [**Download v0.7.3b2**](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3b2)
 
-[Documentation hub](docs/index.md) · [EU guide](docs/compliance/eu-ai-act.md) ·
-[California guide](docs/compliance/california.md) · [Test protocols and evidence](docs/benchmarks/protocols.md) ·
-[CPU performance and resources](docs/benchmarks/0.7.3a4-performance-2026-11-15.md) ·
-[0.7.3a4 delivery-transform tests](docs/benchmarks/0.7.3a4-delivery-2026-11-18.md)
+**Supported media:** JPEG, PNG and SDR H.264 MP4. **Tested runtime:** Linux x86-64, Python 3.12, CPU. Local evaluation requires no account, API key or hosted service. Original code is [Apache-2.0](LICENSE).
 
-## Download and get a first result
+## What you get
 
-[Release 0.7.3b2](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3b2) contains the qualified wheel/source, exact hashes,
-runtime inventory and real image/video examples with signed verification reports.
-Try a [complete signed image](https://ariadnemark.xyz/verify/?sample=full-image)
-or [video](https://ariadnemark.xyz/verify/?sample=full-video) in the public verifier,
-or inspect the [independent C2PA evidence](https://ariadnemark.xyz/evidence/c2pa/).
-The release assets record the exact source and package checks. [0.7.3b1 qualification](docs/validation/0.7.3b1-results.md) and [0.7.3a4 qualification](docs/validation/0.7.3a4-results.md)
-record previous builds.
+- **Export:** embed a recoverable watermark ID and signed provenance for the final file. Add visible disclosure when your workflow needs it. The SDK reads the result back before writing it to the requested output path and writes a JSON receipt with the file hash and check results.
+- **Verify:** use the browser UI, HTTP API or CLI to inspect credentials and search for a supported watermark. With a registry, a recovered ID can retrieve its provenance record. Watermark recovery alone cannot authenticate the content of a transformed copy.
+- **Plan for deployment:** map the features to the [EU AI Act](docs/compliance/eu-ai-act.md) and [California AI Transparency Act](docs/compliance/california.md). The guides identify which actions and assessments remain with the operator. SDK output does not establish legal compliance.
 
-This is a GitHub release; no PyPI package or prebuilt combined Docker binary is
-published. Documentation can evolve separately from the immutable packages.
-Release archives retain the build-time README.
-Use the walkthrough below or the [current Quickstart](docs/start-here.md) for installation. Prior
-[0.7.2a1 artifacts](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.2a1)
-remain historical evidence.
+Want to see the difference between a signed claim and a recovered watermark? Try the [signed PNG](https://ariadnemark.xyz/verify/?sample=full-image) and the [signed MP4](https://ariadnemark.xyz/verify/?sample=full-video). We built Ariadne for our own generative-media workflows and shared it so other teams could reuse the export and verification work. If you try it, [tell us what you were trying to label and where you got stuck](https://github.com/ariadne-mark/ariadne-mark/discussions).
 
-With Linux x86-64, Docker Engine, curl, tar and sha256sum:
+## Get your first verified export
+
+Use Docker for a complete sample run. The wheel fits an existing Python worker.
+
+| If you want to… | Use | What you need |
+| --- | --- | --- |
+| Run the complete example on your machine | [Docker walkthrough](#quick-start-with-docker) | Linux x86-64, Docker Engine, `curl`, `tar`, `sha256sum`, at least **10 GiB free** |
+| Integrate with an existing Python backend | [Release wheel](#python-wheel) | Linux x86-64, Python 3.12, FFmpeg/ffprobe, Node.js/npm, about **2.2 GB** for the installed runtime |
+| Test a real export without installing | [Hosted verifier with a signed MP4](https://ariadnemark.xyz/verify/?sample=full-video) | A browser |
+
+Both installation routes use files from the [GitHub release](https://github.com/ariadne-mark/ariadne-mark/releases/tag/v0.7.3b2), which includes checksums, runtime inventory, examples and signed verification reports. There is no PyPI distribution or prebuilt combined Docker image. Initial setup downloads dependencies and models.
+
+### Quick start with Docker
 
 ```sh
 curl -fL https://github.com/ariadne-mark/ariadne-mark/releases/download/v0.7.3b2/FIRST_EXPORT.sh -o FIRST_EXPORT.sh
-# Inspect the script; it creates a new ariadne-first-run directory.
+# Inspect FIRST_EXPORT.sh before running it.
 bash FIRST_EXPORT.sh
 ```
 
-The Docker source-build walkthrough verifies downloads, builds the source recipe and exports an
-image and Economy5s, Economy2s and Resilient video. It uses development
-credentials and deterministic engineering fixtures. `FIRST_EXPORT.sh` requires
-at least **10 GiB free disk space** (about 10.74 GB) before it starts. For an
-existing Python 3.12 backend, use the lighter
-[wheel installation](docs/operations/wheel-install.md) below.
+The script checks the release downloads, builds the container from source, and runs one PNG export plus an MP4 export in each video mode. In `ariadne-first-run`, look for `first.png`, the three `first-*.mp4` files, their `.receipt.json` sidecars and separate verification JSON files. Check for a valid C2PA signature with a development identity and a recovered watermark ID matching the receipt. See [verification results](docs/implementation/verification-results.md) for the field meanings.
 
-[Production setup at a glance](docs/operations/production-onboarding.md#production-at-a-glance) ·
-[Node.js / Next.js / mobile backend](docs/guides/nodejs-nextjs.md) ·
-[Commercial use](docs/operations/licensing.md) · [Troubleshooting](docs/operations/troubleshooting.md) ·
-[ComfyUI export nodes](https://github.com/ariadne-mark/ComfyUI-Ariadne-Mark)
+For the next export, follow the [current Quickstart](docs/start-here.md) or the [production onboarding guide](docs/operations/production-onboarding.md). The [own-files walkthrough](docs/implementation/own-files.md) shows the worker pattern and is documented for v0.7.3b1.
 
-## Quick start with Docker
+### Python wheel
 
-```sh
-# From the downloaded source archive or its qualified source checkout.
-# --iidfile records the immutable image ID; no shared tag is created or moved.
-docker build --platform linux/amd64 --iidfile ariadne-image.id .
-IMAGE=$(cat ariadne-image.id)
-```
-
-Plan disk space before building: on the qualification host the final image is
-about 3.2 GB and the build stage about 3.5 GB, plus BuildKit cache, so allow
-roughly 9–10 GB free while building (more if layers are not already cached).
-The wheel path below needs about 2.2 GB (venv 1.5 GB, models ~0.3 GB, Node
-~0.2 GB) and is the fallback for hosts that cannot hold the Docker build.
-
-The build downloads CPU dependencies and verifies pinned model files. Processing can then run without a network connection:
-
-```sh
-# Create a local DEVELOPMENT identity. Production uses your own credentials.
-docker run --rm --network none --user "$(id -u):$(id -g)" \
-  -v "$PWD:/data" "$IMAGE" init-dev .ariadne/dev
-
-# Put input.png in this directory. Supply its actual generator and creation time.
-docker run --rm --network none --user "$(id -u):$(id -g)" \
-  -v "$PWD:/data" "$IMAGE" mark input.png output.png \
-  --publisher "Example Studio" --system "Example Generator" --system-version "1.0" \
-  --created-at "2026-11-03T10:00:00Z" --identity .ariadne/dev --allow-dev \
-  --registry .ariadne/registry.sqlite3
-
-docker run --rm --network none --user "$(id -u):$(id -g)" \
-  -v "$PWD:/data" "$IMAGE" verify output.png \
-  --registry .ariadne/registry.sqlite3
-```
-
-Video uses TrustMark Q on CPU. The default `economy_5s` marks 125 ms windows every 5 seconds; `economy_2s` uses 2 seconds. Each selected frame receives a fresh signal. `resilient` processes every frame. All three presets are in the same SDK/wheel and need the same video runtime. Select with `SDK(video_profile="economy_2s")`, a per-export `sdk.mark(..., video_profile="resilient")`, `--video-profile`, or `sdk.video_profile` in a product JSON configuration.
-
-Economy export checks require an independently decoded matching ID in every occupied watermark window; Resilient retains its five-sample read-back gate. For a new operator that has never issued VideoSeal marks, set `SDK(verification_scope="current")` or CLI `--verification-scope current`; new kits write this scope explicitly. Existing SDK/CLI defaults remain `all` for compatibility. A negative applies only to declared schemes; a signed out-of-scope technique remains `not_checked`. Independent verification does not need the export profile: it scans for IDs and can recover weak signals from cached logits without a second CNN pass. Search budgets and incomplete/conflicting results are explicit. A recovered ID does not establish whole-video coverage or legal compliance. Legacy Fast and older TrustMark IDs remain readable; VideoSeal requires its explicit optional model setup; `fast` is an explicit compatibility encoder, no longer the default.
-
-```sh
-ariadne mark input.mp4 output.mp4 --video-profile resilient \
-  --publisher "Example Studio" --system "Example Generator" --system-version "1.0" \
-  --created-at "2026-11-04T10:00:00Z" --identity .ariadne/dev --allow-dev \
-  --audio-kind original --registry .ariadne/registry.sqlite3
-```
-
-[Video modes and installation](docs/implementation/video-profiles.md) · [Run the verifier](docs/operations/verifier-quickstart.md) · [Requirements and known limits](docs/compliance/launch-mapping.md).
-
-For video use `input.mp4 output.mp4` and set `--audio-kind original`, `synthetic`, or `unknown` when appropriate. Add `--visible` for a visible disclosure, or `--action altered` for AI-altered material. Existing output files are never overwritten.
-
-The output includes a `.receipt.json` file containing its SHA-256, processing time and verification results. A development signature is valid but **not a production identity**; its headline remains marked development even if its test root is explicitly trusted. `--trust-anchors .ariadne/dev/trust.pem` is only for explicitly trusting your own test root.
-
-## Python installation and API
-
-The tested media bundle is Linux x86-64 / Python 3.12 / CPU. The dependency-free record core is also tested on Python 3.11–3.14. Native video use requires FFmpeg/ffprobe and Node.js (tested 24); npm is needed only during explicit model/runtime setup. The Docker recipe provisions them and omits npm from the final runtime. The Node/ONNX worker is persistent and receives binary frames; audio/timestamps remain in the Python exporter.
+Download the wheel from the release and verify its checksum. Run the following from the directory with the wheel, with the system prerequisites already installed:
 
 ```sh
 python3.12 -m venv .venv
 . .venv/bin/activate
-# Use the downloaded wheel, or use: python -m pip install --no-deps .
-python -m pip install --no-deps /path/to/ariadne_mark-0.7.3b2-py3-none-any.whl
-# Explicit setup installs the pinned C2PA pair and CPU dependencies, then models.
-# FFmpeg/ffprobe and Node.js/npm must already be installed.
+python -m pip install --no-deps ./ariadne_mark-0.7.3b2-py3-none-any.whl
 ariadne setup media --fetch-models
 ariadne runtime check
 ```
 
-The wheel contains media/video hash locks and an explicit installer; a source checkout is not needed.
-`ariadne setup video --fetch-models` installs the lighter video-only runtime without
-Torch, NumPy or Python TrustMark; image/legacy decoders are omitted. Extras alone
-do not provision or qualify C2PA/models. The qualified wrapper is built explicitly
-from pinned source rather than resolved from an unavailable PyPI version.
+`ariadne setup media` installs the pinned Python media dependencies and C2PA runtime. A passing `runtime check` confirms setup. For a verified export, follow the [Quickstart export and check steps](docs/start-here.md) with a supported file. See [the wheel guide](docs/operations/wheel-install.md) for alternatives, including video-only setup. Load one SDK instance per worker and reuse it across jobs.
 
-The explicit C2PA bootstrap builds the official tagged Python wrapper with the
-SHA-256-pinned upstream native library 0.91.11. It is qualified on Linux x86-64;
-use the Docker recipe for the supported media environment.
+## Choose a video mode
 
-`models fetch` defaults to the current image and video engines (`--engine media`). Legacy VideoSeal is not on the normal setup/build path. Use `models fetch --engine all` to request all engines explicitly; a requested engine download failure remains an error. Use `--engine trustmark` for images, `--engine video` for Economy/Resilient, or `--engine videoseal` for legacy compatibility. `ARIADNE_VIDEOSEAL_MODEL` can point to a shared, checksum-verified model file.
+| Mode | Watermark cadence |
+| --- | --- |
+| **Economy5s** (default, `economy_5s`) | Marks a 125 ms window every 5 seconds |
+| **Economy2s** (`economy_2s`) | Marks a 125 ms window every 2 seconds |
+| **Resilient** (`resilient`) | Processes every frame |
 
-`models fetch` is an explicit setup step. Later requests fail clearly if models are missing or have incorrect checksums. They do not silently download models.
+All three use the same CPU video runtime. Select a profile with `--video-profile` or the SDK’s `video_profile` option. Mark each final rendition and test the actual delivery path. Cropping, letterboxing, heavy compression and short edits can remove signals, particularly with sparse marking. See [video modes and read-back checks](docs/implementation/video-profiles.md), [CPU measurements](docs/benchmarks/0.7.3a4-performance-2026-11-15.md) and [delivery transform results](docs/benchmarks/0.7.3a4-delivery-2026-11-18.md). The linked measurements cover v0.7.3a4. Use them as reference and measure CPU time and memory on your own media before planning capacity for v0.7.3b2.
 
-```python
-from datetime import datetime, timezone
-from pathlib import Path
-from ariadne_mark.pipeline import SDK
-from ariadne_mark.provenance import Action, GenerativeSystem, MediaKind, ProvenanceRecord
-from ariadne_mark.registry import Registry
-from ariadne_mark.signing import SigningIdentity
-from ariadne_mark.watermark import Watermarker
+## Deploy and verify
 
-sdk = SDK(
-    Watermarker(threads=2),
-    SigningIdentity.from_directory(Path(".ariadne/dev"), allow_dev=True),
-    Registry(Path(".ariadne/registry.sqlite3")),
-)
-record = ProvenanceRecord.create(
-    publisher="Example Studio", system=GenerativeSystem("Example Generator", "1.0"),
-    media_kind=MediaKind.IMAGE, action=Action.CREATED,
-    created_at=datetime(2026, 11, 3, 10, 0, tzinfo=timezone.utc),
-)
-receipt = sdk.mark(Path("input.png"), Path("output.png"), record)
-result = sdk.verify(Path("output.png"))
-```
+- [Self-hosted verifier quickstart](docs/operations/verifier-quickstart.md) · runs a UI and API that distinguish valid claims, watermark recovery and incomplete checks.
+- [Exporter + verifier + registry deployment kit](docs/operations/deployment-kit.md) · includes batch export, a read-only recovery service and a TLS edge. Plan for your own TLS/DNS and signing credentials in production.
+- [Stock export lab](examples/stock_product/README.md) · illustrates a queued worker and a separate verifier. See also the [Node.js and Next.js backend guide](docs/guides/nodejs-nextjs.md) and [ComfyUI export nodes](https://github.com/ariadne-mark/ComfyUI-Ariadne-Mark).
+- [Signed verification reports](docs/operations/signed-reports.md) · [C2PA recovery and registry publication](docs/operations/c2pa-recovery.md) · [C2PA runtime troubleshooting](docs/operations/c2pa-runtime.md).
 
-Load the SDK once and reuse it across a queue of jobs. It serializes model inference; do not load a model per frame or request.
+A successful C2PA check validates the claim signature and its binding to the submitted file. The verifier reports issuer trust separately. A missing watermark does not establish human origin. Development signatures are for testing. Standalone audio and text marking, universal AI detection, and relaying already-signed upstream files unchanged are outside the supported workflow. See [supported formats and limits](docs/operations/support.md) and [verification semantics](docs/implementation/verifier.md).
 
-## Product requirements profiles
+## Evidence and requirements
 
-```sh
-ariadne profile init > product.json
-# Fill the product facts and deployment fields, then:
-ariadne profile check product.json > requirements-report.json
-ariadne mark input.png marked.png --profile product.json \
-  --created-at "2026-11-03T10:00:00Z" --identity .ariadne/dev --allow-dev
-```
+For a pilot, exercise the signed final rendition, then check watermark recovery separately after metadata removal and the transformations your delivery pipeline actually performs. Measure throughput and check that the production verifier trusts your issuer.
 
-The offline EU/California planner reports missing configuration, deployment
-actions and review items. No models are needed for `profile check`; exit 3 means
-open actions/review, exit 2 means invalid input. The media export records the
-assessment and configuration hash in its receipt. Declarations are never
-reported as verified legal compliance. [Profile guide](docs/compliance/applicability.md).
+- **Run your own checks:** [test protocols](docs/benchmarks/protocols.md), [reproducible durability benchmark](benchmarks/durability/README.md) and [sample artifacts](docs/benchmarks/samples.md).
+- **Inspect external verification:** [C2PA interoperability evidence](https://ariadnemark.xyz/evidence/c2pa/).
+- **Assess your workflow:** [requirements coverage](compliance/COVERAGE.md), [operator checklist and evidence template](docs/compliance/operator-evidence-template.md), and [offline product profile guide](docs/compliance/applicability.md).
 
-## Self-hosted verifier
+[Documentation hub](docs/index.md) · [Troubleshooting](docs/operations/troubleshooting.md) · [Release qualification](docs/operations/releases.md) · [Release history](CHANGELOG.md)
 
-```sh
-docker compose up --build
-```
+## Feedback and contributions
 
-Open **http://localhost:8080**. It accepts uploads without registration, exposes a binary-upload API at `POST /verify?format=png` (also `jpg`, `jpeg`, `mp4`), and deletes temporary media after each request. The default Compose service binds only to localhost. Public service mode requires valid, non-development CA roots and deployment behind a buffering/rate-limiting reverse proxy. It requires configured roots (`--production --trust-anchors roots.pem`). Uploads are bounded separately from inference; the default 512 MiB ceiling matches export. See [deployment](docs/operations/verifier.md) to attach a recovery registry, trust roots or feedback link and publish it behind a reverse proxy.
-
-## Try a complete product integration
-
-The [stock export lab](examples/stock_product/README.md) replaces a generator
-with stock images/video and exercises a persistent queue, SDK worker,
-downloads and a separate verifier. It includes a browser UI and an HTTP
-acceptance script that deliberately interrupts and restarts services.
-[Server validation](examples/stock_product/VALIDATION.md).
-
-## What verification means
-
-- **Valid signed claim:** signature and content binding validate. An untrusted issuer gets an unverified headline; use `verify --strict` when trusted credentials are required.
-- **Recovered watermark:** a supported ID was extracted. Registry lookup returns the record associated with that ID; a transformed copy has no authenticated content binding from the ID alone.
-- **Not found:** a supported check ran and found no mark. This does not establish human origin.
-- **Not checked / invalid / expired credential:** operational failure, invalid evidence and unresolved signing time are distinguished. None is a successful negative detection.
-
-Watermarks can be removed or copied. The tool does not detect every AI image, verify factual truth, or call other providers' closed detectors. Video watermark verification reports sample coverage and aggregate-only recovery; C2PA verifies the signed asset binding. No whole-video watermark percentage is inferred from the samples.
-
-## SDK + verifier + registry deployment kit
-
-`ariadne kit init DIRECTORY` prepares an operator-owned deployment. Add
-`--development` to explicitly generate local test credentials. The kit includes
-batch export with resident SDK workers, a read-only registry verifier, separate
-report keys and a pinned nginx TLS edge. No signing key is mounted in the
-verifier. Economy5s, Economy2s and Resilient are unchanged.
-
-See the [end-to-end kit guide](docs/operations/deployment-kit.md). Production
-credentials, public TLS/DNS and actual product-scope assessment remain operator
-steps; kit readiness is not a legal compliance determination.
-
-## Tests and evidence
-
-```sh
-python -m unittest discover -s tests -t . -v
-python scripts/check_requirements.py
-# Full real-engine suite in the built image, with networking disabled:
-docker run --rm --network none --cpus 2 --memory 6g \
-  -e ARIADNE_MEDIA_TESTS=1 -w /app --entrypoint python \
-  "$IMAGE" -m unittest discover -s tests -t . -v
-```
-
-The ordinary core suite skips media tests unless explicitly enabled. Release qualification runs the Python matrix and real-engine Docker suite in a maintainer-dispatched EC2 job for an exact commit. Automatic PR checks verify that the exact revision has retained EC2 qualification evidence. [Reproducible benchmark](benchmarks/durability/README.md) · [0.7.3a4 qualification](docs/validation/0.7.3a4-results.md) · [Prior video qualification](docs/validation/0.7.1a0.md) · [Requirement records](compliance/requirements.json) · [Regulatory mapping](docs/compliance/release-mapping.md).
-
-[Release qualification checklist](docs/operations/releases.md).
-
-## Contribute
-
-Use [Discussions](https://github.com/ariadne-mark/ariadne-mark/discussions) for integration questions, [Issues](https://github.com/ariadne-mark/ariadne-mark/issues) for bugs and sourced regulatory corrections, and [private security reports](https://github.com/ariadne-mark/ariadne-mark/security/advisories/new) for vulnerabilities. See [CONTRIBUTING](CONTRIBUTING.md). If useful, give the project a star.
+[Start a discussion](https://github.com/ariadne-mark/ariadne-mark/discussions) with your media format, deployment environment and what happened. Use [Issues](https://github.com/ariadne-mark/ariadne-mark/issues) for reproducible bugs and sourced regulatory corrections, and [private security reports](https://github.com/ariadne-mark/ariadne-mark/security/advisories/new) for vulnerabilities. See [the contribution guide](CONTRIBUTING.md).
 
 ## License
 
-Original code is [Apache-2.0](LICENSE). TrustMark and VideoSeal code/models are MIT; C2PA is MIT/Apache-2.0. Other dependencies, including FFmpeg and codec libraries, retain their own licenses. [Third-party inventory](THIRD_PARTY.md).
-
-
-### Signed reports and C2PA recovery (0.7 alpha)
-
-The self-hosted verifier can issue portable Ed25519/JWS reports bound to the
-submitted file. The registry can retain exact signed C2PA manifest stores and
-serve explicitly published entries through read-only soft-binding endpoints.
-[Signed reports](docs/operations/signed-reports.md) ·
-[Recovery, publication and registration limits](docs/operations/c2pa-recovery.md).
-Economy 5s (default), Economy 2s and Resilient marking policies are unchanged.
-Color conversions use explicit SDR matrix/range and accurate rounding; fractional
-FPS recovery has a bounded phase bank. Canonical BCH5 guards validate decoded
-codewords in both runtimes. See the [video guide](docs/implementation/video-profiles.md)
-and [spatial recovery limits](docs/research/spatial-recovery-2026-11-06.md).
-Native C2PA 0.91.11 is pinned for correct CBOR byte-string assertions; rerun
-bootstrap when upgrading an existing 0.6 environment. Algorithm-list enrollment,
-production trust and mode-specific durability assessment remain separate work.
-
-### C2PA media preflight (0.7.2a1)
-
-`ariadne runtime check` reports the loaded native version and SHA-256 alongside
-Python-package pins. The qualified media pair is c2pa-python0.38.3/native0.91.11
-on Linux x86-64/Python3.12. Core construction without a signing identity is lazy. Installed mismatches stop media operations; the
-supplied verifier preflights before binding HTTP. Low-level inspection reports
-`not_checked`/`c2pa_runtime_unqualified`, never absence or a forged signature.
-Record/profile-only core operations remain dependency-free. See the
-[runtime guide](docs/operations/c2pa-runtime.md) for diagnosis and recovery.
-
-## Boundaries to assess before integrating
-
-- Media is qualified on Linux x86-64 / Python 3.12; core planning supports Python 3.11–3.14. Use Linux amd64 Docker on other hosts; emulation performance is unqualified.
-- Post-export portrait crops/aspect changes, letterboxes, severe compression and arbitrary excerpts are not guaranteed to retain ID. Mark final renditions and test the actual delivery path.
-- Economy is a cost/coverage setting. Its temporal windows can be removed; public TrustMark removal can also defeat images and Resilient video. No preset is certified as a statutory minimum or attack-proof.
-- Detector FPR is not population-calibrated. Two repeated reads are concordant observations, not independent statistical trials. See the [reliability protocol](benchmarks/reliability/README.md).
-- Standalone/synthetic audio marking is outside scope; retaining an AAC track does not mark it.
-- `verified_at` in signed verifier reports is the verifier's clock, not a TSA timestamp.
-- Inputs already carrying valid C2PA require `action=altered` today and are declared AI-altered/composite. A pure marking relay for already-generated upstream media is not implemented; this can be semantically unsuitable for that workflow.
-- Public provider/system fields are withheld by default. Configure reviewed `--public-sources` and issuer trust, then test the public output. The CA planner keeps this operator action open until declared reviewed.
-
-The [requirements map](docs/compliance/launch-mapping.md) distinguishes binding law,
-voluntary guidance, technical measures and operator duties. Economy's adequacy for
-an actual EU/California product remains an assessment question, particularly the
-California removal-resistance criterion. This SDK does not supply a compliance certificate.
-
-### Supported deployment scope
-
-One deployment kit serves one publisher/system/version pair; use separate kits
-for other model versions. Generation timestamps more than five minutes ahead
-of the export clock are rejected. Production `kit check` validates the local
-issuer chain/EKU against configured roots, but does not establish production
-readiness, certificate enrollment, endpoint availability or legal compliance.
-Kit recovery acceptance covers metadata removal without re-encoding (PNG
-re-save and MP4 remux); recompression/crop recovery is not guaranteed. The
-six-second acceptance fixture distinguishes Economy5s and Economy2s cadence.
-See [0.7.3a4 qualification](docs/validation/0.7.3a4-results.md) and
-[deployment scope](docs/operations/deployment-kit.md).
+Original code is [Apache-2.0](LICENSE). Dependencies and models retain their own licenses. See the [third-party inventory](THIRD_PARTY.md) and [commercial use guide](docs/operations/licensing.md).

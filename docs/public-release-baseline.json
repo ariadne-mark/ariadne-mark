@@ -1,12 +1,12 @@
 {
-  "version": "0.7.3b1",
-  "qualified_source": "2453c83d5dbfb8f272704609b88f9814a4f39799",
-  "image_id": "sha256:ef2534f4fe36d3046977b8d31a7b448e30872d0df2d078d48ce7a8b1deddc795",
-  "image_tag": "ariadne-mark:ci-44302448483-2453c83",
-  "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/44302448483",
-  "full_media_tests": 341,
+  "version": "0.7.3b2",
+  "qualified_source": "b467d3e0e9a414a11a96aa934e3bf016717c92ed",
+  "image_id": "sha256:e93c944a7588542fd40b1a977bc1a959f6621b37780a2779def3ee8abeb1aa10",
+  "image_tag": "ariadne-mark:ci-44485431514-b467d3e",
+  "ci_url": "https://github.com/ariadne-mark/ariadne-mark/actions/runs/44485431514",
+  "full_media_tests": 343,
   "artifacts": {
-    "ariadne_mark-0.7.3b1-py3-none-any.whl": "58e441bb3deb102bc5f23da123b52b3a18a7619f9b40a693c2797a990cac3e52",
-    "ariadne_mark-0.7.3b1.tar.gz": "4f29aa4db9e2f24cf2898b317162391211eaaff06edaa7b335230573333b583d"
+    "ariadne_mark-0.7.3b2-py3-none-any.whl": "6ff11c31e639a57745cf60d058a6b19a8d3cd315dd1ee51159320c0327994d4e",
+    "ariadne_mark-0.7.3b2.tar.gz": "7aa9c39ac86e9e82b73e44f487d686902b65c54be5fa0b2d20a4852e0431e18a"
   }
 }
