@@ -1,0 +1,161 @@
+{
+  "watermark": {
+    "status": "recovered_claim",
+    "token": "014d507bcd983d12",
+    "algorithm_scope": "configured_video_schemes",
+    "engines_checked": [
+      "adobe.trustmark.Q.variax-bch5",
+      "meta.videoseal.1.0.bch20",
+      "adobe.trustmark.Q.bch5"
+    ],
+    "scope": "sampled_frames",
+    "sample_coverage": {
+      "by_engine": [
+        {
+          "algorithm": "adobe.trustmark.Q.bch5",
+          "sampled_frames": 5,
+          "matched_frames": 1,
+          "matched_fraction": 0.2
+        },
+        {
+          "algorithm": "adobe.trustmark.Q.variax-bch5",
+          "sampled_frames": 2,
+          "matched_frames": 2,
+          "matched_fraction": 1.0
+        },
+        {
+          "algorithm": "meta.videoseal.1.0.bch20",
+          "sampled_frames": 5,
+          "matched_frames": 0,
+          "matched_fraction": 0.0
+        }
+      ],
+      "confirmation_status": "recovered_claim",
+      "matched_frames": 2,
+      "sampled_frames": 2,
+      "interpretation": "early_stop_evidence",
+      "whole_video_coverage": "not_established"
+    },
+    "checked_frames": 6,
+    "declared_schemes": [
+      "adobe.trustmark.Q.bch5",
+      "adobe.trustmark.Q.variax-bch5",
+      "meta.videoseal.1.0.bch20"
+    ],
+    "out_of_operator_scope": [],
+    "configured_schemes": [
+      "adobe.trustmark.Q.bch5",
+      "adobe.trustmark.Q.variax-bch5",
+      "meta.videoseal.1.0.bch20"
+    ],
+    "completed_schemes": [
+      "adobe.trustmark.Q.bch5",
+      "meta.videoseal.1.0.bch20"
+    ],
+    "supplemental_completed_schemes": [],
+    "signed_routing": "independent_operator_scan",
+    "unavailable_engines": [],
+    "unavailable_auxiliary_engines": [],
+    "search": {
+      "reason": "two_concordant_ids",
+      "frames_decoded": 2,
+      "file_exhausted": false,
+      "hypotheses_complete": true,
+      "max_frames": 2000,
+      "max_seconds": 120,
+      "cnn_passes": 1,
+      "whole_video_coverage": "not_established",
+      "phase_bank": "observed_bins_v2",
+      "phase_resolution_s": 0.015625,
+      "aggregate_window_s": 0.09375,
+      "selection": "sequential_from_start",
+      "time_range_s": [
+        0.0,
+        0.08333333333333333
+      ]
+    },
+    "ids": [
+      {
+        "token": "014d507bcd983d12",
+        "status": "confirmed",
+        "confirmation_basis": "two_or_more_unique_frames_one_scheme",
+        "first_time_s": 0.0,
+        "last_time_s": 0.08333333333333333,
+        "matches_signed_claim": null,
+        "bases": [
+          {
+            "algorithm": "adobe.trustmark.Q.bch5",
+            "basis": "individual",
+            "unique_frames": 1,
+            "observations": 1
+          },
+          {
+            "algorithm": "adobe.trustmark.Q.variax-bch5",
+            "basis": "individual",
+            "unique_frames": 2,
+            "observations": 2
+          }
+        ],
+        "positions_s": [
+          0.0,
+          0.08333333333333333
+        ]
+      }
+    ],
+    "evidence_scope": {
+      "whole_file_examined": false,
+      "full_decode_schemes": [],
+      "unavailable_schemes": [],
+      "positions_scope": "observed_positions_only",
+      "unexamined_content": "not_established",
+      "declared_schemes": [
+        "adobe.trustmark.Q.bch5",
+        "adobe.trustmark.Q.variax-bch5",
+        "meta.videoseal.1.0.bch20"
+      ],
+      "out_of_operator_scope": [],
+      "passes": [
+        {
+          "algorithm": "adobe.trustmark.Q.variax-bch5",
+          "selection": "sequential_from_start",
+          "coverage": "prefix_until_stop",
+          "unique_frames": 2,
+          "time_range_s": [
+            0.0,
+            0.08333333333333333
+          ],
+          "stop_reason": "two_concordant_ids",
+          "complete": false
+        },
+        {
+          "algorithm": "meta.videoseal.1.0.bch20",
+          "selection": "uniform_positions",
+          "coverage": "sampled_positions",
+          "requested_positions": 5,
+          "unique_frames": 5,
+          "time_range_s": [
+            0.0,
+            5.916666666666667
+          ]
+        },
+        {
+          "algorithm": "adobe.trustmark.Q.bch5",
+          "selection": "uniform_positions",
+          "coverage": "sampled_positions",
+          "requested_positions": 5,
+          "unique_frames": 5,
+          "time_range_s": [
+            0.0,
+            5.916666666666667
+          ]
+        }
+      ]
+    }
+  },
+  "c2pa": {
+    "status": "not_found",
+    "signature": "not_checked",
+    "asset_binding": "not_checked",
+    "issuer_trust": "not_checked"
+  }
+}
