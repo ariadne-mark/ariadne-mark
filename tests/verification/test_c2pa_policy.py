@@ -33,8 +33,12 @@ class C2paPolicyTests(unittest.TestCase):
     def test_invalid_manifest_preserves_independent_evidence(self):
         from ariadne_mark.public_verifier import public_report
         good = ["claimSignature.validated", "assertion.bmffHash.match", "signingCredential.trusted"]
-        report = self.check(native_result(good, ["assertion.action.softBindingMissing"]))
+        raw = native_result(good, ["assertion.action.softBindingMissing", "unsafe code /path"])
+        raw["validation_state"] = "Invalid"
+        report = self.check(raw)
         public = public_report({"c2pa": report})["c2pa"]
+        self.assertEqual(public["validation_state"], "Invalid")
+        self.assertEqual(public["validation_status_codes"]["failure"], ["assertion.action.softBindingMissing"])
         self.assertEqual(public["status"], "invalid")
         self.assertEqual(public["signature"], "valid")
         self.assertEqual(public["asset_binding"], "valid")

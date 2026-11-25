@@ -79,6 +79,13 @@ def inspect_c2pa(path: Path, *, trust_anchors: Path | None = None, tsa_trust_anc
         "validation_codes": sorted(x for x in successes | failures | informational if x),
         "revocation": "not_checked_offline",
     }
+    native_state = raw.get("validation_state")
+    if native_state in ("WellFormed", "Valid", "Trusted", "Invalid"):
+        result["validation_state"] = native_state
+    result["validation_status_codes"] = {
+        name: sorted(code for code in codes if isinstance(code, str))
+        for name, codes in (("success", successes), ("informational", informational), ("failure", failures))
+    }
     if expired_only:
         result["reason"] = "signing_credential_expired_without_trusted_time"
     manifest = raw.get("manifests", {}).get(raw.get("active_manifest"), {})

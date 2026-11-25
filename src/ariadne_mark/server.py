@@ -4,6 +4,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import hashlib
 import io
+import re
+from datetime import datetime
 from pathlib import Path
 import tempfile
 import threading
@@ -44,6 +46,38 @@ class _DeadlineReader(io.RawIOBase):
                 raise TimeoutError('header_deadline')
             self.connection.settimeout(remaining)
         return self.connection.recv_into(buffer)
+
+
+def _active_trust_snapshot(sdk):
+    """Expose the configured paired snapshot without revealing filesystem paths."""
+    manifest = getattr(sdk, 'trust_anchors', None)
+    tsa = getattr(sdk, 'tsa_trust_anchors', None)
+    if manifest is None or tsa is None:
+        return None
+    manifest, tsa = Path(manifest), Path(tsa)
+    if (manifest.parent != tsa.parent or
+            (manifest.name, tsa.name) != ('C2PA-TRUST-LIST.pem', 'C2PA-TSA-TRUST-LIST.pem')):
+        return None
+    try:
+        root = manifest.parent.resolve(strict=True)
+        with (root / 'snapshot.json').open('rb') as stream:
+            raw = stream.read(16385)
+        if len(raw) > 16384:
+            return None
+        state = json.loads(raw)
+        revision = state['revision']
+        observed = datetime.fromisoformat(state['checked_at_utc'])
+        if not re.fullmatch(r'[a-f0-9]{40}', revision) or observed.tzinfo is None:
+            return None
+        files = state['files']
+        for name in (manifest.name, tsa.name):
+            with (root / name).open('rb') as stream:
+                data = stream.read(1024 * 1024 + 1)
+            if len(data) > 1024 * 1024 or hashlib.sha256(data).hexdigest() != files[name]['sha256']:
+                return None
+        return {'revision': revision, 'snapshot_created_at': observed.isoformat()}
+    except (OSError, ValueError, AttributeError, KeyError, RuntimeError, TypeError):
+        return None
 
 
 def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback_url=None,
@@ -156,6 +190,7 @@ def make_server(sdk, *, host="127.0.0.1", port=8080, max_upload_mb=512, feedback
                     "max_upload_bytes": limit, "formats": ["jpg", "jpeg", "png", "mp4"],
                     "c2pa_manifest_recovery": {'enabled': public_manifests, 'profile': 'read_only',
                         'algorithm_registration': 'provisional_not_registered'},
+                    "c2pa_trust_snapshot": _active_trust_snapshot(sdk),
                     "signed_reports": report_signer is not None,
                     "report_verifier_id": report_signer.verifier_id if report_signer else None,
                     "feedback_enabled": feedback is not None, "feedback_url": feedback_url,

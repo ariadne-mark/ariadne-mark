@@ -8,6 +8,7 @@ from contextlib import contextmanager, closing
 import json
 import os
 from pathlib import Path
+import re
 import sqlite3
 
 
@@ -119,6 +120,18 @@ def public_report(report, sources=()):
                    'revocation', 'reason', 'manifest_id', 'claim_scope', 'record_scope', 'ingredient_count',
                    'watermark_algorithm', 'token']
         result['c2pa'] = {k: deepcopy(c2pa[k]) for k in allowed if k in c2pa}
+        if c2pa.get('validation_state') in ('WellFormed', 'Valid', 'Trusted', 'Invalid'):
+            result['c2pa']['validation_state'] = c2pa['validation_state']
+        codes = c2pa.get('validation_status_codes')
+        if isinstance(codes, dict):
+            # Only native code identifiers are public. Explanations and URIs
+            # can contain paths or input metadata.
+            result['c2pa']['validation_status_codes'] = {
+                group: [code for code in codes[group]
+                        if isinstance(code, str) and len(code) <= 100
+                        and re.fullmatch(r'[a-z][A-Za-z0-9]*(?:\.[A-Za-z0-9_-]+)+', code)][:32]
+                for group in ('success', 'informational', 'failure') if isinstance(codes.get(group), list)
+            }
         for flag in ['development_identity', 'visible_disclosure']:
             if type(c2pa.get(flag)) is bool:
                 result['c2pa'][flag] = c2pa[flag]
