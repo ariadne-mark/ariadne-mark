@@ -22,7 +22,7 @@ TIME = re.compile(
 EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
 CLOCK_VAR = "ARIADNE_ASSESSMENT_CLOCK"
 NANOSECONDS = 1_000_000_000
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 
 
 class NoManifestAssessment(Exception):
@@ -137,7 +137,7 @@ def main():
         print(json.dumps({"tool": "ariadne-c2pa-assess", "tool_version": VERSION,
                           "outcome": exc.outcome, "native_error": exc.native_error}), file=sys.stderr)
         return {"manifest_not_found": 3, "malformed_asset_or_manifest": 4,
-                "no_manifest_assessment": 5, "native_validation_failed": 2}[exc.outcome]
+                "no_manifest_assessment": 5, "native_validation_failed": 6}[exc.outcome]
     except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired) as exc:
         print(f"C2PA assessment failed: {exc}", file=sys.stderr)
         return 2

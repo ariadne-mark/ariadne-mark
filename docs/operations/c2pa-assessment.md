@@ -51,12 +51,13 @@ signature, binding and trust outcomes.
 
 | Exit code | Output |
 | --- | --- |
-| 2 | Assessment could not complete. Unclassified native read failures return a JSON diagnostic with `native_validation_failed`. |
+| 2 | Assessment infrastructure could not complete validation. |
 | 3 | JSON diagnostic with `manifest_not_found`. |
 | 4 | JSON diagnostic with `malformed_asset_or_manifest` for typed native failures. |
 | 5 | JSON diagnostic with `no_manifest_assessment` if the native result has no manifest entries. |
+| 6 | JSON diagnostic with `native_validation_failed` for an unclassified native reader error. The cause is unspecified. |
 
-For 2–5, stdout is empty and the diagnostic is on stderr. Such a diagnostic
+For 2–6, stdout is empty and the diagnostic is on stderr. Such a diagnostic
 is outside the crJSON schema. Network access stays disabled during validation.
 
 `c2pa_assess_replay.py` consumes a `CASE-MATRIX.json` containing the complete

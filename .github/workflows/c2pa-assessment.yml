@@ -1,0 +1,32 @@
+name: C2PA assessment harness
+
+on:
+  push:
+    branches: ['review/c2pa-assessment-20261125']
+    paths:
+      - 'scripts/c2pa_assess*.py'
+      - 'scripts/c2pa_assessment_clock.c'
+      - '.github/workflows/c2pa-assessment.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Install the hash-pinned C2PA runtime
+        run: |
+          python3.12 -m venv /tmp/ariadne-assessment-venv
+          PYTHONPATH="$PWD/src" /tmp/ariadne-assessment-venv/bin/python -m ariadne_mark.bootstrap_c2pa
+      - name: Exercise the native contract with synthetic fixtures
+        run: |
+          cc -std=c11 -O2 -Wall -Wextra -Werror -fPIC -shared -Wl,-z,relro,-z,now \
+            -o /tmp/ariadne-assessment-clock.so scripts/c2pa_assessment_clock.c
+          PYTHONPATH="$PWD/src" /tmp/ariadne-assessment-venv/bin/python \
+            scripts/c2pa_assess_check.py /tmp/ariadne-assessment-clock.so
