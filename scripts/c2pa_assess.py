@@ -22,6 +22,14 @@ TIME = re.compile(
 EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
 CLOCK_VAR = "ARIADNE_ASSESSMENT_CLOCK"
 NANOSECONDS = 1_000_000_000
+VERSION = "0.1.0"
+
+
+class NoManifestAssessment(Exception):
+    def __init__(self, outcome, native_error=None):
+        super().__init__(outcome)
+        self.outcome = outcome
+        self.native_error = native_error
 
 
 def epoch_ns(value):
@@ -62,12 +70,22 @@ def run_reader(args, requested):
     import c2pa
 
     with context(args.trust_list, tsa_trust_anchors=args.tsa_trust_list) as ctx:
-        with c2pa.Reader(args.asset, context=ctx) as reader:
-            raw = reader.crjson()
+        try:
+            with c2pa.Reader(args.asset, context=ctx) as reader:
+                raw = reader.crjson()
+        except c2pa.C2paError as exc:
+            if isinstance(exc, c2pa.C2paError.ManifestNotFound):
+                raise NoManifestAssessment("manifest_not_found", type(exc).__name__) from exc
+            malformed = tuple(getattr(c2pa.C2paError, name) for name in
+                              ("InvalidAsset", "InvalidClaim", "InvalidContent", "InvalidSignature", "AssertionDecoding")
+                              if hasattr(c2pa.C2paError, name))
+            if isinstance(exc, malformed):
+                raise NoManifestAssessment("malformed_asset_or_manifest", type(exc).__name__) from exc
+            raise NoManifestAssessment("native_validation_failed", type(exc).__name__) from exc
     report = json.loads(raw)
     manifests = report.get("manifests")
     if not isinstance(manifests, list) or not manifests:
-        raise RuntimeError("The native reader yielded no manifest assessment")
+        raise NoManifestAssessment("no_manifest_assessment")
     for manifest in manifests:
         results = manifest.get("validationResults", {})
         observed = manifest.get("validationTime", results.get("validationTime"))
@@ -78,6 +96,7 @@ def run_reader(args, requested):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--version", action="version", version=VERSION)
     parser.add_argument("asset", type=Path, help="Local JPEG, PNG or MP4 fixture")
     parser.add_argument("--trust-list", required=True, type=Path, help="Test C2PA Trust List (PEM)")
     parser.add_argument("--tsa-trust-list", required=True, type=Path, help="Test C2PA TSA Trust List (PEM)")
@@ -114,6 +133,11 @@ def main():
             [sys.executable, str(Path(__file__).resolve()), "--ariadne-assessment-child", *sys.argv[1:]],
             env=environment, stdin=subprocess.DEVNULL, timeout=90, check=False,
         ).returncode
+    except NoManifestAssessment as exc:
+        print(json.dumps({"tool": "ariadne-c2pa-assess", "tool_version": VERSION,
+                          "outcome": exc.outcome, "native_error": exc.native_error}), file=sys.stderr)
+        return {"manifest_not_found": 3, "malformed_asset_or_manifest": 4,
+                "no_manifest_assessment": 5, "native_validation_failed": 2}[exc.outcome]
     except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired) as exc:
         print(f"C2PA assessment failed: {exc}", file=sys.stderr)
         return 2

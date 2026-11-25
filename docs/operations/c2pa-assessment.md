@@ -24,9 +24,10 @@ python scripts/c2pa_assess.py fixture.png \
   --clock-sha256 '<recorded-sha256>' > fixture.crjson
 ```
 
-Use test trust files provided for the assessment and convert to their PEM
-certificate bundles if necessary. Lists for manifest issuers and TSAs remain
-separate. Keep the original inputs and document the conversion. Wall-clock
+The assessor takes PEM X.509 trust anchors, with distinct lists for manifest
+issuers and TSAs. Preserve the original tests and test-list files. If an
+assessor supplies another trust-list representation, confirm the treatment of
+trust status and service scopes before extracting certificates. Wall-clock
 control applies only to the child process. The SDK runtime performs normal
 cryptographic validation with the supplied trust configuration. A report is
 accepted only if its native crJSON reports the requested validation time. Use a
@@ -40,3 +41,31 @@ own summary status and from the assessment crJSON itself. The status groups
 expose bounded code identifiers and leave detailed input-controlled strings in
 the local report. `/health` exposes a paired trust snapshot only after it has
 matched both configured list hashes.
+
+## CLI contract and replay
+
+Get the independent harness version using `c2pa_assess.py --version`. On
+exit 0, stdout holds the native crJSON. A native validation failure can be in
+a successfully emitted report. Read its status groups to establish the
+signature, binding and trust outcomes.
+
+| Exit code | Output |
+| --- | --- |
+| 2 | Assessment could not complete. Unclassified native read failures return a JSON diagnostic with `native_validation_failed`. |
+| 3 | JSON diagnostic with `manifest_not_found`. |
+| 4 | JSON diagnostic with `malformed_asset_or_manifest` for typed native failures. |
+| 5 | JSON diagnostic with `no_manifest_assessment` if the native result has no manifest entries. |
+
+For 2–5, stdout is empty and the diagnostic is on stderr. Such a diagnostic
+is outside the crJSON schema. Network access stays disabled during validation.
+
+`c2pa_assess_replay.py` consumes a `CASE-MATRIX.json` containing the complete
+test inputs, report and diagnostic hashes, expected exit code and exact
+validation time for each case. Use the same runtime and assessor source as
+recorded in the matrix. It verifies input hashes and compares full parsed
+native reports and diagnostics. Set the clock hash to that of the copy you
+built for the isolated container.
+
+The `specVersion` emitted by the validator in its result block describes the
+native report. The version declared by the content signer in
+`claim_generator_info` is part of the content manifest. Keep both as emitted.
